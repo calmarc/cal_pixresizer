@@ -1,0 +1,690 @@
+#!/usr/bin/env python
+#{{{
+# Copyright (C) 2006 http://www.calmar.ws calmar
+# Permission to copy and use this file is specified in the file COPYING.
+# If this file is missing you can find it here: http://www.calmar.ws/resize/COPYING
+
+# for pyexe only: comment out: #pygtk.require('2.0')
+
+import pygtk, glob, Image, os, sys, pango
+#pygtk.require('2.0')
+import gtk
+
+# Check for new pygtk: this is new class in PyGtk 2.4
+if gtk.pygtk_version < (2,4,0):
+   print "PyGtk 2.4.0 or later required for this example"
+   raise SystemExit
+
+# global (arg) things
+window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+todolabel = gtk.Label()
+files_todo = []
+height = 0
+quality = 0
+what_todo = ""
+entry1 = gtk.Entry(15)
+entry2 = gtk.Entry(15)
+entry3 = gtk.Entry(25)
+
+adj = gtk.Adjustment(1024, 50, 2500, 1, 100, 0)
+spinHeight = gtk.SpinButton(adj, 1.0, 0)
+adj = gtk.Adjustment(768, 30, 2000, 1, 100, 0)
+spinner1 = gtk.SpinButton(adj, 1.0, 0)
+adj = gtk.Adjustment(90, 10, 100, 1, 10, 0)
+spinner2 = gtk.SpinButton(adj, 0.0, 0)
+
+# in order icons and convert can get found
+if sys.path[0][-12:] == "/library.zip":
+    cwd = sys.path[0][0:-12] + "/"  #for py2exe only
+else:
+    cwd = sys.path[0] + "/"
+
+#}}}
+def delete_event(widget, event, data=None): #{{{
+    gtk.main_quit()
+    return False
+#}}}
+def allesauswaehlen(widget, data): #{{{
+    data.select_all()
+#}}}
+def mesbox_destroy(widget, data): #{{{
+    data.hide()
+    data.destroy()
+#}}}
+def whattodo(widget, data): #{{{
+    global what_todo
+    what_todo = str(data[1])
+    data[0].hide()
+    data[0].destroy()
+#}}}
+def quit(self, *args): #{{{
+    self.hide()
+    self.destroy()
+#}}}
+def trimlongline(loc_item, size=54): #{{{
+    # nur gerade zahlen verwenden und >= 12
+    if len(loc_item) >= size:
+        loc_item = loc_item[0:size/2-6] + "[...]" + loc_item[len(loc_item)-size/2:]
+    return loc_item
+#}}}
+def update_preview_cb(file_chooser, preview): #{{{
+    filename = file_chooser.get_preview_filename()
+    try:
+      pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 160, 160)
+      preview.pic.set_from_pixbuf(pixbuf)
+      have_preview = True
+    except:
+      have_preview = True
+    file_chooser.set_preview_widget_active(have_preview)
+    return
+#}}}
+def open_filechooser(widget, event, data=None): #{{{
+    global files_todo
+
+    dialog = gtk.FileChooserDialog("Open..",
+                                   None,
+                                   gtk.FILE_CHOOSER_ACTION_OPEN,
+                                   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                   gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+
+    dialog.set_default_response(gtk.RESPONSE_OK)
+    dialog.set_select_multiple(True)
+
+    vbox = gtk.VBox(True, 0)
+    vbox.show()
+    dialog.set_extra_widget(vbox)
+
+    hbutton_box = gtk.HButtonBox()
+    hbutton_box.set_layout(gtk.BUTTONBOX_DEFAULT_STYLE)
+    vbox.pack_start(hbutton_box, True, True, 0)
+    hbutton_box.show()
+
+    button = gtk.Button("Alle Bilder auswaehlen")
+    button.show()
+    button.connect("clicked", allesauswaehlen, dialog)
+    hbutton_box.add(button)
+
+    label = gtk.Label("Ctrl + linke Maus fuer zusaetzliche Auswahl\nShift + linke Maus fuer Bereiche")
+    label.show()
+    vbox.pack_start(label, False, False, 0)
+
+
+    filter = gtk.FileFilter()
+    filter.set_name(" Images ")
+    filter.add_mime_type("image/jpeg")
+    filter.add_pattern("*.jpg")
+    filter.add_pattern("*.jpeg")
+    filter.add_pattern("*.png")
+    filter.add_pattern("*.tif")
+    filter.add_pattern("*.bmp")
+
+    dialog.add_filter(filter)
+    filter = gtk.FileFilter()
+    filter.set_name(" alles ")
+    filter.add_pattern("*")
+    dialog.add_filter(filter)
+
+    if sys.platform == "win32":
+      homevar = os.getenv("HOMEDRIVE")
+      homevar += "\\" + str(os.getenv("HOMEPATH"))
+    else:
+      homevar = os.getenv("HOME")
+    if homevar != None:
+        dialog.set_current_folder(homevar)
+
+    preview = gtk.VBox(True)
+    label = gtk.Label()    
+    label.show()
+    preview.pack_start(label, True, True, 5)
+    pic = gtk.Image()
+    pic.show()
+    preview.pack_start(pic, True, True, 5)
+    dialog.set_preview_widget(preview)
+    dialog.connect("update-preview", update_preview_cb, preview)
+
+    response = dialog.run()
+    if response == gtk.RESPONSE_OK:
+        files_todo =  dialog.get_filenames()
+        labeltext=""
+        if len(files_todo) == 1:
+            labeltext += "\n\n" + trimlongline(files_todo[0]) + "\n\n"
+        elif len(files_todo) == 2:
+            labeltext += "\n" + trimlongline(files_todo[0]) + "\n" + trimlongline(files_todo[1]) + "\n\n"
+        elif len(files_todo) == 3:
+            labeltext += "\n" + trimlongline(files_todo[0]) + "\n"  + trimlongline(files_todo[1]) + "\n"  +  trimlongline(files_todo[2]) + "\n"
+        elif len(files_todo) == 4:
+            labeltext +=  trimlongline(files_todo[0]) + "\n"  + trimlongline(files_todo[1]) + "\n"  + trimlongline(files_todo[2]) + "\n"  + trimlongline(files_todo[3]) + "\n"
+        elif len(files_todo) == 5:
+            labeltext +=  trimlongline(files_todo[0]) + "\n"  + trimlongline(files_todo[1]) + "\n"  + trimlongline(files_todo[2]) + "\n"  + trimlongline(files_todo[3]) + "\n"  + trimlongline(files_todo[4]) 
+        else:
+            for i in range(0,3):
+                labeltext += trimlongline(files_todo[i]) +"\n"
+            labeltext += ".....\n" 
+            labeltext += trimlongline(files_todo[-1])
+        todolabel.set_text(labeltext)
+        counter=0
+        print "## Die Bilder Auswahl:"
+        print
+        for file in files_todo:
+            counter += 1
+            string = "%3s: " + trimlongline(file,66)
+            print string % (str(counter))
+        print
+
+    elif response == gtk.RESPONSE_CANCEL:
+        dialog.destroy()
+    dialog.destroy()
+#}}}
+def setheight(widget, data): #{{{
+    global height
+    height = data
+#}}}
+def setquality( widget, data): #{{{
+    global quality
+    quality = data
+#}}}
+def do_nothing(widget, data): #{{{
+    return
+#}}}
+def show_overwrite_dialog(file): #{{{
+    global window
+    mesbox = gtk.Dialog("Achtung:", window, gtk.DIALOG_MODAL, ()) 
+    mesbox.connect("destroy", do_nothing, None)
+    mesbox.connect("delete_event", do_nothing, None)    
+    label = gtk.Label()
+    label.set_markup("Ziel Bild/Datei <b>existiert bereits:</b>\n\n" + trimlongline(file,68))
+    mesbox.vbox.pack_start(label, True, True, 10)
+    label.show()
+    ok_button = gtk.Button("Abbrechen")
+    mesbox.action_area.pack_start(ok_button, True, True, 0)
+    ok_button.connect("clicked", whattodo, (mesbox,"cancel"))
+    ok_button.show()
+    cancel_button = gtk.Button("ueberspringen")
+    mesbox.action_area.pack_start(cancel_button, True, True, 0)
+    cancel_button.connect("clicked", whattodo, (mesbox,"skip"))
+    cancel_button.show()
+    overwrite_button = gtk.Button("ueberschreiben")
+    mesbox.action_area.pack_start(overwrite_button, True, True, 0)
+    overwrite_button.connect("clicked", whattodo, (mesbox,"overwrite"))
+    overwrite_button.show()
+    overwrite_button = gtk.Button("Alle Ueberschreiben")
+    mesbox.action_area.pack_start(overwrite_button, True, True, 0)
+    overwrite_button.connect("clicked", whattodo, (mesbox,"all_overwrite"))
+    overwrite_button.show()
+    mesbox.show()
+    mesbox.run()
+#}}}
+def start_resize(widget, event, data=None): #{{{
+    global files_todo
+    global what_todo
+    global height
+    global quality
+
+    prefix = entry1.get_text().strip()
+    suffix = entry2.get_text().strip()
+    folder = entry3.get_text().strip()
+
+    if height == "0": # then, the spinner is selected finally
+        height = str(spinner1.get_value_as_int())
+    if quality == "0":
+        quality = str(spinner2.get_value_as_int())
+
+# print warning when not at least one of the entries got set
+    if prefix == "" and suffix == "" and folder == "":
+        mesbox = gtk.Dialog() 
+        mesbox.connect("destroy", quit)
+        mesbox.connect("delete_event", quit)    
+        label = gtk.Label(""" Mindestens eines von den drei muss angegeben werden:
+
+    -> Prefix
+    -> Suffix
+    -> Unterordner
+
+ weil sonst die Original-Bilder ueberschrieben werden wuerden.""")
+
+        mesbox.vbox.pack_start(label, False, False, 6)
+        label.show()
+
+        ok_button = gtk.Button("OK")
+        mesbox.action_area.pack_start(ok_button, True, True, 0)
+        ok_button.connect("clicked", mesbox_destroy, mesbox)
+        ok_button.show()
+
+        mesbox.show()
+        return
+
+    if len(files_todo) == 0:
+        mesbox = gtk.Dialog() 
+        mesbox.connect("destroy", quit)
+        mesbox.connect("delete_event", quit)    
+        label = gtk.Label("  Bitte zuerst Bilder auswaehlen")
+        mesbox.vbox.pack_start(label, True, True, 10)
+        label.show()
+        ok_button = gtk.Button("OK")
+        mesbox.action_area.pack_start(ok_button, True, True, 0)
+        ok_button.connect("clicked", mesbox_destroy, mesbox)
+        ok_button.show()
+        mesbox.show()
+        return
+
+# to get the path
+    splitfile = os.path.split(files_todo[0])
+
+# create folder when needed
+    if folder != "" and not os.path.exists(splitfile[0] + "/" +folder):
+        print "## Erstelle neuen Ordner: " + folder + "  (" + \
+                trimlongline(splitfile[0],38) + "/" + folder + ")"
+        print
+        os.mkdir(splitfile[0] + "/" + folder)
+    else:
+        print "# Sub-Ordner existiert bereits"
+
+    print """\
+## Erstelle die Bilder: Hoehe:     %-s 
+                        Qualitaet: %-s 
+                        Ordner:    %-s 
+                        Prefix:    %-s 
+                        Suffix:    %-s""" %  (height, quality, folder, prefix, suffix)
+
+    print
+    total = len(files_todo)
+    counter=0
+    fixed = ""
+    fixed2 = ""
+    for dofile in files_todo:
+        counter += 1
+
+        splitfile = os.path.split(dofile)
+        resultpath = splitfile[0] + "/"
+        if folder != "":
+            resultpath += folder + "/" 
+
+        fname,ext=os.path.splitext(splitfile[1]); 
+        filetot = resultpath + prefix + fname + suffix + ext
+
+# for py2exe only (looking for the convert.exe in the same dir...)
+        if sys.platform == "win32":
+            command = cwd + "convert.exe " + '"' + dofile + '"' + " -resize 9999x" + str(height)\
+                + " -quality " + str(quality) + ' "' + filetot + '"'
+        else:
+            command = "convert " + '"' + dofile + '"' + " -resize 9999x" + str(height)\
+                + " -quality " + str(quality) + ' "' + filetot + '"'
+
+# wait and update
+
+        while gtk.events_pending():
+            gtk.main_iteration(False)
+
+# fixed=(some padding) set already?
+        if fixed == "":
+            fixed = str(len(splitfile[1]) + 2)
+            fixed2 =  len(splitfile[1])
+        command_print = "convert: " + "%-" + fixed + "s --> " + \
+                trimlongline(filetot,58 - fixed2 )
+
+        todolabel.set_markup("\n\n<b>Progress" + " (" + str(counter) + "/" + \
+                str(total) + ")</b>: " + trimlongline(splitfile[1],20) + " -> " + \
+                trimlongline(folder,30) + "/" + prefix +\
+                fname + suffix + ext + "\n\n" )
+        
+# check if file exists and may show 'overwrite dialog'
+        if os.path.exists(filetot):
+            if what_todo != "all_overwrite":
+                show_overwrite_dialog(filetot)
+        if what_todo == "skip":
+            what_todo = ""
+            print "# Uebergangen: " + trimlongline(filetot,58)
+            continue
+        elif what_todo == "cancel":
+            what_todo = ""
+            files_todo=[]
+            folder=""
+            todolabel.set_markup("\n\n  <b>-- keine Bilder ausgewaehlt --</b> \n\n")
+            print
+            print "# Die Generierung wurde komplett abgebrochen"
+            print
+
+            return
+        elif what_todo == "overwrite":
+            what_todo = ""
+
+        print command_print % (splitfile[1])
+
+        exitstatus = os.system(command)
+        if exitstatus != 0:
+            mesbox = gtk.Dialog() 
+            mesbox.connect("destroy", quit)
+            mesbox.connect("delete_event", quit)    
+            label = gtk.Label("Imagemagick beendete mit einem Fehlercode beim\n\
+                    Bearbeiten vom Bild: \n" + dofile + "\n\n \
+                    Die weitere Bearbeitung wird ABGEBROCHEN\n\n \
+                    (mac@calmar.ws kontaktieren allenfalls)"  )
+            mesbox.vbox.pack_start(label, True, True, 10)
+            label.show()
+            ok_button = gtk.Button("OK")
+            mesbox.action_area.pack_start(ok_button, True, True, 0)
+            ok_button.connect("clicked", mesbox_destroy, mesbox)
+            ok_button.show()
+
+            mesbox.show()
+            return
+
+    mesbox = gtk.Dialog() 
+    mesbox.connect("destroy", quit)
+    mesbox.connect("delete_event", quit)    
+    label = gtk.Label(" Die Bilder wurden generiert")
+    mesbox.vbox.pack_start(label, True, True, 10)
+    label.show()
+    ok_button = gtk.Button("OK")
+    mesbox.action_area.pack_start(ok_button, True, True, 0)
+    ok_button.connect("clicked", mesbox_destroy, mesbox)
+    ok_button.show()
+    mesbox.show()
+
+    print
+    print "# Die Erstellung der Bilder wurde fertiggestellt"
+    print "\n"
+
+
+    what_todo = ""
+    files_todo=[]
+    folder=""
+    todolabel.set_markup("\n\n  <b>-- keine Bilder ausgewaehlt --</b> \n\n")
+#}}}
+def main(): #{{{
+
+    global cwd 
+    global spinner1
+    global spinner2
+
+    print "============================="
+    print "Calmar Picture Resize Utility"
+    print "============================="
+    print
+
+#    window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+    window.set_title("Calmar's Picture Resizer - http://www.calmar.ws")
+    window.set_default_size(500,300)
+    window.connect("delete_event", delete_event)
+    window.set_border_width(15)
+
+    mainbox = gtk.VBox(False, 0)
+    window.add(mainbox)
+
+#########################################################################
+# buttons  in hbox
+
+    boxh1 = gtk.HBox(False, 0)
+    mainbox.pack_start(boxh1, False, False, 0)
+
+    image = gtk.Image()
+    image.set_from_file(cwd + "bilder/calmar.png")
+    image.show()
+    boxh1.pack_start(image, False, False , 0)
+
+    image = gtk.Image()
+    image.set_from_file(cwd + "bilder/exit.png")
+    image.show()
+    but_quit = gtk.Button()
+    hbox=gtk.HBox()
+    hbox.pack_end(image, False, False, 0)
+    but_quit.add(hbox)
+    label = gtk.Label(" Exit ")
+    label.show()
+    hbox.pack_end(label, False, False, 0)
+
+    hbox.show()
+    but_quit.connect("clicked", delete_event, None)
+    boxh1.pack_end(but_quit, False, False, 0)
+
+
+#########################################################################
+# separator
+
+    separator = gtk.HSeparator()
+    mainbox.pack_start(separator, False, False, 5)
+    separator.show()
+
+#########################################################################
+#  vbox for radios below
+
+
+    boxh2 = gtk.HBox(True, 0)
+    mainbox.pack_start(boxh2, True, True, 0)
+
+#### height
+
+    vboxHeight = gtk.VBox(False, 0)
+    boxh2.pack_start(vboxHeight, False, False, 0)
+    
+    label = gtk.Label()
+    label.set_markup('<span foreground="#000060"><b>Hoehe</b></span>')
+    vboxHeight.pack_start(label, False, False, 0)
+    label.show()
+
+    radHeight = gtk.RadioButton(None, "... x 3200")
+    radHeight.connect("toggled", setheight, "3200")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+
+    radHeight = gtk.RadioButton(radHeight, "... x 3024")
+    radHeight.connect("toggled", setheight, "3024")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+
+    radHeight = gtk.RadioButton(radHeight, "... x 768")
+    radHeight.connect("toggled", setheight, "768")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+    radHeight.set_active(True)
+    height = 768
+
+    radHeight = gtk.RadioButton(radHeight, "... x 600")
+    radHeight.connect("toggled", setheight, "600")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+
+    radHeight = gtk.RadioButton(radHeight, "... x 480")
+    radHeight.connect("toggled", setheight, "480")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+
+    radHeight = gtk.RadioButton(radHeight, "... x 320")
+    radHeight.connect("toggled", setheight, "320")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+
+    radHeight = gtk.RadioButton(radHeight, "... x 80")
+    radHeight.connect("toggled", setheight, "80")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+
+    radHeight = gtk.RadioButton(radHeight, "spezifisch:")
+    radHeight.connect("toggled", setheight, "0")
+    vboxHeight.pack_start(radHeight, True, True, 0)
+    radHeight.show()
+
+    spinHeight.show()
+    spinHeight.set_wrap(False)
+    vboxHeight.pack_start(spinHeight, False, False, 0)
+
+
+#### quality
+
+    boxv2 = gtk.VBox(False, 0)
+    boxh2.pack_start(boxv2, False, False, 0)
+
+    label = gtk.Label()
+    label.set_markup('<span foreground="#000060"><b>Qualitaet</b></span>')
+    boxv2.pack_start(label, False, False, 0)
+    label.show()
+
+    radbut2 = gtk.RadioButton(None, "100%")
+    radbut2.connect("toggled", setquality, "100")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+
+    radbut2 = gtk.RadioButton(radbut2, "  95%")
+    radbut2.connect("toggled", setquality, "95")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+
+    radbut2 = gtk.RadioButton(radbut2, "  90%")
+    radbut2.connect("toggled", setquality, "90")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+    radbut2.set_active(True)
+    quality = 92
+
+    radbut2 = gtk.RadioButton(radbut2, "  85%")
+    radbut2.connect("toggled", setquality, "85")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+
+    radbut2 = gtk.RadioButton(radbut2, "  80%")
+    radbut2.connect("toggled", setquality, "80")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+
+    radbut2 = gtk.RadioButton(radbut2, "  70%")
+    radbut2.connect("toggled", setquality, "70")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+
+    radbut2 = gtk.RadioButton(radbut2, "  50%")
+    radbut2.connect("toggled", setquality, "50")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+
+    radbut2 = gtk.RadioButton(radbut2, "spezifisch:")
+    radbut2.connect("toggled", setquality, "0")
+    boxv2.pack_start(radbut2, True, True, 0)
+    radbut2.show()
+
+    spinner2.show()
+    spinner2.set_wrap(False)
+    boxv2.pack_start(spinner2, False, False, 0)
+
+#### prefix/suffix/folder
+
+    vboxHeight = gtk.VBox(False, 0)
+    boxh2.pack_start(vboxHeight, False, False, 0)
+
+    label = gtk.Label()
+    label.set_markup("\n<b>PREFIX</b>orig-name.jpg")
+    vboxHeight.pack_start(label, False, False, 0)
+    label.show()
+    entry1.set_alignment(0)
+#    entry1.set_text("_")
+    vboxHeight.pack_start(entry1, False, False, 0)
+    entry1.show()
+
+    label = gtk.Label()
+    label.set_markup("\norig-name<b>SUFFIX</b>.jpg")
+
+    vboxHeight.pack_start(label, False, False, 0)
+    label.show()
+    entry2.set_alignment(0)
+    vboxHeight.pack_start(entry2, False, False, 0)
+    entry2.show()
+
+    label = gtk.Label()
+    label.set_markup("\n<b>Unterordner</b>, fuer\ndie <u>neuen</u> Bilder")
+    vboxHeight.pack_start(label, False, False, 0)
+    label.show()
+    entry3.set_alignment(0)
+    vboxHeight.pack_start(entry3, False, False, 0)
+    entry3.show()
+
+#########################################################################
+# separator
+
+    separator = gtk.HSeparator()
+    mainbox.pack_start(separator, False, False, 5)
+    separator.show()
+
+
+#########################################################################
+# label 
+
+    boxh3 = gtk.HBox(False, 0)
+    mainbox.pack_start(boxh3, False, False, 0)
+
+    todolabel.set_markup("\n\n  <b>-- keine Bilder ausgewaehlt --</b> \n\n")
+    boxh3.pack_start(todolabel, False, False , 0)
+
+#########################################################################
+# separator
+
+    separator = gtk.HSeparator()
+    mainbox.pack_start(separator, False, False, 5)
+    separator.show()
+
+#########################################################################
+# buttons  in letzter bod
+
+
+    boxhend = gtk.HBox(False, 0)
+    mainbox.pack_start(boxhend, False, False, 0)
+
+    hbox=gtk.HBox()
+    hbox.show()
+    image = gtk.Image()
+    image.set_from_file(cwd + "bilder/open.png")
+    image.show()
+    hbox.pack_end(image, False, False, 0)
+    label = gtk.Label("Bilder auswaehlen  ")
+    label.show()
+    hbox.pack_end(label, False, False, 0)
+    but_files = gtk.Button()
+    but_files.add(hbox)
+    but_files.connect("clicked", open_filechooser, None)
+    boxhend.pack_start(but_files, False, False, 0)
+
+    but_files.grab_focus()
+
+    hbox=gtk.HBox()
+    hbox.show()
+    image = gtk.Image()
+    image.set_from_file(cwd + "bilder/go.png")
+    image.show()
+    hbox.pack_end(image, False, False, 0)
+    label = gtk.Label("Starten  ")
+    label.show()
+    hbox.pack_end(label, False, False, 0)
+    but_start = gtk.Button()
+    but_start.add(hbox)
+    but_start.connect("clicked", start_resize, None)
+    boxhend.pack_end(but_start, False, False, 0)
+
+#########################################################################
+# show
+
+
+    boxh1.show()   # buttonrow
+    but_quit.show()
+
+    boxh2.show()   # radios
+
+    boxv1.show()
+    boxv2.show()
+    vboxHeight.show()
+
+    boxh3.show()   # label
+    todolabel.show()
+
+    boxhend.show() # buttonrow at the end
+    but_files.show()
+    but_start.show()
+
+    mainbox.show() # main vbox
+    window.show()
+
+    gtk.main()
+    return 0      
+
+if __name__ == "__main__":
+    main()
+
+
+

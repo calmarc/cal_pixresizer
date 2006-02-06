@@ -1,0 +1,18 @@
+files =
+    cal_pixresizer/cal_pixresizer.py
+    cal_pixresizer/cal_pixresizer.ico
+    cal_pixresizer/COPYING
+    cal_pixresizer/README
+    cal_pixresizer/bilder/calmar.png
+    cal_pixresizer/bilder/calmar.xpm
+    cal_pixresizer/bilder/exit.png
+    cal_pixresizer/bilder/go.png
+    cal_pixresizer/bilder/open.png
+
+ 
+all : 
+    @os.system("cd ..; zip -r cal_pixresizer " + _no.files)
+    @os.system("mv ../cal_pixresizer.zip /home/calmar/www/calmar/resize")
+    @os.system("cd ..; tar -czf  cal_pixresizer.tar.gz " + _no.files)
+    @os.system("mv ../cal_pixresizer.tar.gz /home/calmar/www/calmar/resize")
+    @os.system("aap -f /home/calmar/www/calmar/main.aap")
