@@ -1,49 +1,9 @@
 #!/usr/bin/env python
-#{{{
-# Copyright (C) 2006 http://www.calmar.ws calmar
+# Copyright (C) 2006 http://www.calmar.ws {{{
 # http://www.calmar.ws/resize/COPYING
-
-# for pyexe only: comment out: #pygtk.require('2.0')
-import pygtk, glob, os, sys, pango, time
-#pygtk.require('2.0')
-import gtk
-
-# PIL needs some help, when py2exe-d
-import Image
-import PngImagePlugin
-import JpegImagePlugin
-
-# Check for new pygtk: this is new class in PyGtk 2.4
-if gtk.pygtk_version < (2,4,0):
-   print "PyGtk 2.4.0 or later required for this example"
-   raise SystemExit
-
-# global: general - used on many function
-general = { "todolabel" : gtk.Label(), 
-            "what_todo" : "",
-            "pic_folder": "",
-            "window" : gtk.Window(gtk.WINDOW_TOPLEVEL)}
-
-if sys.path[0][-12:] == "\library.zip":
-    general["cwd"] = sys.path[0][0:-12] + "/"  #for py2exe only
-else:
-    general["cwd"] = sys.path[0] + "/"
-
-# global: imgprocess - data (source) for image processing
-imgprocess = { "entry1" : gtk.Entry(15),
-               "entry2" : gtk.Entry(15),
-               "entry3" : gtk.Entry(25),
-               "files_todo" : [],
-               "width" : 0,
-               "height" : 0 ,
-               "quality" : 0}
-adj = gtk.Adjustment(1024, 30, 2000, 1, 100, 0)
-imgprocess["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
-adj = gtk.Adjustment(768, 30, 2000, 1, 100, 0)
-imgprocess["spinHeight"] = gtk.SpinButton(adj, 1.0, 0)
-adj = gtk.Adjustment(90, 10, 100, 1, 10, 0)
-imgprocess["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
-
+# }}}
+def get_spin_focus(widget, varname): #{{{
+    general[varname].set_active(True)
 #}}}
 def delete_event(widget, event, data=None): #{{{
     gtk.main_quit()
@@ -91,6 +51,7 @@ def create_radios(vbox,values,text,ipvar, default): #{{{
         if values[i] == default:
             radio.set_active(True)
         radio.show()
+    return radio # return last radio thing for spinner
 #}}}
 def show_mesbox(text): #{{{
     mesbox = gtk.Dialog("Calmar's Picture Resizer", general["window"], gtk.DIALOG_MODAL,\
@@ -175,7 +136,6 @@ linke Maus fuer Bereiche")
     dialog.connect("update-preview", update_preview_cb, (label, image))
 
 # starting folder
-    print "pre:" + general["pic_folder"]
     if general["pic_folder"] == "":
         if sys.platform == "win32":
           homevar = os.getenv("HOMEDRIVE")
@@ -415,9 +375,9 @@ def main(): #{{{
 
     global imgprocess
 
-    print "============================="
-    print "Calmar Picture Resize Utility"
-    print "============================="
+    print "==============================="
+    print "Calmar's Picture Resize Utility"
+    print "==============================="
     print
 
     general["window"].set_title("Calmar's Picture Resizer - http://www.calmar.ws")
@@ -477,11 +437,11 @@ def main(): #{{{
     vbox.pack_start(label, False, False, 0)
     label.show()
 
-    text = [ "kein Limit", "1600 x ...", "1200 x ...", "768 x ...", "600 x ...",\
+    text = [ "kein Limit", "1600 x ...", "1280 x ...", "1024 x ...", "800 x ...", "640 x ...",\
             "480 x ...", "120 x ...", "spezifisch:" ]
-    values = [ "99999", "1600", "1200", "768", "600", "480", "120" ,"0"]
+    values = [ "99999", "1600", "1280", "1024", "800", "640", "480", "120" ,"0"]
     default = "99999"
-    create_radios(vbox, values, text, "width", default)
+    general["radio_width"] = create_radios(vbox, values, text, "width", default)
     imgprocess["width"] = 99999
 
     imgprocess["spinWidth"].show()
@@ -499,11 +459,11 @@ def main(): #{{{
     vbox.pack_start(label, False, False, 0)
     label.show()
 
-    text = [ "kein Limit", "... x 1200", "... x 768", "... x 600", "... x 480",\
-             "... x 120", "... x 80", "spezifisch:" ]
-    values = [ "99999", "1200", "768", "600", "480", "120", "80", "0"]
+    text = [ "kein Limit", "... x 1200", "...x 1024",  "... x 768", "... x 600", "... x 480",\
+             "... x 320", "... x 80", "spezifisch:" ]
+    values = [ "99999", "1200", "1024", "768", "600", "480", "320", "80", "0"]
     default = "768"
-    create_radios(vbox, values, text, "height", default)
+    general["radio_height"] = create_radios(vbox, values, text, "height", default)
     imgprocess["height"] = 768
 
     imgprocess["spinHeight"].show()
@@ -523,7 +483,7 @@ def main(): #{{{
     text = [ "100%", "97%", "94%", "90%", "85%", "80%", "70%", "50%", "spezifisch"]
     values = [ "100", "97", "94", "90", "85", "80", "70", "50", "0"]
     default = "94"
-    create_radios(vbox, values, text, "quality", default)
+    general["radio_quality"] = create_radios(vbox, values, text, "quality", default)
     imgprocess["quality"] = 94
 
     imgprocess["spinQuality"].show()
@@ -634,6 +594,57 @@ def main(): #{{{
 
     gtk.main()
     return 0      
+#}}}
+# for pyexe only: comment out: #pygtk.require('2.0' #{{{
+import pygtk, glob, os, sys, pango, time
+#pygtk.require('2.0')
+import gtk
+# PIL needs some help, when py2exe-d
+import Image
+import PngImagePlugin
+import JpegImagePlugin
+
+# Check for new pygtk: this is new class in PyGtk 2.4
+if gtk.pygtk_version < (2,4,0):
+   print "PyGtk 2.4.0 or later required for this example"
+   raise SystemExit
+
+# global: general - used on many function
+radio_bogus = gtk.RadioButton() #radio_ must be radioB, gtk calls it or so
+general = { "todolabel" : gtk.Label(), 
+            "what_todo" : "",
+            "pic_folder": "",
+            "radio_width" : radio_bogus,
+            "radio_height" : radio_bogus,
+            "radio_quality" : radio_bogus,
+            "window" : gtk.Window(gtk.WINDOW_TOPLEVEL)}
+
+if sys.path[0][-12:] == "\library.zip":
+    general["cwd"] = sys.path[0][0:-12] + "/"  #for py2exe only
+else:
+    general["cwd"] = sys.path[0] + "/"
+
+# global: imgprocess - data (source) for image processing
+imgprocess = { "entry1" : gtk.Entry(15),
+               "entry2" : gtk.Entry(15),
+               "entry3" : gtk.Entry(25),
+               "files_todo" : [],
+               "width" : 0,
+               "height" : 0 ,
+               "quality" : 0}
+adj = gtk.Adjustment(1024, 30, 2000, 1, 100, 0)
+adj.connect("value_changed", get_spin_focus, "radio_width" )
+imgprocess["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
+imgprocess["spinWidth"].set_numeric(True)  #spinnervalue needed later
+adj = gtk.Adjustment(768, 30, 2000, 1, 100, 0)
+adj.connect("value_changed", get_spin_focus, "radio_height" )
+imgprocess["spinHeight"] = gtk.SpinButton(adj, 1.0, 0)
+imgprocess["spinHeight"].set_numeric(True)
+adj = gtk.Adjustment(90, 10, 100, 1, 10, 0)
+adj.connect("value_changed", get_spin_focus, "radio_quality" )
+imgprocess["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
+imgprocess["spinQuality"].set_numeric(True)
 
 if __name__ == "__main__":
     main()
+#}}}
