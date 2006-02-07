@@ -139,18 +139,22 @@ linke Maus fuer Bereiche")
 
 # starting folder
     if general["pic_folder"] == "":
-        if sys.platform == "win32":
+        if sys.platform in ["win32", "win16", "win64"]:
           homevar = os.getenv("HOMEDRIVE")
           homevar += "\\" + str(os.getenv("HOMEPATH"))
+          if os.path.exists(homevar + "\My Documents"): homevar += "\My Documents"
+          elif os.path.exists(homevar + "\Eigene Dateien"): 
+             print "judihui"
+             homevar += "\Eigene Dateien"
         else:
           homevar = os.getenv("HOME")
-        if homevar != None:
+        if os.path.exists(homevar):
             dialog.set_current_folder(homevar)
     else:
         dialog.set_current_folder(general["pic_folder"])
 
 #DELETE
-    dialog.set_current_folder("/home/calmar/pics/Auto_Salon_2005/ppp")
+#    dialog.set_current_folder("/home/calmar/pics/Auto_Salon_2005/ppp")
     response = dialog.run()
     if response == gtk.RESPONSE_OK:
         general["pic_folder"] = dialog.get_current_folder()
@@ -435,16 +439,19 @@ def start_resize(widget, event, data=None): #{{{
         elif general["what_todo"] == "overwrite":
             general["what_todo"] = ""
 
-
 # the actual work
-        exitstatus = commands.getstatusoutput(command)
+        if sys.platform in ["win32", "win16", "win64"]:
+             exitstatus = [0,"Unter Windows sind keine naeheren Angaben moeglich leider"]
+             exitstatus[0] = os.system(command)
+        else:
+             exitstatus = commands.getstatusoutput(command)
         if exitstatus[0] != 0:
 # there was an error, print and ask what to do
-            text = "Imagemagick beendete mit einem <b>Fehlercode<b> beim Bearbeiten vom Bild: \n  " + dofile + " \n\n<b>" + \
-exitstatus[0] + ": " + exitstatus[1] + "</b>\n\n\
+            text = "Imagemagick beendete mit einem <b>Fehlercode</b> beim Bearbeiten vom Bild: \n  " + dofile + " \n\n<b>" + \
+str(exitstatus[0]) + ": " + exitstatus[1] + "</b>\n\n\
 (mac@calmar.ws kontaktieren allenfalls)  "
             print "#### Fehler beim Bearbeiten dieser Datei.####"
-            print exitstatus[0] + ": " + exitstatus[1]
+            print str(exitstatus[0]) + ": " + exitstatus[1]
             print
             show_error_dialog(text)
             if general["what_error"] != "skip":

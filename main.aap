@@ -16,3 +16,5 @@ all :
     @os.system("cd ..; tar -czf  cal_pixresizer.tar.gz " + _no.files)
     @os.system("mv ../cal_pixresizer.tar.gz /home/calmar/www/calmar/resize")
     @os.system("aap -f /home/calmar/www/calmar/main.aap")
+    @os.system("tar -cjf  cal_pixresizer.git.tar.bz2 .git")
+    @os.system("cp cal_pixresizer.git.tar.bz2 /home/calmar/backup")
