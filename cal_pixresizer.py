@@ -21,25 +21,17 @@ def setvalue(widget, data): #{{{
     global general
     imgprocess[data[0]] = data[1]
 #}}}
+def setcombo(combobox): #{{{
+    global imgprocess
+    model = combobox.get_model()
+    active = combobox.get_active()
+    if active >= 0:
+        imgprocess["combo4"]=model[active][0]
+#}}}
 def trimlongline(loc_item, size=72): #{{{
     if len(loc_item) >= size:
         loc_item = loc_item[0:size/4] + "..." + loc_item[-1*((size-size/4)-3):]
     return loc_item
-#}}}
-def update_preview_cb(file_chooser, preview): #{{{
-    try:
-        filename = file_chooser.get_preview_filename()
-        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 160, 160)
-        preview[1].set_from_pixbuf(pixbuf)
-        pil_img = Image.open(filename)
-        preview[0].set_markup("<b>" + os.path.split(filename)[1] + "</b>\n (" + str(pil_img.size[0]) \
-               + " x " + str(pil_img.size[1]) + ")" )
-        have_preview = True
-    except:
-        have_preview = False
-
-    file_chooser.set_preview_widget_active(have_preview)
-    return
 #}}}
 def create_radios(vbox,values,text,ipvar, default): #{{{
     for i in range(len(values)):
@@ -53,24 +45,22 @@ def create_radios(vbox,values,text,ipvar, default): #{{{
         radio.show()
     return radio # return last radio thing for spinner
 #}}}
-def show_mesbox(text): #{{{
-    mesbox = gtk.Dialog("Calmar's Picture Resizer", general["window"], gtk.DIALOG_MODAL,\
-            (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)) 
-    mesbox.connect("destroy", quit_self)
-    mesbox.connect("delete_event", quit_self)    
-    label = gtk.Label()
-    label.set_markup(text)
-    label.show()
-    mesbox.vbox.pack_start(label, True, True, 15)
-    mesbox.show()
-    response = mesbox.run()
-    mesbox.destroy()
-#}}}
-def overwrite_destroy(widget, data): #{{{
-    global general
-    general["what_todo"] = str(data[1])
-    data[0].hide()
-    data[0].destroy()
+def update_preview_cb(file_chooser, preview): #{{{
+    try:
+        filename = file_chooser.get_preview_filename()
+        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 160, 160)
+        preview[0].set_from_pixbuf(pixbuf)
+        pil_img = Image.open(filename)
+        size = os.path.getsize(filename)
+        preview[1].set_markup("<b>" + os.path.split(filename)[1] + "</b>")
+        preview[2].set_markup(str(pil_img.size[0]) + " x " + str(pil_img.size[1]))
+        preview[3].set_markup( str(size/1024) + " kb")
+        have_preview = True
+    except:
+        have_preview = False
+
+    file_chooser.set_preview_widget_active(have_preview)
+    return
 #}}}
 def open_filechooser(widget, event, data=None): #{{{
     global general
@@ -108,11 +98,14 @@ linke Maus fuer Bereiche")
     filter = gtk.FileFilter()
     filter.set_name(" Images ")
     filter.add_mime_type("image/jpeg")
-    filter.add_pattern("*.jpg")
-    filter.add_pattern("*.jpeg")
-    filter.add_pattern("*.png")
-    filter.add_pattern("*.tif")
-    filter.add_pattern("*.bmp")
+    for i in [
+        "avs", "bmp", "cgm", "dcx", "dib", "eps", "fax", "fig", "fits", "fpx", "gif",
+        "hdf", "jbig", "jpg" "jpeg", "ico", "map", "matte", "miff", "mng", "mpeg", "mtv",
+        "null", "pbm", "pcd", "pcl", "pcx", "pdf", "pgm", "pict", "plasma", "png",
+        "pnm", "ppm", "ps", "ps2", "p7", "rad", "rgb", "rla", "rle", "sgi", "sun",
+        "tga", "tiff", "tiff24", "tile", "uil", "uyvy", "vid", "viff", "xc", "xbm",
+        "xpm", "xwd", "yuv" ]:
+            filter.add_pattern("*." + i)
 
     dialog.add_filter(filter)
     filter = gtk.FileFilter()
@@ -125,15 +118,24 @@ linke Maus fuer Bereiche")
     preview = gtk.VBox(False)
     preview.set_size_request(162,162)
     label = gtk.Label()
+    label.set_alignment(0.5,1)
     label.show()
-    preview.pack_start(label, False, False, 10)
+    preview.pack_start(label, False, False, 0)
+    label2 = gtk.Label()
+    label2.set_alignment(0.5,1)
+    label2.show()
+    preview.pack_start(label2, False, False, 0)
+    label3 = gtk.Label()
+    label3.set_alignment(0.5,1)
+    label3.show()
+    preview.pack_start(label3, False, False, 0)
     image = gtk.Image()
     image.show()
     preview.pack_start(image, False, False, 10)
     dialog.set_preview_widget(preview)
     dialog.set_preview_widget_active(False)
 
-    dialog.connect("update-preview", update_preview_cb, (label, image))
+    dialog.connect("update-preview", update_preview_cb, (image, label, label2, label3))
 
 # starting folder
     if general["pic_folder"] == "":
@@ -147,6 +149,8 @@ linke Maus fuer Bereiche")
     else:
         dialog.set_current_folder(general["pic_folder"])
 
+#DELETE
+    dialog.set_current_folder("/home/calmar/pics/Auto_Salon_2005/ppp")
     response = dialog.run()
     if response == gtk.RESPONSE_OK:
         general["pic_folder"] = dialog.get_current_folder()
@@ -192,6 +196,34 @@ linke Maus fuer Bereiche")
         dialog.destroy()
     dialog.destroy()
 #}}}
+def show_error_dialog(text): #{{{
+    global general
+    mesbox = gtk.Dialog("Achtung:", general["window"], gtk.DIALOG_MODAL, ()) 
+    mesbox.connect("destroy", quit_self, None)
+    mesbox.connect("delete_event", quit_self, None)    
+    label = gtk.Label()
+    label.set_markup(text)
+    mesbox.vbox.pack_start(label, True, True, 10)
+    label.show()
+
+    button = gtk.Button("Abbrechen")
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", error_destroy, (mesbox,"quit"))
+    button.show()
+    button = gtk.Button("weiterfahren")
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", error_destroy, (mesbox,"skip"))
+    button.show()
+    button.grab_focus()
+    mesbox.show()
+    mesbox.run()
+#}}}
+def error_destroy(widget, data): #{{{
+    global general
+    general["what_error"] = str(data[1])
+    data[0].hide()
+    data[0].destroy()
+#}}}
 def show_overwrite_dialog(file): #{{{
     global general
     mesbox = gtk.Dialog("Achtung:", general["window"], gtk.DIALOG_MODAL, ()) 
@@ -201,24 +233,34 @@ def show_overwrite_dialog(file): #{{{
     label.set_markup("Ziel Bild/Datei <b>existiert bereits:</b>\n\n" + trimlongline(file,68))
     mesbox.vbox.pack_start(label, True, True, 10)
     label.show()
-    ok_button = gtk.Button("Abbrechen")
-    mesbox.action_area.pack_start(ok_button, True, True, 0)
-    ok_button.connect("clicked", overwrite_destroy, (mesbox,"cancel"))
-    ok_button.show()
-    cancel_button = gtk.Button("ueberspringen")
-    mesbox.action_area.pack_start(cancel_button, True, True, 0)
-    cancel_button.connect("clicked", overwrite_destroy, (mesbox,"skip"))
-    cancel_button.show()
-    overwrite_button = gtk.Button("ueberschreiben")
-    mesbox.action_area.pack_start(overwrite_button, True, True, 0)
-    overwrite_button.connect("clicked", overwrite_destroy, (mesbox,"overwrite"))
-    overwrite_button.show()
-    overwrite_button = gtk.Button("Alle Ueberschreiben")
-    mesbox.action_area.pack_start(overwrite_button, True, True, 0)
-    overwrite_button.connect("clicked", overwrite_destroy, (mesbox,"all_overwrite"))
-    overwrite_button.show()
+
+    button = gtk.Button("Abbrechen")
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", overwrite_destroy, (mesbox,"cancel"))
+    button.show()
+
+    button = gtk.Button("ueberspringen")
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", overwrite_destroy, (mesbox,"skip"))
+    button.grab_focus()
+    button.show()
+
+    button = gtk.Button("ueberschreiben")
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", overwrite_destroy, (mesbox,"overwrite"))
+    button.show()
+    button = gtk.Button("Alle Ueberschreiben")
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", overwrite_destroy, (mesbox,"all_overwrite"))
+    button.show()
     mesbox.show()
     mesbox.run()
+#}}}
+def overwrite_destroy(widget, data): #{{{
+    global general
+    general["what_todo"] = str(data[1])
+    data[0].hide()
+    data[0].destroy()
 #}}}
 def start_resize(widget, event, data=None): #{{{
     global general
@@ -241,14 +283,15 @@ def start_resize(widget, event, data=None): #{{{
         return
 
 # messagebox when there is no suff, pre or folder
-    if prefix == "" and suffix == "" and folder == "":
-        text = """  Mindestens <u>ein</u> von den drei muss angegeben werden:  
+    if prefix == "" and suffix == "" and folder == "" and imgprocess["combo4"] == "":
+        text = """  Mindestens <u>ein</u> von den vier muss angegeben werden:  
 
              -> <b>Prefix</b>
              -> <b>Suffix</b>
              -> <b>Unterordner</b>
-
-  weil sonst die Original-Bilder ueberschrieben werden wuerden.  """
+             -> <b>Dateityp</b>
+ 
+ um ungewolltes Ueberscheiben der Original-Bilder auszuschliessen"""
         show_mesbox(text)
         return
 
@@ -280,7 +323,10 @@ def start_resize(widget, event, data=None): #{{{
                         Qualitaet:   %-s 
                         Ordner:      %-s 
                         Prefix:      %-s 
-                        Suffix:      %-s""" %  (width_here, height_here, imgprocess["quality"], folder, prefix, suffix)
+                        Suffix:      %-s
+                        Convert to:  %-s""" % \
+                              (width_here, height_here, imgprocess["quality"],\
+                              folder, prefix, suffix, imgprocess["combo4"])
 
     print
     total = len(imgprocess["files_todo"])
@@ -296,8 +342,12 @@ def start_resize(widget, event, data=None): #{{{
             resultpath += folder + "/" 
 
         fname,ext=os.path.splitext(splitfile[1]); 
-        filetot = resultpath + prefix + fname + suffix + ext
+        if imgprocess["combo4"] == "":
+            target_ext = ext
+        else:
+            target_ext = imgprocess["combo4"]
 
+        filetot = resultpath + prefix + fname + suffix + target_ext
 # for py2exe only (looking for the convert.exe in the same dir...)
         if sys.platform == "win32":
             command = general["cwd"] + "convert.exe " + '"' + dofile + '"' + " -resize " + str(imgprocess["width"]) + "x" + str(imgprocess["height"])\
@@ -316,6 +366,7 @@ def start_resize(widget, event, data=None): #{{{
             fixed = str(len(splitfile[1]) + 2)
             fixed2 =  len(splitfile[1])
 
+# print what you're going to do...
         command_print = "convert: " + "%-" + fixed + "s --> " + \
                 trimlongline(filetot,58 - fixed2 )
 
@@ -323,7 +374,29 @@ def start_resize(widget, event, data=None): #{{{
                 str(total) + ")</b>: " + trimlongline(splitfile[1],20) + " -> " + \
                 trimlongline(folder,30) + "/" + prefix +\
                 fname + suffix + ext + "\n\n" )
-        
+        print command_print % (splitfile[1])
+
+# source und target the same?   refuse then      
+        if dofile == filetot:
+            text = "<b>Original</b> und <b>Ziel</b> Datei sind gleich! /b>\n\n\
+(cowardly refuses to overwrite...)"
+            print "#### Original und Ziel Datei sind gleich! ####"
+            show_error_dialog(text)
+            if general["what_error"] != "skip":
+                imgprocess["files_todo"]=[]
+                general["todolabel"].set_markup("\n\n<b>Progress (" + str(counter)  + "/" +  str(total) +\
+                        "): <span color=\"#800000\"> Abbruch!</span></b>\n\n")
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                time.sleep(2.0)
+                general["todolabel"].set_markup("\n\n  <b>-- keine Bilder ausgewaehlt --</b> \n\n")
+                print
+                print "# Die Generierung wurde abgebrochen"
+                print
+                return
+            else:
+                continue
+
 # check if file exists and may show 'overwrite dialog'
         if os.path.exists(filetot):
             if general["what_todo"] != "all_overwrite":
@@ -335,26 +408,41 @@ def start_resize(widget, event, data=None): #{{{
         elif general["what_todo"] == "cancel":
             general["what_todo"] = ""
             imgprocess["files_todo"]=[]
-            folder=""
+            general["todolabel"].set_markup("\n\n<b>Progress (" + str(counter)  + "/" +  str(total) +\
+                    "): <span color=\"#800000\"> Abbruch!</span></b>\n\n")
+            while gtk.events_pending():
+                gtk.main_iteration(False)
+            time.sleep(2.0)
             general["todolabel"].set_markup("\n\n  <b>-- keine Bilder ausgewaehlt --</b> \n\n")
             print
-            print "# Die Generierung wurde komplett abgebrochen"
+            print "# Die Generierung wurde abgebrochen"
             print
 
             return
         elif general["what_todo"] == "overwrite":
             general["what_todo"] = ""
 
-        print command_print % (splitfile[1])
 
 # the actual work
-        exitstatus = os.system(command)
-        if exitstatus != 0:
-            text = "  Imagemagick beendete mit einem Fehlercode beim  \n\
-  Bearbeiten vom Bild: \n  " + dofile + "  \n\n \
-  Die weitere Bearbeitung wird ABGEBROCHEN  \n\n \
-  (mac@calmar.ws kontaktieren allenfalls)  "
-            show_mesbox(text)
+        exitstatus = commands.getstatusoutput(command)
+        if exitstatus[0] != 0:
+# there was an error, print and ask what to do
+            text = "Imagemagick beendete mit einem Fehlercode beim \n\
+Bearbeiten vom Bild: \n  " + dofile + " \n\n<b>" + \
+exitstatus[1] + "</b>\n\n\
+(mac@calmar.ws kontaktieren allenfalls)  "
+            print "#### Fehler beim Bearbeiten dieser Datei.####"
+            show_error_dialog(text)
+            if general["what_error"] != "skip":
+                imgprocess["files_todo"]=[]
+                general["todolabel"].set_markup("\n\n<b>Progress (" + str(counter)  + "/" +  str(total) +\
+                        "): <span color=\"#800000\"> Abbruch!</span></b>\n\n")
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                time.sleep(2.4)
+                general["todolabel"].set_markup("\n\n  <b>-- keine Bilder ausgewaehlt --</b> \n\n")
+                print "# Die Generierung wurde abgebrochen"
+                return
 
     print
     print "# Die Erstellung der Bilder wurde fertiggestellt"
@@ -521,6 +609,22 @@ def main(): #{{{
     vbox.pack_start(imgprocess["entry3"], False, False, 0)
     imgprocess["entry3"].show()
 
+    label = gtk.Label()
+    label.set_markup("\n<b>Konvertieren</b> in:")
+    vbox.pack_start(label, False, False, 0)
+    label.show()
+    combo4 = gtk.combo_box_new_text()
+    combo4.set_wrap_width(3)
+    list = ["", ".jpg", ".png", ".tif", ".pdf" ,".bmp", ".gif", ".ico",\
+            ".pbm", ".xpm", ".pcd" ]
+    list.sort() # too lazy
+    for ext in list:
+        combo4.append_text(ext)
+    combo4.set_active(0)
+    vbox.pack_start(combo4, False, False, 0)
+    combo4.connect('changed', setcombo)
+    combo4.show()
+
 #########################################################################
 # separator
 
@@ -595,8 +699,9 @@ def main(): #{{{
     gtk.main()
     return 0      
 #}}}
-# for pyexe only: comment out: #pygtk.require('2.0' #{{{
-import pygtk, glob, os, sys, pango, time
+#imports... vars...       {{{
+# for pyexe only: comment out: #pygtk.require('2.0' #
+import pygtk, glob, os, sys, pango, time, commands
 #pygtk.require('2.0')
 import gtk
 # PIL needs some help, when py2exe-d
@@ -611,10 +716,11 @@ if gtk.pygtk_version < (2,4,0):
 
 # global: general - used on many function
 radio_bogus = gtk.RadioButton() #radio_ must be radioB, gtk calls it or so
-general = { "todolabel" : gtk.Label(), 
-            "what_todo" : "",
-            "pic_folder": "",
-            "radio_width" : radio_bogus,
+general = { "todolabel"    : gtk.Label(), 
+            "what_todo"    : "",
+            "what_errror"  : "",
+            "pic_folder"   : "",
+            "radio_width"  : radio_bogus,
             "radio_height" : radio_bogus,
             "radio_quality" : radio_bogus,
             "window" : gtk.Window(gtk.WINDOW_TOPLEVEL)}
@@ -628,6 +734,7 @@ else:
 imgprocess = { "entry1" : gtk.Entry(15),
                "entry2" : gtk.Entry(15),
                "entry3" : gtk.Entry(25),
+               "combo4" : "",
                "files_todo" : [],
                "width" : 0,
                "height" : 0 ,
@@ -648,3 +755,4 @@ imgprocess["spinQuality"].set_numeric(True)
 if __name__ == "__main__":
     main()
 #}}}
+
