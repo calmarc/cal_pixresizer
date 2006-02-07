@@ -262,6 +262,19 @@ def overwrite_destroy(widget, data): #{{{
     data[0].hide()
     data[0].destroy()
 #}}}
+def show_mesbox(text): #{{{
+    mesbox = gtk.Dialog("Calmar's Picture Resizer", general["window"], gtk.DIALOG_MODAL,\
+            (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)) 
+    mesbox.connect("destroy", quit_self)
+    mesbox.connect("delete_event", quit_self)    
+    label = gtk.Label()
+    label.set_markup(text)
+    label.show()
+    mesbox.vbox.pack_start(label, True, True, 15)
+    mesbox.show()
+    response = mesbox.run()
+    mesbox.destroy()
+#}}}
 def start_resize(widget, event, data=None): #{{{
     global general
     global imgprocess
@@ -427,11 +440,12 @@ def start_resize(widget, event, data=None): #{{{
         exitstatus = commands.getstatusoutput(command)
         if exitstatus[0] != 0:
 # there was an error, print and ask what to do
-            text = "Imagemagick beendete mit einem Fehlercode beim \n\
-Bearbeiten vom Bild: \n  " + dofile + " \n\n<b>" + \
-exitstatus[1] + "</b>\n\n\
+            text = "Imagemagick beendete mit einem <b>Fehlercode<b> beim Bearbeiten vom Bild: \n  " + dofile + " \n\n<b>" + \
+exitstatus[0] + ": " + exitstatus[1] + "</b>\n\n\
 (mac@calmar.ws kontaktieren allenfalls)  "
             print "#### Fehler beim Bearbeiten dieser Datei.####"
+            print exitstatus[0] + ": " + exitstatus[1]
+            print
             show_error_dialog(text)
             if general["what_error"] != "skip":
                 imgprocess["files_todo"]=[]
