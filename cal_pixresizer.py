@@ -314,7 +314,7 @@ def start_resize(widget, event, data=None): #{{{
 
 # messagebox when there are no files selexted
     if len(imgprocess["files_todo"]) == 0:
-        show_mesbox("Select some <b>pics</b> to work on")
+        show_mesbox(_("Select some <b>pics</b> to work on"))
         return
 
 # messagebox when there is no suff, pre or folder
@@ -413,7 +413,7 @@ def start_resize(widget, event, data=None): #{{{
 
 # source und target the same?   refuse then      
         if dofile == filetot:
-            text = _("<b>source</b> and <b>target</b> are the same! /b>") + "\n\n" +\
+            text = _("<b>source</b> and <b>target</b> are the same!") + "\n\n" +\
 _("(...cowardly refuses to overwrite)")
             print "#### " + _("source and target are the same!") + " ####"
             show_error_dialog(text)
@@ -466,7 +466,7 @@ _("(...cowardly refuses to overwrite)")
              exitstatus = commands.getstatusoutput(command)
         if exitstatus[0] != 0:
 # there was an error, print and ask what to do
-            text = _("Imagemagick terminated with an <b>Error</b> while working on:") + " \n  " + dofile + " \n\n<b>" + \
+            text = _("Imagemagick terminated with an <b>error</b> while working on:") + " \n\n " + dofile + " \n\n<b>" + \
 str(exitstatus[0]) + ": " + exitstatus[1] + "</b>\n\n" +\
 _("(may contact mac@calmar.ws )  ")
             print "#### " + _("Error while working on that picture") + "####"
@@ -476,7 +476,8 @@ _("(may contact mac@calmar.ws )  ")
             if general["what_error"] != "skip":
                 imgprocess["files_todo"]=[]
                 general["todolabel"].set_markup("\n\n<b>" + _("progress") + " (" + str(counter)  + "/" +\
-                        str(total) + "): <span color=\"#800000\"> " + _("canceled") + "!</span></b>\n\n")
+                        str(total) + "): <span color=\"#800000\"> " + _("canceled") +\
+                        "!</span></b>\n\n")
                 while gtk.events_pending():
                     gtk.main_iteration(False)
                 time.sleep(2.4)
@@ -488,8 +489,8 @@ _("(may contact mac@calmar.ws )  ")
     print _("# the pics got generated")
     print "\n"
 
-    general["todolabel"].set_markup("\n\n<b>" + _("progress") + " (") + str(total) + "/" +  str(total) +\
-            "): <span color=\"#000060\"> " + _("finish") + "!</span></b>\n\n"
+    general["todolabel"].set_markup("\n\n<b>" + _("progress") + " (" + str(total) + "/" +  str(total) +\
+            "): <span color=\"#000060\"> " + _("finish") + "!</span></b>\n\n")
     while gtk.events_pending():
         gtk.main_iteration(False)
     time.sleep(1.4)
@@ -499,7 +500,7 @@ _("(may contact mac@calmar.ws )  ")
     folder=""
     general["todolabel"].set_markup("\n\n  <b>-- " + _("no pics selected") + " --</b> \n\n")
 #}}}
-def main(): #{{{
+def main(): #{{{ OK
 
     global imgprocess
 
@@ -519,12 +520,12 @@ def main(): #{{{
 #########################################################################
 # buttons  in top hbox
 
-    boxh1 = gtk.HBox(False, 0)
-    mainbox.pack_start(boxh1, False, False, 0)
+    box = gtk.HBox(False, 0)
+    mainbox.pack_start(box, False, False, 0)
 
     image = gtk.Image()
     image.set_from_file(general["cwd"] + "bilder/calmar.png")
-    boxh1.pack_start(image, False, False , 0)
+    box.pack_start(image, False, False , 0)
 
     image = gtk.Image()
     image.set_from_file(general["cwd"] + "bilder/exit.png")
@@ -536,7 +537,7 @@ def main(): #{{{
     hbox.pack_end(label, False, False, 0)
 
     but_quit.connect("clicked", delete_event, None)
-    boxh1.pack_end(but_quit, False, False, 0)
+    box.pack_end(but_quit, False, False, 0)
 
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
@@ -544,19 +545,19 @@ def main(): #{{{
 #########################################################################
 #  vbox for radios below
 
-    boxh2 = gtk.HBox(False, 0)
-    mainbox.pack_start(boxh2, False, False, 0)
+    box = gtk.HBox(False, 0)
+    mainbox.pack_start(box, False, False, 0)
 
 #### width
 
     vbox = gtk.VBox(False, 0)
-    boxh2.pack_start(vbox, False, False, 20)
+    box.pack_start(vbox, False, False, 20)
     
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("max. width") + '</b></span>')
     vbox.pack_start(label, False, False, 0)
 
-    text = [ "", "1600 x ...", "1280 x ...", "1024 x ...", "800 x ...", "640 x ...",\
+    text = [ _("no limit"), "1600 x ...", "1280 x ...", "1024 x ...", "800 x ...", "640 x ...",\
             "480 x ...", "120 x ...", "specific:" ]
     values = [ "99999", "1600", "1280", "1024", "800", "640", "480", "120" ,"0"]
     default = "99999"
@@ -570,7 +571,7 @@ def main(): #{{{
 ## height
 
     vbox = gtk.VBox(False, 0)
-    boxh2.pack_start(vbox, False, False, 20)
+    box.pack_start(vbox, False, False, 20)
     
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("max. height") + '</b></span>')
@@ -589,7 +590,7 @@ def main(): #{{{
 ## quality
 
     vbox = gtk.VBox(False, 0)
-    boxh2.pack_start(vbox, False, False, 20)
+    box.pack_start(vbox, False, False, 20)
 
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("quality") + '</b></span>')
@@ -607,7 +608,7 @@ def main(): #{{{
 #### prefix/suffix/folder
 
     vbox = gtk.VBox(False, 0)
-    boxh2.pack_start(vbox, False, False, 20)
+    box.pack_start(vbox, False, False, 20)
 
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>&lt;' + _("PREFIX") + '&gt;</b></span>file.jpg')
@@ -623,7 +624,8 @@ def main(): #{{{
     vbox.pack_start(imgprocess["entry2"], False, False, 0)
 
     label = gtk.Label()
-    label.set_markup('\n<span foreground="#000060"><b>' + _("sub-folder") + "</b></span>, " + _("for\nthe <u>new</u> pics"))
+    label.set_markup('\n<span foreground="#000060"><b>' + _("sub-folder") + "</b></span>, " +\
+            _("for\nthe <u>new</u> pics"))
     vbox.pack_start(label, False, False, 0)
     imgprocess["entry3"].set_alignment(0.5)
     vbox.pack_start(imgprocess["entry3"], False, False, 0)
@@ -644,15 +646,14 @@ def main(): #{{{
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
 
-
 #########################################################################
 # label 
 
-    boxh3 = gtk.HBox(False, 0)
-    mainbox.pack_start(boxh3, False, False, 0)
+    box = gtk.HBox(False, 0)
+    mainbox.pack_start(box, False, False, 0)
 
     general["todolabel"].set_markup("\n\n  <b>-- " + _("no pictures selected") + " --</b> \n\n")
-    boxh3.pack_start(general["todolabel"], False, False , 0)
+    box.pack_start(general["todolabel"], False, False , 0)
 
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
@@ -660,8 +661,8 @@ def main(): #{{{
 #########################################################################
 # buttons  in last box
 
-    boxhend = gtk.HBox(False, 0)
-    mainbox.pack_start(boxhend, False, False, 0)
+    box = gtk.HBox(False, 0)
+    mainbox.pack_start(box, False, False, 0)
 
     hbox=gtk.HBox()
     image = gtk.Image()
@@ -672,7 +673,7 @@ def main(): #{{{
     but_files = gtk.Button()
     but_files.add(hbox)
     but_files.connect("clicked", open_filechooser, None)
-    boxhend.pack_start(but_files, False, False, 0)
+    box.pack_start(but_files, False, False, 0)
 
     but_files.grab_focus()
 
@@ -685,7 +686,7 @@ def main(): #{{{
     but_start = gtk.Button()
     but_start.add(hbox)
     but_start.connect("clicked", start_resize, None)
-    boxhend.pack_end(but_start, False, False, 0)
+    box.pack_end(but_start, False, False, 0)
 
 #########################################################################
 # show
@@ -700,9 +701,8 @@ def main(): #{{{
     gtk.main()
     return 0      
 #}}}
-#imports... vars...       {{{
- 
-import os, sys,  time, glob
+#imports... vars...  {{{ OK
+import os, sys,  time, glob, commands
 import gtk, pygtk, pango
 # PIL needs some help, when py2exe-d
 import Image, PngImagePlugin, JpegImagePlugin
@@ -710,24 +710,12 @@ import Image, PngImagePlugin, JpegImagePlugin
 # for pyexe only: comment out
 #pygtk.require('2.0')
 
-APP = 'cal_pixresizer'
-DIR = 'locale'
-
-
 import locale
-locale.setlocale(locale.LC_ALL, 'de_DE')
+locale.setlocale(locale.LC_ALL, 'C')
 import gettext
-gettext.bindtextdomain(APP, DIR)
-gettext.textdomain(APP)
+gettext.bindtextdomain('cal_pixresizer', 'locale')
+gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
-
-#import locale
-#import gettext
-#gettext.install(APP, localedir = DIR, unicode = True)
-#locale.setlocale(locale.LC_ALL, '')
-#gettext.bindtextdomain(APP, DIR)
-#gettext.textdomain(APP)
-#_ = gettext.gettext
 
 #if gtk.pygtk_version < (2,4,0):
 #   print "PyGtk 2.4.0"

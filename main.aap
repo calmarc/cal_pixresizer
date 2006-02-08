@@ -18,3 +18,8 @@ all :
     @os.system("aap -f /home/calmar/www/calmar/main.aap")
     @os.system("tar -cjf  cal_pixresizer.git.tar.bz2 .git")
     @os.system("mv cal_pixresizer.git.tar.bz2 /home/calmar/backup")
+
+po {virtual}:
+    @os.system("xgettext -k_ *.py")
+    @os.system("msgmerge -U de.po messages.po")
+    @os.system("msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo")
