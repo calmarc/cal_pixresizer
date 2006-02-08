@@ -23,7 +23,7 @@ msgstr "Calmar's Picture Resizer - Bilder auswaehlen..."
 
 #: cal_pixresizer.py:92
 msgid "select all pics"
-msgstr "Alle Bilder auswaehlen"
+msgstr "alle Bilder auswaehlen"
 
 #: cal_pixresizer.py:108
 msgid "left mouse  click - for adding items"
