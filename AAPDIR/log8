@@ -2,7 +2,8 @@ extra:	Reading recipe "main.aap"
 extra:	Finished reading recipe "main.aap"
 depend:	Adding default dependency for "clean"
 depend:	Adding default dependency for "cleanmore"
-depend:	Building the "all" target
-depend:	1 - updating target "all"
-depend:	2 - Using dependency "all : "
-depend:	1 - Updating "all" from "": virtual target
+depend:	Building targets specified on command line
+depend:	1 - updating target "po"
+depend:	2 - Using dependency "po{virtual=1} : "
+depend:	1 - Updating "po" from "": virtual target
+note:	Cannot read sign file "AAPDIR/sign": [Errno 2] Datei oder Verzeichnis nicht gefunden: '/home/calmar/coding/py/cal_pixresizer/AAPDIR/sign'

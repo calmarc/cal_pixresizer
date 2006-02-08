@@ -304,7 +304,7 @@ def start_resize(widget, event, data=None): #{{{
     suffix = imgprocess["entry2"].get_text().strip()
     folder = imgprocess["entry3"].get_text().strip()
 
-    if imgprocess["width"] == "0": # then, the spinner is selected
+    if imgprocess["width"] == "0": # then, the spinner-radio got selected
         imgprocess["width"] = str(imgprocess["spinWidth"].get_value_as_int())
     if imgprocess["height"] == "0":
         imgprocess["height"] = str(imgprocess["spinHeight"].get_value_as_int())
@@ -312,12 +312,12 @@ def start_resize(widget, event, data=None): #{{{
         imgprocess["quality"] = str(imgprocess["spinQuality"].get_value_as_int())
 
 
-# messagebox when there are no files selexted
+# messagebox when there are no files selected
     if len(imgprocess["files_todo"]) == 0:
         show_mesbox(_("Select some <b>pics</b> to work on"))
         return
 
-# messagebox when there is no suff, pre or folder
+# messagebox when there is no suffif, prefix, folder or type
     if prefix == "" and suffix == "" and folder == "" and imgprocess["combo4"] == "":
         text = _("""  At least <u>one</u> must be set:  
 
@@ -520,24 +520,24 @@ def main(): #{{{ OK
 #########################################################################
 # buttons  in top hbox
 
-    box = gtk.HBox(False, 0)
-    mainbox.pack_start(box, False, False, 0)
+    hbox = gtk.HBox(False, 0) #main box
+    mainbox.pack_start(hbox, False, False, 0)
 
     image = gtk.Image()
     image.set_from_file(general["cwd"] + "bilder/calmar.png")
-    box.pack_start(image, False, False , 0)
+    hbox.pack_start(image, False, False , 0)
 
-    image = gtk.Image()
+    image = gtk.Image() # image into button
     image.set_from_file(general["cwd"] + "bilder/exit.png")
-    but_quit = gtk.Button()
-    hbox=gtk.HBox()
-    hbox.pack_end(image, False, False, 0)
-    but_quit.add(hbox)
+    hbox2=gtk.HBox() # subbox for button
+    hbox2.pack_end(image, False, False, 0)
     label = gtk.Label(_("exit"))
-    hbox.pack_end(label, False, False, 0)
+    hbox2.pack_end(label, False, False, 0)
+    button = gtk.Button()
+    button.add(hbox2)
 
-    but_quit.connect("clicked", delete_event, None)
-    box.pack_end(but_quit, False, False, 0)
+    button.connect("clicked", delete_event, None)
+    hbox.pack_end(button, False, False, 0)
 
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
@@ -545,13 +545,13 @@ def main(): #{{{ OK
 #########################################################################
 #  vbox for radios below
 
-    box = gtk.HBox(False, 0)
-    mainbox.pack_start(box, False, False, 0)
+    hbox = gtk.HBox(False, 0)
+    mainbox.pack_start(hbox, False, False, 0)
 
 #### width
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    hbox.pack_start(vbox, False, False, 20)
     
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("max. width") + '</b></span>')
@@ -571,7 +571,7 @@ def main(): #{{{ OK
 ## height
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    hbox.pack_start(vbox, False, False, 20)
     
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("max. height") + '</b></span>')
@@ -590,7 +590,7 @@ def main(): #{{{ OK
 ## quality
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    hbox.pack_start(vbox, False, False, 20)
 
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("quality") + '</b></span>')
@@ -608,12 +608,12 @@ def main(): #{{{ OK
 #### prefix/suffix/folder
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    hbox.pack_start(vbox, False, False, 20)
 
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>&lt;' + _("PREFIX") + '&gt;</b></span>file.jpg')
     vbox.pack_start(label, False, False, 0)
-    imgprocess["entry1"].set_alignment(0.5)
+    imgprocess["entry1"].set_alignment(0.5) # not global should also work, but well
     vbox.pack_start(imgprocess["entry1"], False, False, 0)
 
     label = gtk.Label()
@@ -649,11 +649,11 @@ def main(): #{{{ OK
 #########################################################################
 # label 
 
-    box = gtk.HBox(False, 0)
-    mainbox.pack_start(box, False, False, 0)
+    hbox = gtk.HBox(False, 0)
+    mainbox.pack_start(hbox, False, False, 0)
 
     general["todolabel"].set_markup("\n\n  <b>-- " + _("no pictures selected") + " --</b> \n\n")
-    box.pack_start(general["todolabel"], False, False , 0)
+    hbox.pack_start(general["todolabel"], False, False , 0)
 
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
@@ -661,32 +661,32 @@ def main(): #{{{ OK
 #########################################################################
 # buttons  in last box
 
-    box = gtk.HBox(False, 0)
-    mainbox.pack_start(box, False, False, 0)
+    hbox = gtk.HBox(False, 0)
+    mainbox.pack_start(hbox, False, False, 0)
 
-    hbox=gtk.HBox()
+    hbox2=gtk.HBox() # button subbox
     image = gtk.Image()
     image.set_from_file(general["cwd"] + "bilder/open.png")
-    hbox.pack_end(image, False, False, 0)
+    hbox2.pack_end(image, False, False, 0)
     label = gtk.Label(_("select pictures...  "))
-    hbox.pack_end(label, False, False, 0)
-    but_files = gtk.Button()
-    but_files.add(hbox)
-    but_files.connect("clicked", open_filechooser, None)
-    box.pack_start(but_files, False, False, 0)
+    hbox2.pack_end(label, False, False, 0)
+    button = gtk.Button()
+    button.add(hbox2)
+    button.connect("clicked", open_filechooser, None)
+    hbox.pack_start(button, False, False, 0)
 
-    but_files.grab_focus()
+    button.grab_focus()
 
-    hbox=gtk.HBox()
+    hbox2=gtk.HBox() # button subbox
     image = gtk.Image()
     image.set_from_file(general["cwd"] + "bilder/go.png")
-    hbox.pack_end(image, False, False, 0)
+    hbox2.pack_end(image, False, False, 0)
     label = gtk.Label(_("start converting  "))
-    hbox.pack_end(label, False, False, 0)
-    but_start = gtk.Button()
-    but_start.add(hbox)
-    but_start.connect("clicked", start_resize, None)
-    box.pack_end(but_start, False, False, 0)
+    hbox2.pack_end(label, False, False, 0)
+    button = gtk.Button()
+    button.add(hbox2)
+    button.connect("clicked", start_resize, None)
+    hbox.pack_end(button, False, False, 0)
 
 #########################################################################
 # show
