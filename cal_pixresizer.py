@@ -3,6 +3,7 @@
 # http://www.calmar.ws/resize/COPYING
 # }}}
 def get_spin_focus(widget, spinname): #{{{ OK
+    global general
     general[spinname].set_active(True)
 #}}}
 def delete_event(widget, event, data=None): #{{{ OK
@@ -20,6 +21,10 @@ def quit_self(self, *args): #{{{ OK
 def setvalue(widget, data): #{{{ OK
     global general
     imgprocess[data[0]] = data[1]
+#}}}
+def entries_cb(editable, id_edit): #{{{ OK
+    global imgprocess
+    imgprocess[id_edit] = editable.get_text()
 #}}}
 def setcombo(combobox): #{{{ OK
     global imgprocess
@@ -305,9 +310,9 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
         return
 
 # get data for processing, well maybe messagebox for stripping?
-    prefix = imgprocess["entry1"].get_text().strip()
-    suffix = imgprocess["entry2"].get_text().strip()
-    folder = imgprocess["entry3"].get_text().strip()
+    prefix = imgprocess["ent_prefix"].strip()
+    suffix = imgprocess["ent_suffix"].strip()
+    folder = imgprocess["ent_folder"].strip()
 
     if imgprocess["width"] == "0": # then, the spinner is selected
         imgprocess["width"] = str(imgprocess["spinWidth"].get_value_as_int())
@@ -315,7 +320,6 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
         imgprocess["height"] = str(imgprocess["spinHeight"].get_value_as_int())
     if imgprocess["quality"] == "0":
         imgprocess["quality"] = str(imgprocess["spinQuality"].get_value_as_int())
-
 
 # messagebox when there is no suff, pre or folder
     if prefix == "" and suffix == "" and folder == "" and imgprocess["ftype"] == "":
@@ -596,7 +600,7 @@ def main(): #{{{ OK
     imgprocess["spinQuality"].set_wrap(False)
     vbox.pack_start(imgprocess["spinQuality"], False, False, 0)
 
-#### prefix/suffix/folder
+#### prefix/suffix/folder entries
 
     vbox = gtk.VBox(False, 0)
     box.pack_start(vbox, False, False, 20)
@@ -604,22 +608,27 @@ def main(): #{{{ OK
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>&lt;' + _("PREFIX") + '&gt;</b></span>file.jpg')
     vbox.pack_start(label, False, False, 0)
-    imgprocess["entry1"].set_alignment(0.5)
-    vbox.pack_start(imgprocess["entry1"], False, False, 0)
+    entry = gtk.Entry(15)
+    entry.set_alignment(0.4)
+    entry.connect('changed',entries_cb, "ent_prefix")
+    vbox.pack_start(entry, False, False, 0)
 
     label = gtk.Label()
     label.set_markup('\nfile<span foreground="#000060"><b>&lt;' + _("SUFFIX") + '&gt;</b></span>.jpg')
-
     vbox.pack_start(label, False, False, 0)
-    imgprocess["entry2"].set_alignment(0.5)
-    vbox.pack_start(imgprocess["entry2"], False, False, 0)
+    entry = gtk.Entry(15)
+    entry.set_alignment(0.4)
+    entry.connect('changed',entries_cb, "ent_suffix")
+    vbox.pack_start(entry, False, False, 0)
 
     label = gtk.Label()
     label.set_markup('\n<span foreground="#000060"><b>' + _("sub-folder") + "</b></span>, " +\
             _("for\nthe <u>new</u> pics"))
     vbox.pack_start(label, False, False, 0)
-    imgprocess["entry3"].set_alignment(0.5)
-    vbox.pack_start(imgprocess["entry3"], False, False, 0)
+    entry = gtk.Entry(15)
+    entry.set_alignment(0.4)
+    entry.connect('changed',entries_cb, "ent_folder")
+    vbox.pack_start(entry, False, False, 0)
 
     label = gtk.Label()
     label.set_markup("\n" + _("<b>convert</b> to:"))
@@ -727,14 +736,14 @@ else:
 gettext.bindtextdomain('cal_pixresizer', general["cwd"] + "locale")
 
 # imgprocess (global)- data (source) for image processing
-imgprocess = { "entry1" : gtk.Entry(15),
-               "entry2" : gtk.Entry(15),
-               "entry3" : gtk.Entry(25),
-               "ftype" : "",
-               "files_todo" : [],
-               "width" : 0,
-               "height" : 0 ,
-               "quality" : 0}
+imgprocess = { "ent_prefix"  : "",
+               "ent_suffix"  : "",
+               "ent_folder": "",
+               "ftype"       : "",
+               "files_todo"  : [],
+               "width"       : 0,
+               "height"      : 0 ,
+               "quality"     : 0}
 adj = gtk.Adjustment(1024, 30, 2000, 1, 100, 0)
 adj.connect("value_changed", get_spin_focus, "radio_width" )
 imgprocess["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
