@@ -6,8 +6,3 @@ depend:	Building the "all" target
 depend:	1 - updating target "all"
 depend:	2 - Using dependency "all : "
 depend:	1 - Updating "all" from "": virtual target
-error:	Error in recipe "/home/calmar/coding/py/cal_pixresizer/main.aap" line 20: 
-     os.system("cp cal_pixresizer.git.tar.bz2 /home/calmar/backup"
-      ^
- SyntaxError: invalid syntax
-

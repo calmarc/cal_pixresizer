@@ -1,0 +1,219 @@
+# German translations for PACKAGE package
+# German messages for PACKAGE.
+# Copyright (C) 2006 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# calmar <mac@calmar.ws>, 2006.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-02-08 04:55+0100\n"
+"PO-Revision-Date: 2006-02-08 04:55+0100\n"
+"Last-Translator: calmar <mac@calmar.ws>\n"
+"Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: cal_pixresizer.py:74
+msgid "Calmar's Picture Resizer - Choose Pics..."
+msgstr "Calmar's Picture Resizer - Bilder waehlen..."
+
+#: cal_pixresizer.py:92
+msgid "select all pics"
+msgstr "Alle Bilder auswaehlen"
+
+#: cal_pixresizer.py:108
+msgid "left mouse  click - for adding items"
+msgstr "linke Maus Taste - fuer einzelne Bilder"
+
+#: cal_pixresizer.py:109
+msgid "left mouse click - for ranges"
+msgstr "linke Maus Taste - fuer Bereiche"
+
+#: cal_pixresizer.py:128
+msgid " all "
+msgstr " alles "
+
+#: cal_pixresizer.py:249
+msgid "Attention:"
+msgstr "Achtung:"
+
+#: cal_pixresizer.py:253
+msgid "Target picture <b>already exists</b>:"
+msgstr "Ziel Bild/Datei <b>existiert bereits:</b>"
+
+#: cal_pixresizer.py:257
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: cal_pixresizer.py:262
+msgid "skip"
+msgstr "ueberspringen"
+
+#: cal_pixresizer.py:268
+msgid "overwrite"
+msgstr "ueberschreiben"
+
+#: cal_pixresizer.py:272
+msgid "overwrite ALL"
+msgstr "Alle Ueberschreiben"
+
+#: cal_pixresizer.py:286
+msgid "Calmar's Picture Resizer"
+msgstr "Calmar's Picture Resizer"
+
+#: cal_pixresizer.py:322
+msgid ""
+"  At least <u>one</u> must be set:  \n"
+"\n"
+"             -> <b>Prefix</b>\n"
+"             -> <b>Suffix</b>\n"
+"             -> <b>subfolder to create in</b>\n"
+"             -> <b>picture type</b>\n"
+" \n"
+" in order to prevent overwriting the original pictures"
+msgstr ""
+"  Mindestens <u>ein</u> von den vier muss angegeben werden:  \n"
+"\n"
+"             -> <b>Prefix</b>\n"
+"             -> <b>Suffix</b>\n"
+"             -> <b>Unterordner</b>\n"
+"             -> <b>Dateityp</b>\n"
+" \n"
+" um ungewolltes Ueberscheiben der Original-Bilder auszuschliessen"
+
+#: cal_pixresizer.py:338
+msgid "create new folder: "
+msgstr "## Erstelle neuen Ordner: "
+
+#: cal_pixresizer.py:343
+msgid "# sub-folder exists already"
+msgstr "# Sub-Ordner existiert bereits"
+
+#: cal_pixresizer.py:346 cal_pixresizer.py:351
+msgid "unlimited"
+msgstr "unlimitiert"
+
+#: cal_pixresizer.py:408 cal_pixresizer.py:447 cal_pixresizer.py:478
+#: cal_pixresizer.py:491
+msgid "progress"
+msgstr "Progress"
+
+#: cal_pixresizer.py:416
+msgid "<b>source</b> and <b>target</b> are the same!"
+msgstr "<b>Original</b> und <b>Ziel</b> Datei sind gleich!"
+
+#: cal_pixresizer.py:417
+msgid "(...cowardly refuses to overwrite)"
+msgstr "(...feige verweigert zu ueberschreiben)"
+
+#: cal_pixresizer.py:418
+msgid "source and target are the same!"
+msgstr "Original und Ziel Datei sind gleich!"
+
+#: cal_pixresizer.py:427 cal_pixresizer.py:452
+msgid "no pictures are selected"
+msgstr "keine Bilder ausgewaehlt"
+
+#: cal_pixresizer.py:430 cal_pixresizer.py:454 cal_pixresizer.py:484
+msgid "# converting has stopped "
+msgstr "# Die Generierung wurde abgebrochen"
+
+#: cal_pixresizer.py:463
+msgid "no further details unter MS Win, sorry"
+msgstr "# Die Generierung wurde abgebrochen"
+
+#: cal_pixresizer.py:469
+msgid "Imagemagick terminated with an <b>Error</b> while working on:"
+msgstr "Unter Windows sind keine naeheren Angaben moeglich leider"
+
+#: cal_pixresizer.py:471
+msgid "(may contact mac@calmar.ws )  "
+msgstr "(mac@calmar.ws kontaktieren allenfalls)  "
+
+#: cal_pixresizer.py:472
+msgid "Error while working on that picture"
+msgstr "Fehler beim Bearbeiten dieser Datei"
+
+#: cal_pixresizer.py:479
+msgid "canceled"
+msgstr "Abbruch"
+
+#: cal_pixresizer.py:483 cal_pixresizer.py:654
+msgid "no pictures selected"
+msgstr "keine Bilder ausgewaehlt"
+
+#: cal_pixresizer.py:488
+msgid "# the pics got generated"
+msgstr "# Die Erstellung der Bilder wurde fertiggestellt"
+
+#: cal_pixresizer.py:492
+msgid "finish"
+msgstr "fertig"
+
+#: cal_pixresizer.py:500
+msgid "no pics selected"
+msgstr "keine Bilder ausgewaehlt"
+
+#: cal_pixresizer.py:535
+msgid "exit"
+msgstr "beenden"
+
+#: cal_pixresizer.py:556
+msgid "max. Breite"
+msgstr "max. Breite"
+
+#: cal_pixresizer.py:576
+msgid "max. Hoehe"
+msgstr "max. Hoehe"
+
+#: cal_pixresizer.py:579
+msgid "kein Limit"
+msgstr "kein Limit"
+
+#: cal_pixresizer.py:580
+msgid "specific:"
+msgstr "spezifisch:"
+
+#: cal_pixresizer.py:595
+msgid "quality"
+msgstr "Qualitaet"
+
+#: cal_pixresizer.py:598
+msgid "specific"
+msgstr "spezifisch"
+
+#: cal_pixresizer.py:613
+msgid "PREFIX"
+msgstr "PREFIX"
+
+#: cal_pixresizer.py:619
+msgid "SUFFIX"
+msgstr "SUFFIX"
+
+#: cal_pixresizer.py:626
+msgid "sub-folder"
+msgstr "Unter-Ordner"
+
+#: cal_pixresizer.py:626
+msgid ""
+"for\n"
+"the <u>new</u> pics"
+msgstr ""
+"fuer\n"
+"die <u>neuen</u> Bilder"
+
+#: cal_pixresizer.py:632
+msgid "<b>convert</b> to:"
+msgstr "konvertiere zu:"
+
+#: cal_pixresizer.py:670
+msgid "select pictures...  "
+msgstr "Bilder auswaehlen  "
+
+#: cal_pixresizer.py:683
+msgid "start converting  "
+msgstr "Starten  "
