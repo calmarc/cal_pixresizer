@@ -1,17 +1,17 @@
-                          Calmar's Picture Resizer, Version 0.3
+            Calmar's Picture Resizer, Version 0.4
 
-              Resize/convert your pictures with this Imagemagick's convert
+            Resize/convert your pictures with this 
+            
+            --> Imagemagick's convert Frontend <--
+            
+            The calmar picture resizer checks before is overwrites
+            anything - so it's quite safe.
 
-                               Frontend written in Python.
+            Nevertheless, use it at your own risk.
 
-                The calmar picture resizer checks before is overwrites
-                           anything - so it's quite safe.
+            Mail or visit me for whatever reason:
 
-                        Neverthless, use it at your own risk.
-
-                        Mail or visit me for whatever reason:
-
-                                   mac@calmar.ws 
-                                http://www.calmar.ws
-                            http://www.calmar.ws/resize
+            mac@calmar.ws 
+            http://www.calmar.ws
+            http://www.calmar.ws/resize
 

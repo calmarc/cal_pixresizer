@@ -4,10 +4,10 @@ files =
     cal_pixresizer/README
     cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo
     cal_pixresizer/bilder/calmar.png
-    cal_pixresizer/bilder/calmar.xpm
     cal_pixresizer/bilder/exit.png
     cal_pixresizer/bilder/go.png
     cal_pixresizer/bilder/open.png
+    cal_pixresizer/bilder/folder.png
 
  
 all : 

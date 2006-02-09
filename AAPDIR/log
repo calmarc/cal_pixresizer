@@ -11,26 +11,16 @@ extra:	Shell commands for updating "all{virtual=1}":
 system:	ls
 log:	]
 cal_pixresizer
-cal_pixresizer.git.tar.gz
+cal_pixresizer.tar.gz
+cal_pixresizer.zip
 tezt.zip
 
 print:	zipping
 extra:	Shell commands for updating "all{virtual=1}":
-system:	{f} zip -u -r cal_pixresizer   cal_pixresizer/cal_pixresizer.py cal_pixresizer/COPYING cal_pixresizer/README cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo cal_pixresizer/bilder/calmar.png cal_pixresizer/bilder/calmar.xpm cal_pixresizer/bilder/exit.png cal_pixresizer/bilder/go.png cal_pixresizer/bilder/open.png
-log:		zip warning: cal_pixresizer.zip not found or empty
-  adding: cal_pixresizer/cal_pixresizer.py (deflated 77%)
-  adding: cal_pixresizer/COPYING (deflated 62%)
-  adding: cal_pixresizer/README (deflated 59%)
-  adding: cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo (deflated 52%)
-  adding: cal_pixresizer/bilder/calmar.png (stored 0%)
-  adding: cal_pixresizer/bilder/calmar.xpm (deflated 87%)
-  adding: cal_pixresizer/bilder/exit.png (stored 0%)
-  adding: cal_pixresizer/bilder/go.png (stored 0%)
-  adding: cal_pixresizer/bilder/open.png (stored 0%)
-
+system:	{f} zip -u -r cal_pixresizer   cal_pixresizer/cal_pixresizer.py cal_pixresizer/COPYING cal_pixresizer/README cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo cal_pixresizer/bilder/calmar.png cal_pixresizer/bilder/exit.png cal_pixresizer/bilder/go.png cal_pixresizer/bilder/open.png cal_pixresizer/bilder/folder.png
 print:	tarring
 extra:	Shell commands for updating "all{virtual=1}":
-system:	tar -czf  cal_pixresizer.tar.gz   cal_pixresizer/cal_pixresizer.py cal_pixresizer/COPYING cal_pixresizer/README cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo cal_pixresizer/bilder/calmar.png cal_pixresizer/bilder/calmar.xpm cal_pixresizer/bilder/exit.png cal_pixresizer/bilder/go.png cal_pixresizer/bilder/open.png
+system:	tar -czf  cal_pixresizer.tar.gz   cal_pixresizer/cal_pixresizer.py cal_pixresizer/COPYING cal_pixresizer/README cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo cal_pixresizer/bilder/calmar.png cal_pixresizer/bilder/exit.png cal_pixresizer/bilder/go.png cal_pixresizer/bilder/open.png cal_pixresizer/bilder/folder.png
 info:	Moved "cal_pixresizer.zip" to "/home/calmar/www/calmar/resize/cal_pixresizer.zip"
 info:	Moved "cal_pixresizer.tar.gz" to "/home/calmar/www/calmar/resize/cal_pixresizer.tar.gz"
 extra:	Shell commands for updating "all{virtual=1}":
