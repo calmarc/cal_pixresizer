@@ -6,3 +6,11 @@ depend:	Building targets specified on command line
 depend:	1 - updating target "po"
 depend:	2 - Using dependency "po{virtual=1} : "
 depend:	1 - Updating "po" from "": virtual target
+extra:	Shell commands for updating "po{virtual=1}":
+system:	xgettext -k_ *.py
+system:	msgmerge -U de.po messages.po
+system:	msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo
+log:	msgmerge: messages.po: warning: Charset "CHARSET" is not a portable encoding name.
+                                Message conversion to user's charset might not work.
+......... done.
+

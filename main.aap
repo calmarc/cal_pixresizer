@@ -11,15 +11,20 @@ files =
 
  
 all : 
-    @os.system("cd ..; zip -r cal_pixresizer " + _no.files)
-    @os.system("mv ../cal_pixresizer.zip /home/calmar/www/calmar/resize")
-    @os.system("cd ..; tar -czf  cal_pixresizer.tar.gz " + _no.files)
-    @os.system("mv ../cal_pixresizer.tar.gz /home/calmar/www/calmar/resize")
-    @os.system("aap -f /home/calmar/www/calmar/main.aap")
-    @os.system("tar -cjf  cal_pixresizer.git.tar.bz2 .git")
-    @os.system("mv cal_pixresizer.git.tar.bz2 /home/calmar/backup")
+    :cd ../
+    :sys ls
+    :print zipping
+    :sys {f} zip -u -r cal_pixresizer   $files
+    :print tarring
+    :sys tar -czf  cal_pixresizer.tar.gz   $files
+    :move cal_pixresizer.zip /home/calmar/www/calmar/resize
+    :move cal_pixresizer.tar.gz /home/calmar/www/calmar/resize
+    :sys aap -f /home/calmar/www/calmar/main.aap
+    :sys tar -czf  cal_pixresizer.git.tar.gz cal_pixresizer/.git
+    :move cal_pixresizer.git.tar.gz /home/calmar/backup
+    :cd cal_pixresizer/
 
 po {virtual}:
-    @os.system("xgettext -k_ *.py")
-    @os.system("msgmerge -U de.po messages.po")
-    @os.system("msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo")
+    :sys xgettext -k_ *.py
+    :sys msgmerge -U de.po messages.po
+    :sys msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo
