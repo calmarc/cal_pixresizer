@@ -12,5 +12,5 @@ system:	msgmerge -U de.po messages.po
 system:	msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo
 log:	msgmerge: messages.po: warning: Charset "CHARSET" is not a portable encoding name.
                                 Message conversion to user's charset might not work.
-...... done.
+....... done.
 

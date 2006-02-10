@@ -2,6 +2,52 @@
 # Copyright (C) 2006 http://www.calmar.ws {{{
 # http://www.calmar.ws/resize/COPYING
 # }}}
+# help functions         SUBROUTINES {{{
+def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?) OK 
+    global general
+    general["what_error"] = str(data[1])
+    data[0].hide()
+    data[0].destroy()
+#}}}
+def update_preview_cb(file_chooser, preview): #{{{ OK
+    try:
+        filename = file_chooser.get_preview_filename()
+        preview[1].set_markup("<b>" + os.path.split(filename)[1] + "</b>")
+        if os.path.isfile(filename):
+            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 200, 125)
+            preview[0].set_from_pixbuf(pixbuf)
+            img = Image.open(filename)
+            size = os.path.getsize(filename)
+            preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
+            preview[3].set_markup( str(size/1024) + " kb")
+        else:
+            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
+                    "bilder/folder.png", 96, 96)
+            preview[0].set_from_pixbuf(pixbuf)
+
+            preview[2].set_markup("<b>"+ str(len(os.listdir(filename))) +\
+                    _("</b> items inside"))
+            preview[3].set_markup("")
+    except:
+        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
+                "bilder/file.png", 96, 96)
+        preview[0].set_from_pixbuf(pixbuf)
+        try:
+            size = os.path.getsize(filename)
+            size = str(size/1024) + " kb"
+        except (TypeError, OSError):
+            size = ""
+        preview[2].set_markup( size )
+        preview[3].set_markup(" ")
+    file_chooser.set_preview_widget_active(True)
+    return
+#}}}
+def overwrite_destroy(widget, data): #{{{ OK
+    global general
+    general["what_todo"] = str(data[1])
+    data[0].hide()
+    data[0].destroy()
+#}}}
 def get_spin_focus(widget, spinname): #{{{ OK
     global general
     general[spinname].set_active(True)
@@ -43,123 +89,8 @@ def setcombo(combobox): #{{{ OK
     if active >= 0:
         imgprocess["ftype"]=model[active][0]
 #}}}
-def create_radios(vbox,values,text, id_radio, default): #{{{ OK
-    for i in range(len(values)):
-        if i == 0: # first should not get other radios as reference
-            radio = None
-        radio = gtk.RadioButton(radio, text[i])
-        radio.connect("toggled", setvalue, (id_radio, values[i]))
-        vbox.pack_start(radio, True, True, 0)
-        if values[i] == default:
-            radio.set_active(True)
-    return radio # return last radio thing for spinner
 #}}}
-def update_preview_cb(file_chooser, preview): #{{{ OK
-    try:
-        filename = file_chooser.get_preview_filename()
-        preview[1].set_markup("<b>" + os.path.split(filename)[1] + "</b>")
-        if os.path.isfile(filename):
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 200, 200)
-            preview[0].set_from_pixbuf(pixbuf)
-            img = Image.open(filename)
-            size = os.path.getsize(filename)
-            preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
-            preview[3].set_markup( str(size/1024) + " kb")
-        else:
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
-                    "bilder/folder.png", 96, 96)
-            preview[0].set_from_pixbuf(pixbuf)
-
-            preview[2].set_markup("<b>"+ str(len(os.listdir(filename))) +\
-                    _("</b> items inside"))
-            preview[3].set_markup("")
-        have_preview = True
-    except:
-        have_preview = True
-    file_chooser.set_preview_widget_active(have_preview)
-    return
-#}}}
-def dialog_viewpics(widget, dialog): # {{{
-    try:
-        file = dialog.get_filenames()[0]
-    except IndexError:
-        return
-    if os.path.isfile(file):
-        if sys.platform in ["win32", "win16", "win64"]:
-            exe = "imdisplay.exe"
-            if general["py2exe"]:
-                exe = general["cwd"] + exe
-            tot = exe + ' "' + file + '"'
-            os.system(tot)
-        else:
-            print "display " + '"' +  '" "'.join(dialog.get_filenames()) + '"'
-            os.system("display " + '"' +  '" "'.join(dialog.get_filenames()) + '"')
-    else:
-        show_mesbox(dialog, _("that is no regular file, can not display it"))
-#}}}
-def dialog_delete(widget, dialog): # {{{  needs more work
-    text = _("are you sure you want to <b>delete</b> selected items - forever?")
-    show_2_dialog(dialog, text, _("cancel"), _("yes"))
-    if general["what_error"] != "ok_pressed":
-        return
-    for item in dialog.get_filenames():
-        if os.path.isdir(item):
-            try: 
-                os.rmdir(item) 
-            except OSError,  (errno, strerror): 
-                message = str( _('sorry, could not remove ') + item + "\n" +\
-                        str(errno) + " -> " + strerror + "\n" )
-                message += _("please remove items inside that folder first") + "\n"
-                print  message
-                message = str( _('sorry, could not remove ') + item + "\n\n" +\
-                        str(errno) + " -> " + strerror + "\n\n" )
-                message += _("please remove items inside that folder first") + "\n\n"
-                show_mesbox(dialog, message)
-        else:
-            try: 
-                os.remove(item) 
-            except OSError,  (errno, strerror): 
-                message = str( _('sorry, could not remove ') + item + "\n" +\
-                        str(errno) + " -> " + strerror + "\n" )
-                print  message
-                message = str( _('sorry, could not remove ') + item + "\n\n" +\
-                        str(errno) + " -> " + strerror + "\n\n" )
-                show_mesbox(dialog, message)
-    dialog.set_current_folder(dialog.get_current_folder())
-    general["what_error"] == ""
-#}}}
-def dialog_rotate(widget, dialog, direction): # {{{
-    try:
-        file = dialog.get_filenames()[0]
-    except IndexError:
-        return
-    if len(dialog.get_filenames()) > 1:
-        show_mesbox(dialog, _("please select only on picture for rotating"))
-        return
-
-
-    if sys.platform in ["win32", "win16", "win64"]:
-        command = general["cwd"] + 'mogrify.exe -rotate "' + direction + '" ' + file
-    else:
-        command = 'mogrify -rotate "' + direction + '" ' + file
-
-    if sys.platform in ["win32", "win16", "win64"]:
-         exitstatus = [0, _("no further details unter MS Win, sorry")]
-         exitstatus[0] = os.system(command)
-    else:
-         exitstatus = commands.getstatusoutput(command)
-
-    if exitstatus[0] != 0:
-        text = _("rotating didn't succeed on:") +\
-                " \n\n " + file + "\n\n<b>" + str(exitstatus[0]) +\
-                ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
-        print "#### " + _("ERROR while trying to rotate that picture")
-        print str(exitstatus[0]) + ": " + exitstatus[1]
-        print
-    else:
-        print "## rotated (" + direction + "): " + trimlongline(file, 65)
-    dialog.emit("update-preview")
-#}}}
+# little gui
 def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{ (seems) OK
     global general
     mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ()) 
@@ -182,15 +113,9 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{ (seems) OK
     mesbox.show()
     mesbox.run()
 #}}}
-def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?) OK 
-    global general
-    general["what_error"] = str(data[1])
-    data[0].hide()
-    data[0].destroy()
-#}}}
 def show_overwrite_dialog(file): #{{{ (seems) OK
     global general
-    mesbox = gtk.Dialog(_("Attention:"), general["window"], gtk.DIALOG_MODAL, ()) 
+    mesbox = gtk.Dialog(_("attention:"), general["window"], gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)    
     label = gtk.Label()
@@ -220,11 +145,12 @@ def show_overwrite_dialog(file): #{{{ (seems) OK
     mesbox.show()
     mesbox.run()
 #}}}
-def overwrite_destroy(widget, data): #{{{ OK
-    global general
-    general["what_todo"] = str(data[1])
-    data[0].hide()
-    data[0].destroy()
+def label_nopic(): #{{{  OK
+    general["todolabel"].set_markup("\n\n  <b>-- " + _("no pictures are selected") + " --</b> \n\n")
+#}}}
+def label_progress(count, tot, text, colorstring): #{{{ OK
+    general["todolabel"].set_markup("\n\n<b>" + _("progress") + " (" + count + "/" + tot +\
+            "): <span " + colorstring + ">" + text + "</span></b>\n\n")
 #}}}
 def show_mesbox(parent, text): #{{{ OK
     mesbox = gtk.Dialog(_("Calmar's Picture Resizer"), parent, gtk.DIALOG_MODAL,\
@@ -239,209 +165,18 @@ def show_mesbox(parent, text): #{{{ OK
     response = mesbox.run()
     mesbox.destroy()
 #}}}
-def label_nopic(): #{{{  OK
-    general["todolabel"].set_markup("\n\n  <b>-- " + _("no pictures are selected") + " --</b> \n\n")
+def create_radios(vbox,values,text, id_radio, default): #{{{ OK
+    for i in range(len(values)):
+        if i == 0: # first should not get other radios as reference
+            radio = None
+        radio = gtk.RadioButton(radio, text[i])
+        radio.connect("toggled", setvalue, (id_radio, values[i]))
+        vbox.pack_start(radio, True, True, 0)
+        if values[i] == default:
+            radio.set_active(True)
+    return radio # return last radio thing for spinner
 #}}}
-def label_progress(count, tot, text, colorstring): #{{{ OK
-    general["todolabel"].set_markup("\n\n<b>" + _("progress") + " (" + count + "/" + tot +\
-            "): <span " + colorstring + ">" + text + "</span></b>\n\n")
-#}}}
-def start_resize(widget, event, data=None): #{{{ (probably) OK 
-    global general
-    global imgprocess
-
-# messagebox when there are no files selexted
-    if len(imgprocess["files_todo"]) == 0:
-        show_mesbox(general["window"], _("Select some <b>pics</b> to work on"))
-        return
-
-    prefix = imgprocess["ent_prefix"]
-    suffix = imgprocess["ent_suffix"]
-    folder = imgprocess["ent_folder"]
-
-    if imgprocess["width"] == "0": # then, the spinner is selected
-        imgprocess["width"] = str(imgprocess["spinWidth"].get_value_as_int())
-    if imgprocess["height"] == "0":
-        imgprocess["height"] = str(imgprocess["spinHeight"].get_value_as_int())
-    if imgprocess["quality"] == "0":
-        imgprocess["quality"] = str(imgprocess["spinQuality"].get_value_as_int())
-
-# messagebox when there is no suff, pre or folder
-    if prefix == "" and suffix == "" and folder == "" and imgprocess["ftype"] == "":
-        text = _("""  At least <u>one</u> must be set:  
-
-             -> <b>Prefix</b>
-             -> <b>Suffix</b>
-             -> <b>subfolder to create pics in</b>
-             -> <b>picture type</b>
- 
- in order to prevent overwriting the original pictures""")
-        show_mesbox(general["window"], text)
-        return
-
-# to get the path of sample file
-    splitfile = os.path.split(imgprocess["files_todo"][0])
-
-# create folder when needed
-    if folder != "" and not os.path.exists(splitfile[0] + "/" +folder):
-        print "##" + _("create new folder: ") + folder + "  (" + \
-                trimlongline(splitfile[0],38) + "/" + folder + ")"
-        print
-        os.mkdir(splitfile[0] + "/" + folder)
-    else:
-        print _("# sub-folder exists already")
-
-    if str(imgprocess["width"]) == "99999":
-       width_here = _("unlimited")
-    else:
-       width_here = imgprocess["width"]
-
-    if str(imgprocess["height"]) == "99999":
-       height_here = _("unlimited")
-    else:
-       height_here = imgprocess["height"]
-
-    print """\
-## create new pictures: max. width:  %-s
-                        max. height: %-s 
-                        quality:     %-s 
-                        folder:      %-s 
-                        prefix:      %-s 
-                        suffix:      %-s
-                        convert to:  %-s""" % \
-                              (width_here, height_here, imgprocess["quality"],\
-                              folder, prefix, suffix, imgprocess["ftype"])
-
-    print
-    total = len(imgprocess["files_todo"])
-    counter=0
-    dist = ""
-    for sourcefile in imgprocess["files_todo"]:
-        counter += 1
-
-        splitfile = os.path.split(sourcefile)
-        resultpath = splitfile[0] + "/"  # targetdir of pics
-        if folder != "":
-            resultpath += folder + "/" 
-
-        fname,ext=os.path.splitext(splitfile[1]); 
-        if imgprocess["ftype"] == "":
-            target_ext = ext
-        else:
-            target_ext = imgprocess["ftype"]
-
-        resultfile = resultpath + prefix + fname + suffix + target_ext
-# for py2exe only (looking for the convert.exe in the same dir...)
-        if sys.platform in ["win32", "win16", "win64"]:
-            command = general["cwd"] + "convert.exe " + '"' + sourcefile + '"' +\
-                    " -resize " + str(imgprocess["width"]) + "x" + str(imgprocess["height"]) +\
-                    " -quality " + str(imgprocess["quality"]) + ' "' + resultfile + '"'
-        else:
-            command = "convert " + '"' + sourcefile + '"' + " -resize " +\
-                    str(imgprocess["width"]) + "x" + str(imgprocess["height"]) +\
-                    " -quality " + str(imgprocess["quality"]) + ' "' + resultfile + '"'
-
-        if dist == "":
-            dist = len(splitfile[1]) + 1 # sourcefile (no path) + 1
-
-# print what you're going to do... preparation here
-        command_print = "convert: " + "%-" + str(dist) + "s --> " +\
-                trimlongline(resultfile,58 - dist )
-
-        text = trimlongline(resultfile,65 - dist )
-        label_progress(str(counter), str(total), text,"") 
-        print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
-
-# wait and update
-        while gtk.events_pending():
-            gtk.main_iteration(False)
-
-# source und target the same?   refuse then      
-        if sourcefile == resultfile:
-            text = _("<b>source</b> and <b>target</b> are the same!") + "\n\n" +\
-_("(...cowardly refuses to overwrite)")
-            print "#### " + _("source and target are the same!") + " ####"
-            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
-            if general["what_error"] != "ok_pressed":
-                imgprocess["files_todo"]=[]
-                label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
-
-                while gtk.events_pending():
-                    gtk.main_iteration(False)
-                time.sleep(2.0)
-                label_nopic()
-                print
-                print _("# converting has stopped ")
-                print
-                return
-            else:
-                continue
-
-# check if file exists and may show 'overwrite dialog'
-        if os.path.exists(resultfile):
-            if general["what_todo"] != "all_overwrite":
-                show_overwrite_dialog(resultfile)
-            if general["what_todo"] == "ok_pressed":
-                general["what_todo"] = ""
-                print _("# skipped: ") + trimlongline(resultfile,58)
-                continue
-            elif general["what_todo"] == "cancel":
-                general["what_todo"] = ""
-                imgprocess["files_todo"]=[]
-                label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
-                while gtk.events_pending():
-                    gtk.main_iteration(False)
-                time.sleep(2.0)
-                label_nopic()
-                print
-                print _("# converting has stopped ")
-                print
-                return
-
-        elif general["what_todo"] == "overwrite":
-            general["what_todo"] = ""
-
-# the actual work/progress
-        if sys.platform in ["win32", "win16", "win64"]:
-             exitstatus = [0, _("no further details unter MS Win, sorry")]
-             exitstatus[0] = os.system(command)
-        else:
-             exitstatus = commands.getstatusoutput(command)
-
-# there was an error, print and ask what to do
-        if exitstatus[0] != 0:
-            text = _("imagemagick terminated with an <b>error</b> while working on:") +\
-                    " \n\n " + sourcefile + "\n\n<b>" + str(exitstatus[0]) +\
-                    ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
-            print "#### " + _("ERROR while working on that picture")
-            print str(exitstatus[0]) + ": " + exitstatus[1]
-            print
-            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
-            if general["what_error"] != "ok_pressed":
-                imgprocess["files_todo"]=[]
-                label_progress(str(counter),str(total), _("canceled!"),"color='#550000'") 
-                while gtk.events_pending():
-                    gtk.main_iteration(False)
-                time.sleep(2.4)
-                label_nopic()
-                print _("# converting has stopped ")
-                return
-
-    print
-    print _("# the pics got generated")
-    print 
-
-    label_progress(str(total),str(total), _("finish!"),"color='#000070'") 
-
-    while gtk.events_pending():
-        gtk.main_iteration(False)
-    time.sleep(2.0)
-
-    general["what_todo"] = ""
-    imgprocess["files_todo"]=[]
-    folder=""
-    label_nopic()
-#}}}
+# FileChooser callbacks
 def open_filechooser(widget, event, data=None): #{{{
     global general
 
@@ -509,7 +244,7 @@ def open_filechooser(widget, event, data=None): #{{{
     hbbox.add(button)
 
     label = gtk.Label()
-    label.set_markup("<b>Ctrl</b> + " + _("left mouse  click - for adding items") +\
+    label.set_markup("\n<b>Ctrl</b> + " + _("left mouse  click - for adding items") +\
             "\n<b>Shift</b> + " + _("left mouse click - for ranges"))
     label.show()
     vbox.pack_start(label, False, False, 0)
@@ -617,6 +352,328 @@ def open_filechooser(widget, event, data=None): #{{{
     elif response == gtk.RESPONSE_CANCEL:
         dialog.destroy()
     dialog.destroy()
+#}}}
+def dialog_delete(widget, dialog): # {{{  needs more work
+    text = _("are you sure you want to <b>delete</b> selected items - forever?")
+    show_2_dialog(dialog, text, _("cancel"), _("yes"))
+    if general["what_error"] != "ok_pressed":
+        return
+    for item in dialog.get_filenames():
+        if os.path.isdir(item):
+            try: 
+                os.rmdir(item) 
+            except OSError,  (errno, strerror): 
+                message = str( _('sorry, could not remove ') + item + "\n" +\
+                        str(errno) + " -> " + strerror + "\n" )
+                message += _("please remove items inside that folder first") + "\n"
+                print  message
+                message = str( _('sorry, could not remove ') + item + "\n\n" +\
+                        str(errno) + " -> " + strerror + "\n\n" )
+                message += _("please remove items inside that folder first") + "\n\n"
+                show_mesbox(dialog, message)
+        else:
+            try: 
+                os.remove(item) 
+            except OSError,  (errno, strerror): 
+                message = str( _('sorry, could not remove ') + item + "\n" +\
+                        str(errno) + " -> " + strerror + "\n" )
+                print  message
+                message = str( _('sorry, could not remove ') + item + "\n\n" +\
+                        str(errno) + " -> " + strerror + "\n\n" )
+                show_mesbox(dialog, message)
+    dialog.set_current_folder(dialog.get_current_folder())
+    general["what_error"] == ""
+#}}}
+def dialog_viewpics(widget, dialog): # {{{
+    try:
+        file = dialog.get_filenames()[0]
+    except IndexError:
+        return
+    if os.path.isfile(file):
+        if sys.platform in ["win32", "win16", "win64"]:
+            if general["py2exe"]:
+                exe = general["cwd"] + "imdisplay.exe"
+            else:
+                exe = "imdisplay.exe"
+            tot = exe + ' "' + file + '"'
+            os.system(tot)
+        else:  # on linux open multiple selection
+            os.system("display " + '"' +  '" "'.join(dialog.get_filenames()) + '"')
+    else:
+        show_mesbox(dialog, _("that is no regular file, can not display it"))
+#}}}
+def dialog_rotate(widget, dialog, direction): # {{{
+    try:
+        file = dialog.get_filenames()[0]
+        if len(dialog.get_filenames()) > 1:
+            show_mesbox(dialog, _("please select only <b>one</b> pic for rotating"))
+            return
+        if os.path.isdir(file):
+            show_mesbox(dialog, _("don't know how to rotate a folder :P"))
+            return
+    except IndexError:
+        return
+    
+# well or use mogrify. both don't provide useful error codes
+    fileext =  os.path.splitext(file)
+    tmpfile = file + ".rotate_tmp" + fileext[1]
+    if general["py2exe"]:
+        exe = general["cwd"] + "convert"
+    else:
+        exe = "convert"
+    command = exe + ' -rotate "' + direction + '" ' + '"' + file + '" ' + '"' + tmpfile + '"'
+
+    if sys.platform in ["win32", "win16", "win64"]:
+         exitstatus = [0, _("Error: have a look at the console windows")]
+         exitstatus[0] = os.system(command)
+    else:
+         exitstatus = commands.getstatusoutput(command)
+
+    if exitstatus[0] == 0: # every was ok
+        if os.path.exists(tmpfile) and os.path.getsize(tmpfile) > 0 : # real test (sigh)
+            try:
+                os.remove(file)
+                try:
+                    os.rename(tmpfile, file)
+                    print "## " + _("rotated") + "(" + direction + "): " + trimlongline(file, 62)
+                except OSError, (errno, strerror):
+                    print "## " + _("Error while tyring to replace the original file")
+                    print "## " + _("you find your file now at:\n") + trimlongline(tmpfile, 65)
+                    text = _("replacing your original file didn't succeed on:") +\
+                        " \n\n " + file + "\n\n<b>" + str(errno) +\
+                        ": " + strerror + "</b>\n\n"
+                    text += _("\nyou find your file now at:\n") + tmpfile
+                    text += _("\n\n(may contact mac@calmar.ws )  ")
+                    show_mesbox(dialog,text)
+
+            except OSError, (errno, strerror):
+               print "## " + _("ERROR while trying to replace your file with the rotated one")
+               print "## " + _("you find the rotated file now at:\n") + trimlongline(tmpfile, 65)
+               print
+               text = _("replacing your original file didn't succeed on:") +\
+                        " \n\n " + file + "\n\n<b>" + str(errno) +\
+                        ": " + strerror + "</b>\n\n"
+               text += _("\nyou find your rotated file now at:\n") + tmpfile
+               text += _("\n\n(may contact mac@calmar.ws )  ")
+               show_mesbox(dialog,text)
+        else:
+            print "## " + _("Error while tyring to rotate the file")
+            text = _("rotating didn't succeed on:") +\
+                   " \n\n " + file + "\n\n<b>" + str(exitstatus[0]) +\
+                   ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
+            show_mesbox(dialog,text)
+            
+    else:  # error there but unfortunately convert nor mogrify provide them nicely
+        if os.path.exists(tmpfile):
+            os.remove(tmpfile)
+        print "#### " + _("ERROR while trying to rotate that file")
+        print str(exitstatus[0]) + ": " + exitstatus[1]
+        print
+        text = _("rotating didn't succeed on:") +\
+                " \n\n " + file + "\n\n<b>" + str(exitstatus[0]) +\
+                ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
+        show_mesbox(dialog,text)
+    dialog.emit("update-preview")
+#}}}
+# major work
+def start_resize(widget, event, data=None): #{{{ (probably) OK 
+    global general
+    global imgprocess
+
+# messagebox when there are no files selexted
+    if len(imgprocess["files_todo"]) == 0:
+        show_mesbox(general["window"], _("Select some <b>pics</b> to work on"))
+        return
+
+    prefix = imgprocess["ent_prefix"]
+    suffix = imgprocess["ent_suffix"]
+    folder = imgprocess["ent_folder"]
+
+    if imgprocess["width"] == "0": # then, the spinner is selected
+        imgprocess["width"] = str(imgprocess["spinWidth"].get_value_as_int())
+    if imgprocess["height"] == "0":
+        imgprocess["height"] = str(imgprocess["spinHeight"].get_value_as_int())
+    if imgprocess["quality"] == "0":
+        imgprocess["quality"] = str(imgprocess["spinQuality"].get_value_as_int())
+
+# messagebox when there is no suff, pre or folder
+    if prefix == "" and suffix == "" and folder == "" and imgprocess["ftype"] == "":
+        text = _("""  At least <u>one</u> must be set:  
+
+             -> <b>Prefix</b>
+             -> <b>Suffix</b>
+             -> <b>subfolder to create pics in</b>
+             -> <b>picture type</b>
+ 
+ in order to prevent overwriting the original pictures""")
+        show_mesbox(general["window"], text)
+        return
+
+# to get the path of sample file
+    splitfile = os.path.split(imgprocess["files_todo"][0])
+
+# create folder when needed
+    if folder != "" and not os.path.exists(splitfile[0] + "/" +folder):
+        print "##" + _("create new folder: ") + folder + "  (" + \
+                trimlongline(splitfile[0],38) + "/" + folder + ")"
+        print
+        os.mkdir(splitfile[0] + "/" + folder)
+    else:
+        print _("# sub-folder exists already")
+
+    if str(imgprocess["width"]) == "99999":
+       width_here = _("unlimited")
+    else:
+       width_here = imgprocess["width"]
+
+    if str(imgprocess["height"]) == "99999":
+       height_here = _("unlimited")
+    else:
+       height_here = imgprocess["height"]
+
+    print """\
+## create new pictures: max. width:  %-s
+                        max. height: %-s 
+                        quality:     %-s 
+                        folder:      %-s 
+                        prefix:      %-s 
+                        suffix:      %-s
+                        convert to:  %-s""" % \
+                              (width_here, height_here, imgprocess["quality"],\
+                              folder, prefix, suffix, imgprocess["ftype"])
+
+    print
+    total = len(imgprocess["files_todo"])
+    counter=0
+    dist = ""
+    for sourcefile in imgprocess["files_todo"]:
+        counter += 1
+        sourcefile = string.replace(sourcefile, "\\","/")
+        splitfile = os.path.split(sourcefile)
+        resultpath = splitfile[0] + "/"  # targetdir of pics
+        if folder != "":
+            resultpath += folder + "/" 
+
+        fname,ext=os.path.splitext(splitfile[1]); 
+        if imgprocess["ftype"] == "":
+            target_ext = ext
+        else:
+            target_ext = imgprocess["ftype"]
+
+        resultfile = resultpath + prefix + fname + suffix + target_ext
+# for py2exe only (looking for the convert.exe in the same dir...)
+        if sys.platform in ["win32", "win16", "win64"]:
+            if general["py2exe"]:
+                exe = general["cwd"] + "convert.exe"
+            else:
+                exe = "convert.exe"
+        else:
+            exe = "convert" 
+        command = exe + ' "' + sourcefile + '"' + " -resize " +\
+                    str(imgprocess["width"]) + "x" + str(imgprocess["height"]) +\
+                    " -quality " + str(imgprocess["quality"]) + ' "' + resultfile + '"'
+
+        if dist == "":
+            dist = len(splitfile[1]) + 1 # sourcefile (no path) + 1
+
+# print what you're going to do... preparation here
+        command_print = "convert: " + "%-" + str(dist) + "s --> " +\
+                trimlongline(resultfile,58 - dist )
+
+        text = trimlongline(resultfile,65 - dist )
+        label_progress(str(counter), str(total), text,"") 
+        print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
+
+# wait and update
+        while gtk.events_pending():
+            gtk.main_iteration(False)
+
+        print "source: " + sourcefile , "\ntarget: " , resultfile
+# source und target the same?   refuse then      
+        if sourcefile == resultfile:
+            text = _("<b>source</b> and <b>target</b> are the same!") + "\n\n" +\
+_("(...cowardly refuses to overwrite)")
+            print "#### " + _("source and target are the same!") + " ####"
+            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
+            if general["what_error"] != "ok_pressed":
+                imgprocess["files_todo"]=[]
+                label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
+
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                time.sleep(2.0)
+                label_nopic()
+                print
+                print _("# converting has stopped ")
+                print
+                return
+            else:
+                continue
+
+# check if file exists and may show 'overwrite dialog'
+        if os.path.exists(resultfile):
+            if general["what_todo"] != "all_overwrite":
+                show_overwrite_dialog(resultfile)
+            if general["what_todo"] == "ok_pressed":
+                general["what_todo"] = ""
+                print _("# skipped: ") + trimlongline(resultfile,58)
+                continue
+            elif general["what_todo"] == "cancel":
+                general["what_todo"] = ""
+                imgprocess["files_todo"]=[]
+                label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                time.sleep(2.0)
+                label_nopic()
+                print
+                print _("# converting has stopped ")
+                print
+                return
+
+        elif general["what_todo"] == "overwrite":
+            general["what_todo"] = ""
+
+# the actual work/progress
+        if sys.platform in ["win32", "win16", "win64"]:
+             exitstatus = [0, _("no further details unter MS Win, sorry")]
+             exitstatus[0] = os.system(command)
+        else:
+             exitstatus = commands.getstatusoutput(command)
+
+# there was an error, print and ask what to do
+        if exitstatus[0] != 0:
+            text = _("imagemagick terminated with an <b>error</b> while working on:") +\
+                    " \n\n " + sourcefile + "\n\n<b>" + str(exitstatus[0]) +\
+                    ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
+            print "#### " + _("ERROR while working on that picture")
+            print str(exitstatus[0]) + ": " + exitstatus[1]
+            print
+            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
+            if general["what_error"] != "ok_pressed":
+                imgprocess["files_todo"]=[]
+                label_progress(str(counter),str(total), _("canceled!"),"color='#550000'") 
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                time.sleep(2.4)
+                label_nopic()
+                print _("# converting has stopped ")
+                return
+
+    print
+    print _("# the pics got generated")
+    print 
+
+    label_progress(str(total),str(total), _("finish!"),"color='#000070'") 
+
+    while gtk.events_pending():
+        gtk.main_iteration(False)
+    time.sleep(2.0)
+
+    general["what_todo"] = ""
+    imgprocess["files_todo"]=[]
+    folder=""
+    label_nopic()
 #}}}
 def main(): #{{{ OK
 
@@ -732,7 +789,7 @@ def main(): #{{{ OK
     label.set_markup('<span foreground="#000060"><b>&lt;' + _("PREFIX") + '&gt;</b></span>file.jpg')
     vbox.pack_start(label, False, False, 0)
     entry = gtk.Entry(15)
-    entry.set_alignment(0.4)
+    entry.set_alignment(0.49)
     entry.connect('changed',entries_cb, "ent_prefix")
     vbox.pack_start(entry, False, False, 0)
 
@@ -740,7 +797,7 @@ def main(): #{{{ OK
     label.set_markup('\nfile<span foreground="#000060"><b>&lt;' + _("SUFFIX") + '&gt;</b></span>.jpg')
     vbox.pack_start(label, False, False, 0)
     entry = gtk.Entry(15)
-    entry.set_alignment(0.4)
+    entry.set_alignment(0.49)
     entry.connect('changed',entries_cb, "ent_suffix")
     vbox.pack_start(entry, False, False, 0)
 
@@ -749,7 +806,7 @@ def main(): #{{{ OK
             _("for\nthe <u>new</u> pics"))
     vbox.pack_start(label, False, False, 0)
     entry = gtk.Entry(15)
-    entry.set_alignment(0.4)
+    entry.set_alignment(0.49)
     entry.connect('changed',entries_cb, "ent_folder")
     vbox.pack_start(entry, False, False, 0)
 
@@ -824,8 +881,9 @@ def main(): #{{{ OK
     gtk.main()
     return 0      
 #}}}
+# imports, head (at the bottom haha)
 #imports... vars...  {{{ OK
-import os, sys,  time, glob, commands, re
+import os, sys,  time, glob, commands, string
 import gtk, pygtk, pango
 # PIL needs some help, when py2exe-d
 import Image, PngImagePlugin, JpegImagePlugin
