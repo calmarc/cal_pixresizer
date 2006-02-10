@@ -13,9 +13,4 @@ system:	msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo
 log:	msgmerge: messages.po: warning: Charset "CHARSET" is not a portable encoding name.
                                 Message conversion to user's charset might not work.
 ........ done.
-de.po:146: `msgid' and `msgstr' entries do not both end with '\n'
-de.po:176: `msgid' and `msgstr' entries do not both end with '\n'
-de.po:180: `msgid' and `msgstr' entries do not both begin with '\n'
-msgfmt: found 3 fatal errors
 
-error:	Error in recipe "/home/calmar/coding/py/cal_pixresizer/main.aap" line 28: Shell command returned 1

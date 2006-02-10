@@ -3,6 +3,14 @@
 # http://www.calmar.ws/resize/COPYING
 # }}}
 # help functions         SUBROUTINES {{{
+def command_exec(command): #{{{
+    if sys.platform in ["win32", "win16", "win64"]:
+         exitstatus = [0, _("Error: have a look at the console windows")]
+         exitstatus[0] = os.system(command)
+    else:
+         exitstatus = commands.getstatusoutput(command)
+    return exitstatus
+#}}}
 def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?) OK 
     global general
     general["what_error"] = str(data[1])
@@ -18,8 +26,12 @@ def update_preview_cb(file_chooser, preview): #{{{ OK
             preview[0].set_from_pixbuf(pixbuf)
             img = Image.open(filename)
             size = os.path.getsize(filename)
+            if size/1024 == 0:
+                bytes = str(size) + " bytes"
+            else:
+                bytes = str(size/1024) + " Kb"
             preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
-            preview[3].set_markup( str(size/1024) + " kb")
+            preview[3].set_markup( bytes)
         else:
             pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
                     "bilder/folder.png", 96, 96)
@@ -396,7 +408,7 @@ def dialog_viewpics(widget, dialog): # {{{
             else:
                 exe = "imdisplay.exe"
             tot = exe + ' "' + file + '"'
-            os.system(tot)
+            os.system(tot)      # error checking here?
         else:  # on linux open multiple selection
             os.system("display " + '"' +  '" "'.join(dialog.get_filenames()) + '"')
     else:
@@ -413,8 +425,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
             return
     except IndexError:
         return
-    
-# well or use mogrify. both don't provide useful error codes
+# well or use mogrify. both don't provide useful error codes on MSwin at least
     fileext =  os.path.splitext(file)
     tmpfile = file + ".rotate_tmp" + fileext[1]
     if general["py2exe"]:
@@ -422,15 +433,10 @@ def dialog_rotate(widget, dialog, direction): # {{{
     else:
         exe = "convert"
     command = exe + ' -rotate "' + direction + '" ' + '"' + file + '" ' + '"' + tmpfile + '"'
+    exitstatus = command_exec(command)
 
-    if sys.platform in ["win32", "win16", "win64"]:
-         exitstatus = [0, _("Error: have a look at the console windows")]
-         exitstatus[0] = os.system(command)
-    else:
-         exitstatus = commands.getstatusoutput(command)
-
-    if exitstatus[0] == 0: # every was ok
-        if os.path.exists(tmpfile) and os.path.getsize(tmpfile) > 0 : # real test (sigh)
+    if exitstatus[0] == 0: # always ok here (sigh -> convert/mogrify)
+        if os.path.exists(tmpfile) and os.path.getsize(tmpfile) > 0 : # real test then here
             try:
                 os.remove(file)
                 try:
@@ -442,7 +448,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
                     text = _("replacing your original file didn't succeed on:") +\
                         " \n\n " + file + "\n\n<b>" + str(errno) +\
                         ": " + strerror + "</b>\n\n"
-                    text += _("\nyou find your file now at:\n") + tmpfile
+                    text += _("\nyou find your original file now at:\n") + tmpfile
                     text += _("\n\n(may contact mac@calmar.ws )  ")
                     show_mesbox(dialog,text)
 
@@ -463,7 +469,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
                    ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
             show_mesbox(dialog,text)
             
-    else:  # error there but unfortunately convert nor mogrify provide them nicely
+    else:  # no useful exit of convert/mogrify (on win at least) -> never will be here maybe
         if os.path.exists(tmpfile):
             os.remove(tmpfile)
         print "#### " + _("ERROR while trying to rotate that file")
@@ -474,6 +480,37 @@ def dialog_rotate(widget, dialog, direction): # {{{
                 ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
         show_mesbox(dialog,text)
     dialog.emit("update-preview")
+#}}}
+# new
+def toggle_percent(widget, data): #{{{
+    if widget.get_property("visible"):
+        data.show()
+        widget.hide()
+        general["percentbox"].set_sensitive(False)
+        general["sizebox"].set_sensitive(True)
+    else:
+        data.hide()
+        widget.show()
+        general["percentbox"].set_sensitive(True)
+        general["sizebox"].set_sensitive(False)
+#}}}
+def toggle_size(widget, data): #{{{
+    if widget.get_property("visible"):
+        data.show()
+        widget.hide()
+        general["percentbox"].set_sensitive(True)
+        general["sizebox"].set_sensitive(False)
+    else:
+        data.hide()
+        widget.show()
+        general["percentbox"].set_sensitive(False)
+        general["sizebox"].set_sensitive(True)
+#}}}
+def options_cb(widget): #{{{
+    pass
+#}}}
+def create_commandline(): #{{{
+    pass
 #}}}
 # major work
 def start_resize(widget, event, data=None): #{{{ (probably) OK 
@@ -489,25 +526,41 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
     suffix = imgprocess["ent_suffix"]
     folder = imgprocess["ent_folder"]
 
+    usesize = True
+    if general["percentbox"].get_property("sensitive"):
+        usesize = False
+        
+
     if imgprocess["width"] == "0": # then, the spinner is selected
-        imgprocess["width"] = str(imgprocess["spinWidth"].get_value_as_int())
+        width = str(imgprocess["spinWidth"].get_value_as_int())
+    else:
+        width = str(imgprocess["width"])
     if imgprocess["height"] == "0":
-        imgprocess["height"] = str(imgprocess["spinHeight"].get_value_as_int())
+        height = str(imgprocess["spinHeight"].get_value_as_int())
+    else:
+        height = str(imgprocess["height"])
+    if imgprocess["percent"] == "0":
+        percent = str(imgprocess["spinPercent"].get_value_as_int())
+    else:
+        percent = str(imgprocess["percent"])
     if imgprocess["quality"] == "0":
-        imgprocess["quality"] = str(imgprocess["spinQuality"].get_value_as_int())
+        quality = str(imgprocess["spinQuality"].get_value_as_int())
+    else:
+        quality = str(imgprocess["quality"])
+    ftype = imgprocess["ftype"]
 
-# messagebox when there is no suff, pre or folder
-    if prefix == "" and suffix == "" and folder == "" and imgprocess["ftype"] == "":
-        text = _("""  At least <u>one</u> must be set:  
+    text = _("""  At least <u>one</u> must be set:  
 
-             -> <b>Prefix</b>
-             -> <b>Suffix</b>
-             -> <b>subfolder to create pics in</b>
-             -> <b>picture type</b>
- 
+              -> <b>Prefix</b>
+              -> <b>Suffix</b>
+              -> <b>subfolder to create pics in</b>
+              -> <b>picture type</b>
+     
  in order to prevent overwriting the original pictures""")
-        show_mesbox(general["window"], text)
-        return
+# messagebox when there is no suff, pre or folder
+    if prefix == "" and suffix == "" and folder == "" and ftype == "":
+            show_mesbox(general["window"], text)
+            return
 
 # to get the path of sample file
     splitfile = os.path.split(imgprocess["files_todo"][0])
@@ -517,32 +570,44 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
         print "##" + _("create new folder: ") + folder + "  (" + \
                 trimlongline(splitfile[0],38) + "/" + folder + ")"
         print
-        os.mkdir(splitfile[0] + "/" + folder)
+        try:
+            os.mkdir(splitfile[0] + "/" + folder)
+        except OSError, (errno, strerror):
+            text = _("was not able to create your target folder") + "\n\n"
+            text += _("please check that issue first") + "\n\n"
+            text += str(errno) + ": " + strerror + "\n\n"
+            show_mesbox(general["window"], text)
     else:
         print _("# sub-folder exists already")
 
-    if str(imgprocess["width"]) == "99999":
+# just some konsole messages
+    if width == "99999":
        width_here = _("unlimited")
     else:
-       width_here = imgprocess["width"]
+       width_here = width
 
-    if str(imgprocess["height"]) == "99999":
+    if height == "99999":
        height_here = _("unlimited")
     else:
-       height_here = imgprocess["height"]
+       height_here = height
+
+    if usesize:
+        reso = width_here + " x " + height_here
+    else:
+        reso = percent + "%"
 
     print """\
-## create new pictures: max. width:  %-s
-                        max. height: %-s 
+## create new pictures: resizing:    %-s
                         quality:     %-s 
                         folder:      %-s 
                         prefix:      %-s 
                         suffix:      %-s
                         convert to:  %-s""" % \
-                              (width_here, height_here, imgprocess["quality"],\
-                              folder, prefix, suffix, imgprocess["ftype"])
+                              (reso, quality, folder, prefix, suffix, ftype)
 
     print
+
+# begin the loop
     total = len(imgprocess["files_todo"])
     counter=0
     dist = ""
@@ -553,14 +618,14 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
         resultpath = splitfile[0] + "/"  # targetdir of pics
         if folder != "":
             resultpath += folder + "/" 
-
         fname,ext=os.path.splitext(splitfile[1]); 
-        if imgprocess["ftype"] == "":
+        if ftype == "":
             target_ext = ext
         else:
-            target_ext = imgprocess["ftype"]
-
+            target_ext = ftype
         resultfile = resultpath + prefix + fname + suffix + target_ext
+# source and target file not set
+
 # for py2exe only (looking for the convert.exe in the same dir...)
         if sys.platform in ["win32", "win16", "win64"]:
             if general["py2exe"]:
@@ -569,12 +634,17 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
                 exe = "convert.exe"
         else:
             exe = "convert" 
-        command = exe + ' "' + sourcefile + '"' + " -resize " +\
-                    str(imgprocess["width"]) + "x" + str(imgprocess["height"]) +\
-                    " -quality " + str(imgprocess["quality"]) + ' "' + resultfile + '"'
+        if usesize:
+            resize = width + "x" + height
+        else:
+            resize = percent + "%"
 
-        if dist == "":
-            dist = len(splitfile[1]) + 1 # sourcefile (no path) + 1
+        command = exe + ' "' + sourcefile + '"' + " -resize " + resize +\
+                    " -quality " + quality + ' "' + resultfile + '"'
+
+# some printing again
+        if dist == "":  # initialisize only once
+            dist = len(splitfile[1]) + 1 # first sourcefile (no path) + 1
 
 # print what you're going to do... preparation here
         command_print = "convert: " + "%-" + str(dist) + "s --> " +\
@@ -588,8 +658,7 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
         while gtk.events_pending():
             gtk.main_iteration(False)
 
-        print "source: " + sourcefile , "\ntarget: " , resultfile
-# source und target the same?   refuse then      
+# source und target the same?   refuse then, may continue     
         if sourcefile == resultfile:
             text = _("<b>source</b> and <b>target</b> are the same!") + "\n\n" +\
 _("(...cowardly refuses to overwrite)")
@@ -635,13 +704,10 @@ _("(...cowardly refuses to overwrite)")
             general["what_todo"] = ""
 
 # the actual work/progress
-        if sys.platform in ["win32", "win16", "win64"]:
-             exitstatus = [0, _("no further details unter MS Win, sorry")]
-             exitstatus[0] = os.system(command)
-        else:
-             exitstatus = commands.getstatusoutput(command)
-
+        exitstatus = command_exec(command)
 # there was an error, print and ask what to do
+# BUT convert does not provide such a thing, so check if target was build or similar
+# IMPORTANT
         if exitstatus[0] != 0:
             text = _("imagemagick terminated with an <b>error</b> while working on:") +\
                     " \n\n " + sourcefile + "\n\n<b>" + str(exitstatus[0]) +\
@@ -657,9 +723,12 @@ _("(...cowardly refuses to overwrite)")
                     gtk.main_iteration(False)
                 time.sleep(2.4)
                 label_nopic()
+                print
                 print _("# converting has stopped ")
+                print
                 return
 
+# HERE CHECK if file really got created!! exitsttus does not really work
     print
     print _("# the pics got generated")
     print 
@@ -718,23 +787,31 @@ def main(): #{{{ OK
     mainbox.pack_start(separator, False, False, 5)
 
 #########################################################################
-#  vbox for radios below
+#  table  for whole thing there
+#########################################################################
 
-    box = gtk.HBox(False, 0)
-    mainbox.pack_start(box, False, False, 0)
+    table = gtk.Table(rows=6, columns=2, homogeneous=False)
+    mainbox.pack_start(table, False, False, 0)
+
+##################
+#  over hbox for sizes
+
+    general["sizebox"] = gtk.HBox(True, 0)
+    table.attach(general["sizebox"], 0, 2, 0, 1, gtk.EXPAND)
+    general["sizebox"].set_sensitive(True)
 
 #### width
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    general["sizebox"].pack_start(vbox, False, False, 5)
     
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("max. width") + '</b></span>')
     vbox.pack_start(label, False, False, 0)
 
-    text = [ _("no limit"), "1600 x ...", "1280 x ...", "1024 x ...", "800 x ...", "640 x ...",\
-            "480 x ...", "120 x ...", _("specific:") ]
-    values = [ "99999", "1600", "1280", "1024", "800", "640", "480", "120" ,"0"]
+    text = [ _("no limit"), "1600x", "1280x", "1024x", "800x", "640x",\
+            "480x", _("specific:") ]
+    values = [ "99999", "1600", "1280", "1024", "800", "640", "480", "0"]
     default = "99999"
     general["radio_width"] = create_radios(vbox, values, text, "width", default)
     imgprocess["width"] = 99999
@@ -746,15 +823,15 @@ def main(): #{{{ OK
 ## height
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    general["sizebox"].pack_start(vbox, False, False, 5)
     
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("max. height") + '</b></span>')
     vbox.pack_start(label, False, False, 0)
 
-    text = [ _("no limit"), "... x 1200", "... x 1024",  "... x 768", "... x 600", "... x 480",\
-             "... x 320", "... x 80", _("specific:") ]
-    values = [ "99999", "1200", "1024", "768", "600", "480", "320", "80", "0"]
+    text = [ _("no limit"), "x1200", "x1024",  "x768", "x600", "x480",\
+             "x320", _("specific:") ]
+    values = [ "99999", "1200", "1024", "768", "600", "480", "320", "0"]
     default = "768"
     general["radio_height"] = create_radios(vbox, values, text, "height", default)
     imgprocess["height"] = 768
@@ -762,17 +839,73 @@ def main(): #{{{ OK
     imgprocess["spinHeight"].set_wrap(False)
     vbox.pack_start(imgprocess["spinHeight"], False, False, 0)
 
+################## overbox finish
+
+##################
+#  over hbox for percent
+
+    general["percentbox"] = gtk.HBox(False, 0)
+    table.attach(general["percentbox"], 2, 3, 0, 1, gtk.EXPAND)
+    general["percentbox"].set_sensitive(False)
+
+#### percent
+
+    vbox = gtk.VBox(False, 0)
+    general["percentbox"].pack_start(vbox, False, False, 5)
+    
+    label = gtk.Label()
+    label.set_markup('<span foreground="#000060"><b>' + _("size in %") + '</b></span>')
+    vbox.pack_start(label, False, False, 0)
+
+    text = [ "100%", "90%", "80%", "70%", "60%", "50%", "40%", _("specific:") ]
+    values = [ "100", "90", "80", "70", "60", "50", "40", "0"]
+    default = "60"
+    general["radio_percent"] = create_radios(vbox, values, text, "percent", default)
+    imgprocess["percent"] = 60
+
+    imgprocess["spinPercent"].set_wrap(False)
+    vbox.pack_start(imgprocess["spinPercent"], False, False, 0)
+
+################## overbox finish
+#  to toggle sensitivity of the above boxes
+    
+    but1 = gtk.Button()
+    but1.set_size_request(-1, 8)
+    align1 = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+    align1.set_padding(6, 6, 0, 5)
+    align1.add(but1)
+#    but1.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#34a1ff"))
+    but2 = gtk.Button()
+    but2.set_size_request(-1, 8)
+#    but2.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#34a1ff"))
+    align2 = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+    align2.set_padding(6, 6, 0, 5)
+    align2.add(but2)
+
+    but1.connect("clicked", toggle_percent, but2)
+    table.attach(align1, 0, 2, 1, 2, gtk.FILL)
+
+    but2.connect("clicked", toggle_size, but1)
+    table.attach(align2, 2, 3, 1, 2, gtk.FILL)
+
+## separator
+    align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+    align.set_padding(0, 0, 5, 5)
+    separator = gtk.VSeparator()
+    align.add(separator)
+    table.attach(align,3,4,0,2)
+
 ## quality
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    table.attach(vbox, 4, 5, 0, 1)
 
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>' + _("quality") + '</b></span>')
     vbox.pack_start(label, False, False, 0)
 
-    text = [ "100%", "97%", "94%", "90%", "85%", "80%", "70%", "50%", _("specific")]
-    values = [ "100", "97", "94", "90", "85", "80", "70", "50", "0"]
+    text = [ "100%", "97%", "94%", "90%", "85%", "80%", "60%", _("specific")]
+    values = [ "100", "97", "94", "90", "85", "80", "60", "0"]
     default = "94"
     general["radio_quality"] = create_radios(vbox, values, text, "quality", default)
     imgprocess["quality"] = 94
@@ -780,10 +913,17 @@ def main(): #{{{ OK
     imgprocess["spinQuality"].set_wrap(False)
     vbox.pack_start(imgprocess["spinQuality"], False, False, 0)
 
+## separator
+    align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+    align.set_padding(0, 0, 5, 5)
+    separator = gtk.VSeparator()
+    align.add(separator)
+    table.attach(align,5,6,0,2)
+
 #### prefix/suffix/folder entries
 
     vbox = gtk.VBox(False, 0)
-    box.pack_start(vbox, False, False, 20)
+    table.attach(vbox, 6, 7, 0, 1)
 
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>&lt;' + _("PREFIX") + '&gt;</b></span>file.jpg')
@@ -827,8 +967,34 @@ def main(): #{{{ OK
     mainbox.pack_start(separator, False, False, 5)
 
 #########################################################################
-# label 
+#  advanced options
 
+#    box = gtk.HBox(False, 0)
+#    mainbox.pack_start(box, False, False, 0)
+
+#    label = gtk.Label()
+#    label.set_markup( _("<b>option:</b>"))
+#    box.pack_start(label, False, False, 0)
+#    combo = gtk.combo_box_new_text()
+#    combo.set_wrap_width(1)
+#    list = ["", "-resize", "-strip", "-unsharp", "-vignette" ,"-tint", "-trim", "-unsharp",\
+#            "-threshold", "-radial-blur", "-posterize" ]
+#    list.sort()
+#    for ext in list:
+#        combo.append_text(ext)
+#    combo.set_active(0)
+#    box.pack_start(combo, False, False, 0)
+#    combo.connect('changed', options_cb)
+
+#    button = gtk.CheckButton("Width/Hight as max")
+#    button.connect("toggled", options_cb, "max")
+#    box.pack_start(button, False, False, 0)
+
+#    separator = gtk.HSeparator()
+#    mainbox.pack_start(separator, False, False, 5)
+
+#########################################################################
+## todo label
     box = gtk.HBox(False, 0)
     mainbox.pack_start(box, False, False, 0)
 
@@ -846,19 +1012,6 @@ def main(): #{{{ OK
 
     hbox=gtk.HBox()
     image = gtk.Image()
-    image.set_from_file(general["cwd"] + "bilder/open.png")
-    hbox.pack_end(image, False, False, 0)
-    label = gtk.Label(_("select pictures...  "))
-    hbox.pack_end(label, False, False, 0)
-    but_files = gtk.Button()
-    but_files.add(hbox)
-    but_files.connect("clicked", open_filechooser, None)
-    box.pack_start(but_files, False, False, 0)
-
-    but_files.grab_focus()
-
-    hbox=gtk.HBox()
-    image = gtk.Image()
     image.set_from_file(general["cwd"] + "bilder/go.png")
     hbox.pack_end(image, False, False, 0)
     label = gtk.Label(_("start converting  "))
@@ -867,6 +1020,24 @@ def main(): #{{{ OK
     but_start.add(hbox)
     but_start.connect("clicked", start_resize, None)
     box.pack_end(but_start, False, False, 0)
+
+
+    hbox=gtk.HBox()
+    image = gtk.Image()
+    image.set_from_file(general["cwd"] + "bilder/open.png")
+    hbox.pack_end(image, False, False, 0)
+    label = gtk.Label(_("select pictures...  "))
+    hbox.pack_end(label, False, False, 0)
+    files = gtk.Button()
+    files.add(hbox)
+    files.connect("clicked", open_filechooser, None)
+    align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+    align.set_padding(0, 0, 5, 15)
+    align.add(files)
+    box.pack_end(align, False, False, 0)
+
+    files.grab_focus()
+
 
 #########################################################################
 # show
@@ -877,7 +1048,7 @@ def main(): #{{{ OK
 
 
     general["window"].show_all()
-
+    but1.hide()
     gtk.main()
     return 0      
 #}}}
@@ -906,8 +1077,11 @@ general = { "todolabel"    : gtk.Label(),
             "what_errror"  : "",
             "pic_folder"   : "",
             "py2exe"       : False,
+            "sizebox"      : True,
+            "percentbox"   : False,
             "radio_width"  : radio_bogus,
             "radio_height" : radio_bogus,
+            "radio_percent" : radio_bogus,
             "radio_quality" : radio_bogus,
             "window" : gtk.Window(gtk.WINDOW_TOPLEVEL)}
 
@@ -921,20 +1095,25 @@ gettext.bindtextdomain('cal_pixresizer', general["cwd"] + "locale")
 # imgprocess (global)- data (source) for image processing
 imgprocess = { "ent_prefix"  : "",
                "ent_suffix"  : "",
-               "ent_folder": "",
+               "ent_folder"  : "",
                "ftype"       : "",
                "files_todo"  : [],
-               "width"       : 0,
-               "height"      : 0 ,
-               "quality"     : 0}
-adj = gtk.Adjustment(1024, 30, 2000, 1, 100, 0)
+               "width"       : "",
+               "height"      : "",
+               "percent"     : "",
+               "quality"     : ""}
+adj = gtk.Adjustment(1024, 10, 2000, 1, 100, 0)
 adj.connect("value_changed", get_spin_focus, "radio_width" )
 imgprocess["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
 imgprocess["spinWidth"].set_numeric(True)  #spinnervalue needed later
-adj = gtk.Adjustment(768, 30, 2000, 1, 100, 0)
+adj = gtk.Adjustment(768, 10, 2000, 1, 100, 0)
 adj.connect("value_changed", get_spin_focus, "radio_height" )
 imgprocess["spinHeight"] = gtk.SpinButton(adj, 1.0, 0)
 imgprocess["spinHeight"].set_numeric(True)
+adj = gtk.Adjustment(60, 10, 400, 1, 30, 0)
+adj.connect("value_changed", get_spin_focus, "radio_percent" )
+imgprocess["spinPercent"] = gtk.SpinButton(adj, 1.0, 0)
+imgprocess["spinPercent"].set_numeric(True)
 adj = gtk.Adjustment(90, 10, 100, 1, 10, 0)
 adj.connect("value_changed", get_spin_focus, "radio_quality" )
 imgprocess["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
