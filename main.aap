@@ -8,6 +8,7 @@ files =
     cal_pixresizer/bilder/go.png
     cal_pixresizer/bilder/open.png
     cal_pixresizer/bilder/folder.png
+    cal_pixresizer/bilder/file.png
 
  
 all : 
