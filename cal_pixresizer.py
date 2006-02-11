@@ -3,14 +3,6 @@
 # http://www.calmar.ws/resize/COPYING
 # }}}
 # help functions         SUBROUTINES {{{
-def command_exec(command): #{{{
-    if sys.platform in ["win32", "win16", "win64"]:
-         exitstatus = [0, _("Error: have a look at the console windows")]
-         exitstatus[0] = os.system(command)
-    else:
-         exitstatus = commands.getstatusoutput(command)
-    return exitstatus
-#}}}
 def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?) OK 
     global general
     general["what_error"] = str(data[1])
@@ -375,24 +367,25 @@ def dialog_delete(widget, dialog): # {{{  needs more work
             try: 
                 os.rmdir(item) 
             except OSError,  (errno, strerror): 
-                message = str( _('sorry, could not remove ') + item + "\n" +\
-                        str(errno) + " -> " + strerror + "\n" )
-                message += _("please remove items inside that folder first") + "\n"
-                print  message
-                message = str( _('sorry, could not remove ') + item + "\n\n" +\
-                        str(errno) + " -> " + strerror + "\n\n" )
-                message += _("please remove items inside that folder first") + "\n\n"
+                print  _('## sorry, could not remove directory:')
+                print  "## " + item
+                print "## " + str(errno) + ": " + strerror
+                message = _('sorry, could not remove diretory:')
+                message += item + "\n\n"
+                message += str(errno) + ": " + strerror + "\n" 
                 show_mesbox(dialog, message)
         else:
             try: 
                 os.remove(item) 
             except OSError,  (errno, strerror): 
-                message = str( _('sorry, could not remove ') + item + "\n" +\
-                        str(errno) + " -> " + strerror + "\n" )
-                print  message
-                message = str( _('sorry, could not remove ') + item + "\n\n" +\
-                        str(errno) + " -> " + strerror + "\n\n" )
+                print  _('## sorry, could not remove file:')
+                print  "## " + item
+                print "## " + str(errno) + ": " + strerror
+                message = _('sorry, could not remove file:')
+                message += item + "\n\n"
+                message += str(errno) + ": " + strerror + "\n" 
                 show_mesbox(dialog, message)
+
     dialog.set_current_folder(dialog.get_current_folder())
     general["what_error"] == ""
 #}}}
@@ -408,9 +401,16 @@ def dialog_viewpics(widget, dialog): # {{{
             else:
                 exe = "imdisplay.exe"
             tot = exe + ' "' + file + '"'
-            os.system(tot)      # error checking here?
+            exitstatus = os.popen(tot + " 2>&1").read()
+            if exitstatus != "" :
+                print _("## catched some error while trying to display picture")
+                print "## " + exitstatus
         else:  # on linux open multiple selection
-            os.system("display " + '"' +  '" "'.join(dialog.get_filenames()) + '"')
+            tot = "display " + '"' +  '" "'.join(dialog.get_filenames()) + '"'
+            exitstatus = os.popen(tot + " 2>&1").read()
+            if exitstatus != "" :
+                print _("## catched some error while trying to display picture")
+                print "## " + exitstatus
     else:
         show_mesbox(dialog, _("that is no regular file, can not display it"))
 #}}}
@@ -427,58 +427,64 @@ def dialog_rotate(widget, dialog, direction): # {{{
         return
 # well or use mogrify. both don't provide useful error codes on MSwin at least
     fileext =  os.path.splitext(file)
-    tmpfile = file + ".rotate_tmp" + fileext[1]
+    targetfile = file + ".rotate_tmp" + fileext[1]
     if general["py2exe"]:
         exe = general["cwd"] + "convert"
     else:
         exe = "convert"
-    command = exe + ' -rotate "' + direction + '" ' + '"' + file + '" ' + '"' + tmpfile + '"'
-    exitstatus = command_exec(command)
-
-    if exitstatus[0] == 0: # always ok here (sigh -> convert/mogrify)
-        if os.path.exists(tmpfile) and os.path.getsize(tmpfile) > 0 : # real test then here
+    command = exe + ' -rotate "' + direction + '" ' + '"' + file + '" ' + '"' + targetfile + '"'
+    exitstatus = os.popen(command + " 2>&1").read()
+    if exitstatus == "": # seems ok
+    ## secure overwriting
+        if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
             try:
                 os.remove(file)
                 try:
-                    os.rename(tmpfile, file)
+                    os.rename(targetfile, file)
                     print "## " + _("rotated") + "(" + direction + "): " + trimlongline(file, 62)
                 except OSError, (errno, strerror):
                     print "## " + _("Error while tyring to replace the original file")
-                    print "## " + _("you find your file now at:\n") + trimlongline(tmpfile, 65)
-                    text = _("replacing your original file didn't succeed on:") +\
-                        " \n\n " + file + "\n\n<b>" + str(errno) +\
-                        ": " + strerror + "</b>\n\n"
-                    text += _("\nyou find your original file now at:\n") + tmpfile
+                    print "## " + _("you find your file now at:\n") + trimlongline(targetfile, 65)
+                    text =  _("replacing your original file didn't succeed on:")
+                    text += _(" \n\n " + file + "\n\n")
+                    text += "<b>" + str(errno) + ": " + strerror + "</b>\n\n"
+                    text += _("\nyou find your original file now at:\n") + targetfile
                     text += _("\n\n(may contact mac@calmar.ws )  ")
                     show_mesbox(dialog,text)
 
             except OSError, (errno, strerror):
                print "## " + _("ERROR while trying to replace your file with the rotated one")
-               print "## " + _("you find the rotated file now at:\n") + trimlongline(tmpfile, 65)
-               print
-               text = _("replacing your original file didn't succeed on:") +\
-                        " \n\n " + file + "\n\n<b>" + str(errno) +\
-                        ": " + strerror + "</b>\n\n"
-               text += _("\nyou find your rotated file now at:\n") + tmpfile
+               print "## " + _("you find the rotated file now at:")
+               print "## " + trimlongline(targetfile, 65)
+               text = _("replacing your original file didn't succeed on:")
+               text += "\n\n " + file + "\n\n"
+               text += "<b>" + str(errno) + ": " + strerror + "</b>\n\n"
+               text += _("\nyou find your rotated file now at:\n") + targetfile
                text += _("\n\n(may contact mac@calmar.ws )  ")
                show_mesbox(dialog,text)
         else:
             print "## " + _("Error while tyring to rotate the file")
-            text = _("rotating didn't succeed on:") +\
-                   " \n\n " + file + "\n\n<b>" + str(exitstatus[0]) +\
-                   ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
+            text = _("rotating didn't succeed on:")
+            text += "\n\n " + file + "\n\n"
+            text += "<b>" + _("no further infos, sorry") + "</b>\n\n"
+            text += _("(may contact mac@calmar.ws )  ")
             show_mesbox(dialog,text)
-            
-    else:  # no useful exit of convert/mogrify (on win at least) -> never will be here maybe
-        if os.path.exists(tmpfile):
-            os.remove(tmpfile)
-        print "#### " + _("ERROR while trying to rotate that file")
-        print str(exitstatus[0]) + ": " + exitstatus[1]
-        print
-        text = _("rotating didn't succeed on:") +\
-                " \n\n " + file + "\n\n<b>" + str(exitstatus[0]) +\
-                ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
+    else: # direct error probably
+        plustext = ""
+        if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
+            plustext = _("Nevertheless, there exists an produced (corrupt?) file at:\n" + targetfile)
+        print "## " + _("Error while tyring to rotate the file")
+        print "## " +  exitstatus
+        if plustext != "":
+            print "## " + plustext
+        text = _("rotating didn't succeed on:")
+        text += " \n\n " + file + "\n\n" 
+        text += "<b>" + exitstatus + "</b>\n\n"
+        if plustext != "":
+            text += plustext
+        text += _("\n\n(may contact mac@calmar.ws )  ")
         show_mesbox(dialog,text)
+            
     dialog.emit("update-preview")
 #}}}
 # new
@@ -623,7 +629,7 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
             target_ext = ext
         else:
             target_ext = ftype
-        resultfile = resultpath + prefix + fname + suffix + target_ext
+        targetfile = resultpath + prefix + fname + suffix + target_ext
 # source and target file not set
 
 # for py2exe only (looking for the convert.exe in the same dir...)
@@ -640,7 +646,7 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
             resize = percent + "%"
 
         command = exe + ' "' + sourcefile + '"' + " -resize " + resize +\
-                    " -quality " + quality + ' "' + resultfile + '"'
+                    " -quality " + quality + ' "' + targetfile + '"'
 
 # some printing again
         if dist == "":  # initialisize only once
@@ -648,9 +654,9 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
 
 # print what you're going to do... preparation here
         command_print = "convert: " + "%-" + str(dist) + "s --> " +\
-                trimlongline(resultfile,58 - dist )
+                trimlongline(targetfile,58 - dist )
 
-        text = trimlongline(resultfile,65 - dist )
+        text = trimlongline(targetfile,65 - dist )
         label_progress(str(counter), str(total), text,"") 
         print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
 
@@ -659,7 +665,7 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
             gtk.main_iteration(False)
 
 # source und target the same?   refuse then, may continue     
-        if sourcefile == resultfile:
+        if sourcefile == targetfile:
             text = _("<b>source</b> and <b>target</b> are the same!") + "\n\n" +\
 _("(...cowardly refuses to overwrite)")
             print "#### " + _("source and target are the same!") + " ####"
@@ -680,12 +686,12 @@ _("(...cowardly refuses to overwrite)")
                 continue
 
 # check if file exists and may show 'overwrite dialog'
-        if os.path.exists(resultfile):
+        if os.path.exists(targetfile):
             if general["what_todo"] != "all_overwrite":
-                show_overwrite_dialog(resultfile)
+                show_overwrite_dialog(targetfile)
             if general["what_todo"] == "ok_pressed":
                 general["what_todo"] = ""
-                print _("# skipped: ") + trimlongline(resultfile,58)
+                print _("# skipped: ") + trimlongline(targetfile,58)
                 continue
             elif general["what_todo"] == "cancel":
                 general["what_todo"] = ""
@@ -704,17 +710,25 @@ _("(...cowardly refuses to overwrite)")
             general["what_todo"] = ""
 
 # the actual work/progress
-        exitstatus = command_exec(command)
-# there was an error, print and ask what to do
-# BUT convert does not provide such a thing, so check if target was build or similar
-# IMPORTANT
-        if exitstatus[0] != 0:
-            text = _("imagemagick terminated with an <b>error</b> while working on:") +\
-                    " \n\n " + sourcefile + "\n\n<b>" + str(exitstatus[0]) +\
-                    ": " + exitstatus[1] + "</b>\n\n" + _("(may contact mac@calmar.ws )  ")
-            print "#### " + _("ERROR while working on that picture")
-            print str(exitstatus[0]) + ": " + exitstatus[1]
+        exitstatus = os.popen(command + " 2>&1").read()
+        if exitstatus != "":  # an error or similar, assuming otherwise all is ok
+            if os.path.exists(targetfile) and os.path.getsize(targetfile) == 0 :
+                try:
+                    os.remove(targetfile)
+                except OSError,  (errno, strerror): 
+                    print _("## there is a currupt (filesize == 0 Bytes) generated file")
+                    print "## " + targetfile
+                    print _("## trying to delete it, didn't succeed")
+                    print "## " + str(errno) + ": " + strerror
+                    print _("## please check that issue yourself as well")
+
+            print "## " + _("ERROR while working on that picture")
+            print exitstatus
             print
+            text = _("imagemagick terminated with an <b>error</b> while working on:")
+            text += " \n\n " + sourcefile + "\n\n"
+            text += "<b>" + exitstatus + "</b>\n\n"
+            text += _("(may contact mac@calmar.ws)  ")
             show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
             if general["what_error"] != "ok_pressed":
                 imgprocess["files_todo"]=[]
@@ -727,8 +741,8 @@ _("(...cowardly refuses to overwrite)")
                 print _("# converting has stopped ")
                 print
                 return
+# exitstatus == "" , I optimistically assume, file gots created properly
 
-# HERE CHECK if file really got created!! exitsttus does not really work
     print
     print _("# the pics got generated")
     print 
@@ -1054,7 +1068,7 @@ def main(): #{{{ OK
 #}}}
 # imports, head (at the bottom haha)
 #imports... vars...  {{{ OK
-import os, sys,  time, glob, commands, string
+import os, sys,  time, glob, string
 import gtk, pygtk, pango
 # PIL needs some help, when py2exe-d
 import Image, PngImagePlugin, JpegImagePlugin
