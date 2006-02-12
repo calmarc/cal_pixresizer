@@ -33,45 +33,6 @@ def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?)
     data[0].hide()
     data[0].destroy()
 #}}}
-def update_preview_cb(file_chooser, preview): #{{{ 
-    filename = str(file_chooser.get_preview_filename())  # str needed once on M$
-    tuple = os.path.split(filename)
-    if tuple[1] != "":
-        preview[1].set_markup("<b>" + tuple[1] + "</b>")
-    else:
-        preview[1].set_markup("<b>(got no name)</b>")
-    if os.path.exists(filename): # once was necessary on M$, so...
-        if os.path.isfile(filename):
-            try:
-                try:
-                    size = os.path.getsize(filename)
-                    if (size/1024) == 0:
-                        bytes = str(size) + " bytes"
-                    else:
-                        bytes = str(size/1024) + " Kb"
-                except (OSError):
-                    bytes = "(got no size)"  # well, should never reach here anyway
-                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 200, 125)
-                preview[0].set_from_pixbuf(pixbuf)
-                img = Image.open(filename)
-                preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
-                preview[3].set_markup(bytes)
-            except (gobject.GError, TypeError): # file but not viewable
-                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
-                        "bilder/file.png", 96, 96)
-                preview[0].set_from_pixbuf(pixbuf)
-                preview[2].set_markup(bytes)
-                preview[3].set_markup("")
-        else: # is dir (or so, hm)
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
-                    "bilder/folder.png", 96, 96)
-            preview[0].set_from_pixbuf(pixbuf)
-            preview[2].set_markup("<b>"+ str(len(os.listdir(filename))) +\
-                    _("</b> items inside"))
-            preview[3].set_markup("")
-    file_chooser.set_preview_widget_active(True)
-    return
-#}}}
 def overwrite_destroy(widget, data): #{{{ 
     global general
     general["what_todo"] = str(data[1])
@@ -186,10 +147,18 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)    
+    align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
+    align.set_padding(10, 10, 50, 50)
+    align.show()
+    vbox = gtk.VBox()
+    vbox.show()
+    align.add(vbox)
+    mesbox.vbox.pack_start(align, True, True, 15)
+
     label = gtk.Label()
     label.set_markup(text)
-    mesbox.vbox.pack_start(label, True, True, 10)
     label.show()
+    vbox.pack_start(label, True, True, 15)
 
     button = gtk.Button(button_quit)
     mesbox.action_area.pack_start(button, True, True, 0)
@@ -208,9 +177,18 @@ def show_overwrite_dialog(file): #{{{
     mesbox = gtk.Dialog(_("attention:"), general["window"], gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)    
+
+    align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
+    align.set_padding(10, 10, 50, 50)
+    align.show()
+    vbox = gtk.VBox()
+    vbox.show()
+    align.add(vbox)
+    mesbox.vbox.pack_start(align, True, True, 15)
+
     label = gtk.Label()
     label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(file,68))
-    mesbox.vbox.pack_start(label, True, True, 10)
+    vbox.pack_start(label, True, True, 10)
     label.show()
 
     button = gtk.Button(_("quit processing"))
@@ -249,10 +227,19 @@ def show_mesbox(parent, text): #{{{
             (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)) 
     mesbox.connect("destroy", quit_self)
     mesbox.connect("delete_event", quit_self)    
+
+    align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
+    align.set_padding(10, 10, 50, 50)
+    align.show()
+    vbox = gtk.VBox()
+    vbox.show()
+    align.add(vbox)
+    mesbox.vbox.pack_start(align, True, True, 15)
+
     label = gtk.Label()
     label.set_markup(text)
     label.show()
-    mesbox.vbox.pack_start(label, True, True, 15)
+    vbox.pack_start(label, True, True, 15)
     mesbox.show()
     response = mesbox.run()
     mesbox.destroy()
@@ -268,6 +255,51 @@ def create_radios(vbox,values,text, id_radio, default): #{{{
             radio.set_active(True)
     return radio # return last radio thing for spinner
 #}}}
+def update_preview_cb(file_chooser, preview, exiflabel ): #{{{ 
+    filename = str(file_chooser.get_preview_filename())  # str needed once on M$
+    comment = get_jhead_exif(filename) 
+    if comment != "":   
+        exiflabel.set_text(trimlongline(comment,55))
+    else:
+        exiflabel.set_text("")
+
+    tuple = os.path.split(filename)
+    if tuple[1] != "":
+        preview[1].set_markup("<b>" + tuple[1] + "</b>")
+    else:
+        preview[1].set_markup("<b>(got no name)</b>")
+    if os.path.exists(filename): # once was necessary on M$, so...
+        if os.path.isfile(filename):
+            try:
+                try:
+                    size = os.path.getsize(filename)
+                    if (size/1024) == 0:
+                        bytes = str(size) + " bytes"
+                    else:
+                        bytes = str(size/1024) + " Kb"
+                except (OSError):
+                    bytes = "(got no size)"  # well, should never reach here anyway
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 230, 200)
+                preview[0].set_from_pixbuf(pixbuf)
+                img = Image.open(filename)
+                preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
+                preview[3].set_markup(bytes)
+            except (gobject.GError, TypeError): # file but not viewable
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
+                        "bilder/file.png", 96, 96)
+                preview[0].set_from_pixbuf(pixbuf)
+                preview[2].set_markup(bytes)
+                preview[3].set_markup("")
+        else: # is dir (or so, hm)
+            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
+                    "bilder/folder.png", 96, 96)
+            preview[0].set_from_pixbuf(pixbuf)
+            preview[2].set_markup("<b>"+ str(len(os.listdir(filename))) +\
+                    _("</b> items inside"))
+            preview[3].set_markup("")
+    file_chooser.set_preview_widget_active(True)
+    return
+#}}}
 # FileChooser callbacks
 def open_filechooser(widget, event, data=None): #{{{
     global general
@@ -280,6 +312,10 @@ def open_filechooser(widget, event, data=None): #{{{
 
     dialog.set_default_response(gtk.RESPONSE_OK)
     dialog.set_select_multiple(True)
+    dialog.set_size_request(700,500)
+#########################################################
+    fileac = gtk.AccelGroup()
+    dialog.add_accel_group(general["acgroup"])
 
 #########################################################
 # main vbox
@@ -301,56 +337,61 @@ def open_filechooser(widget, event, data=None): #{{{
 
     vbox.pack_start(align, False, False, 0)
 
-    table = gtk.Table(rows=4, columns=3, homogeneous=False)
+    table = gtk.Table(rows=6, columns=8, homogeneous=False)
     table.show()
     hbox.pack_start(table, False, False, 0)
 
 # first vbox
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#8a0000"><b>delete</b> selection</span>'))
+    label.set_markup(_('<span color="#8a0000"><b><u>D</u>elete</b> selection</span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
     button.show()
+    button.add_accelerator('clicked', general["acgroup"], ord('d'), 0, gtk.ACCEL_VISIBLE )
     button.connect("clicked", dialog_delete, dialog)
-    table.attach(button, 0, 1, 0, 1, gtk.FILL)
-
-    label = gtk.Label()
-    label.set_markup(_('<span color="#00008a">select <b>all</b> images</span>'))
-    label.show()
-    button = gtk.Button()
-    button.add(label)
-    button.show()
-    button.connect("clicked", lambda w, d: d.select_all(), dialog)
     table.attach(button, 1, 2, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#002a00"><b>preview picture</b></span>'))
+    label.set_markup(_('<span color="#00008a">select <b><u>A</u>ll</b> images</span>'))
+    label.show()
+    button = gtk.Button()
+    button.add(label)
+    button.show()
+    button.add_accelerator('clicked', general["acgroup"], ord('a'), 0, gtk.ACCEL_VISIBLE )
+    button.connect("clicked", lambda w, d: d.select_all(), dialog)
+    table.attach(button, 2, 3, 0, 1, gtk.FILL)
+
+    label = gtk.Label()
+    label.set_markup(_('<span color="#002a00"><b>pre<u>V</u>iew</b> picture</span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
     button.show()
     button.connect("clicked", dialog_viewpics, dialog)
-    table.attach(button, 2, 3, 0, 1, gtk.FILL)
+    button.add_accelerator('clicked', general["acgroup"], ord('v'), 0, gtk.ACCEL_VISIBLE )
+    table.attach(button, 3, 4, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#402a20"><b>rotate left</b></span>'))
+    label.set_markup(_('<span color="#402a20">rotate <b>l<u>E</u>ft</b></span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
     button.show()
     button.connect("clicked", dialog_rotate, dialog, "-90")
-    table.attach(button, 0, 1, 1, 2, gtk.FILL)
+    button.add_accelerator('clicked', general["acgroup"], ord('e'), 0, gtk.ACCEL_VISIBLE )
+    table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#402a20"><b>rotate right</b></span>'))
+    label.set_markup(_('<span color="#402a20">rotate <b><u>R</u>ight</b></span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
     button.show()
     button.connect("clicked", dialog_rotate, dialog, "90")
-    table.attach(button, 1, 2, 1, 2, gtk.FILL)
+    button.add_accelerator('clicked', general["acgroup"], ord('r'), 0, gtk.ACCEL_VISIBLE )
+    table.attach(button, 2, 3, 1, 2, gtk.FILL)
 
     label = gtk.Label()
     label.set_markup(_('<span color="#405a30">choose viewer</span>'))
@@ -359,14 +400,35 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", dialog_setupview, dialog)
-    table.attach(button, 2, 3, 1, 2, gtk.FILL)
+    table.attach(button, 3, 4, 1, 2, gtk.FILL)
+
+    label = gtk.Label()
+    label.set_markup(_('<span color="#405a30">edit <b>E<u>X</u>if</b> comment</span>'))
+    label.show()
+    button = gtk.Button()
+    button.add(label)
+    button.show()
+    button.add_accelerator('clicked', general["acgroup"], ord('x'), 0, gtk.ACCEL_VISIBLE )
+    button.connect("clicked", dialog_exif_com, dialog)
+    table.attach(button, 1, 4, 2, 3, gtk.FILL)
+
+    
+    align = gtk.Alignment(0.5, 0.0, 0.0, 0.0)
+    align.set_padding(10, 10, 10, 10)
+    align.show()
+    exiflabel = gtk.Label()
+    exiflabel.show()
+    exiflabel.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000050'))
+    align.add(exiflabel)
+
+    table.attach(align, 0, 6, 3, 4, gtk.FILL)
 
     label = gtk.Label()
     label.set_markup("\n<b>Ctrl</b> + " + _("left mouse  click - for adding items") +\
             "\n<b>Shift</b> + " + _("left mouse click - for ranges"))
     label.show()
 
-    table.attach(label, 0, 3, 2, 3, gtk.FILL)
+    table.attach(label, 0, 6, 4, 5, gtk.FILL)
 
 
 ##################################################
@@ -393,7 +455,7 @@ def open_filechooser(widget, event, data=None): #{{{
 # preview widget
     dialog.set_use_preview_label(False)
     preview = gtk.VBox(False)
-    preview.set_size_request(162,162)
+    preview.set_size_request(220,220)
     label = gtk.Label()
     label.set_alignment(0.5,1)
     label.show()
@@ -412,7 +474,7 @@ def open_filechooser(widget, event, data=None): #{{{
     dialog.set_preview_widget(preview)
     dialog.set_preview_widget_active(False)
 
-    dialog.connect("update-preview", update_preview_cb, (image, label, label2, label3))
+    dialog.connect("update-preview", update_preview_cb, (image, label, label2, label3), exiflabel)
 
 # starting folder
     if general["pic_folder"] == "":
@@ -429,12 +491,10 @@ def open_filechooser(widget, event, data=None): #{{{
     else:
         dialog.set_current_folder(general["pic_folder"])
 
-#DELETE
-#    dialog.set_current_folder("/home/calmar/pics/Auto_Salon_2005/ppp")
     response = dialog.run()
     if response == gtk.RESPONSE_OK:
         general["pic_folder"] = dialog.get_current_folder()
-        imgprocess["files_todo"] =  dialog.get_filenames()
+        imgprocess["files_todo"] = dialog.get_filenames()
         labeltext = files_print_label(imgprocess["files_todo"])
         general["todolabel"].set_text(labeltext)
         counter=0
@@ -482,6 +542,94 @@ def dialog_delete(widget, dialog): # {{{  needs more work
     dialog.set_current_folder(dialog.get_current_folder())
     general["what_error"] == ""
 #}}}
+def get_jhead_exif(file): #{{{
+    pre = ""
+    if sys.platform in ["win32", "win16", "win64"]:
+        pre = general["cwd"]
+    tot = pre + "jhead '" + str(file) + "'" 
+    jheadoutput = os.popen(tot + " 2>&1").read()
+    jheadoutput = jheadoutput.split("\n")
+    comment = ""
+    for item in jheadoutput:
+        if item[0:7] == "Comment":
+            if comment != "":
+                comment += "\n"
+            comment += item.split(":")[1][1:]
+    return comment
+#}}}
+def show_exif_dialog(parent_widget, text, button_quit, button_ok, file): #{{{
+    global general
+    mesbox = gtk.Dialog(_("Exif Dialog:"), parent_widget, gtk.DIALOG_MODAL, ()) 
+    mesbox.connect("destroy", quit_self, None)
+    mesbox.connect("delete_event", quit_self, None)    
+
+    align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
+    align.set_padding(10, 10, 50, 50)
+    align.show()
+    vbox = gtk.VBox()
+    vbox.show()
+    align.add(vbox)
+    mesbox.vbox.pack_start(align, True, True, 15)
+
+    label = gtk.Label()
+    label.set_markup(text)
+    label.show()
+    vbox.pack_start(label, True, True, 15)
+
+    textview = gtk.TextView()
+    textbuffer = textview.get_buffer()
+    textbuffer.set_text(get_jhead_exif(file))
+    sw = gtk.ScrolledWindow()
+    sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+    sw.add(textview)
+    sw.show()
+    textview.show()
+    textview.set_size_request(400, 10)
+
+    textview.set_editable(True)
+    textview.set_wrap_mode(gtk.WRAP_NONE)
+    textview.set_justification(gtk.JUSTIFY_LEFT)
+    textview.set_left_margin(0)
+    textview.set_accepts_tab(False)
+    vbox.pack_start(sw, False, False, 0)
+
+    button = gtk.Button(button_quit)
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", dialog_2_destroy, (mesbox,"quit"))
+    button.show()
+    button = gtk.Button(button_ok)
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", dialog_2_destroy, (mesbox,"ok_pressed"))
+    button.show()
+    mesbox.show()
+    textview.grab_focus()
+    mesbox.run()
+    return textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter(), True)
+#}}}
+def dialog_exif_com(widget, dialog): # {{{
+    files =  dialog.get_filenames()
+    if len(files) == 0:
+        return
+    file = files[0]
+
+    if os.path.isdir(file):
+        print "## " + _("can not set Exif comment to a directory")
+        return
+    pre = ""
+    if sys.platform in ["win32", "win16", "win64"]:
+        pre = general["cwd"]
+    newcomment = show_exif_dialog(dialog, _("Exif Comment"), _("cancel"), _("OK, save that"), file)
+    if general["what_error"] == "ok_pressed": # don't allow " or \ then it should work
+        newcomment = string.replace(newcomment,"'","\'")
+        tot = pre + "jhead -cl '" + str(newcomment) + "' '" + file + "'" 
+        jheadoutput = os.popen(tot + " 2>&1").read()
+#        check of correct output (modified...)
+        print jheadoutput
+        dialog.emit("update-preview")
+        return
+    else:
+        return
+#}}}
 def dialog_viewpics(widget, dialog): # {{{
     if general["viewer"] == "":
         if sys.platform in ["win32", "win16", "win64"]:
@@ -528,12 +676,17 @@ def dialog_setupview(widget, dialog_main): #{{{
     dialog.set_extra_widget(align)
 
     label = gtk.Label()
-    label.set_markup("\n" +\
-            _("<b>Select</b> your <b>previewer</b> for your images - e.g:") +\
-            "\n\n" +\
-            _("/usr/bin/<i>display</i> (*nix's)") + \
-            "\n" +\
-            _('C:\Programs\irfanview\<i>i_view32.exe</i> (MS-Win)'))
+
+    text = "\n" + _("<b>Select</b> your <b>previewer</b> for your images - e.g:") + "\n\n"
+    if sys.platform in ["win32", "win16", "win64"]:
+        text += "            C:\\Programs\\irfanview\\<b>i_view32.exe</b>" + "\n"
+        text += "            <b>.....</b>" + "\n"
+    else:
+        text += "                   /usr/bin/<i>display</i>" + "\n"
+        text += "                   /usr/bin/<i>qiv</i>" + "\n"
+        text += "                   ....." + "\n"
+
+    label.set_markup(text)
     label.show()
 
     align.add(label)
@@ -573,7 +726,7 @@ def dialog_setupview(widget, dialog_main): #{{{
 #}}}
 def dialog_rotate(widget, dialog, direction): # {{{
     try:
-        file = dialog.get_filenames()[0]
+        file = dialog.get_filenames()[0]  # can be 'None'
         if len(dialog.get_filenames()) > 1:
             show_mesbox(dialog, _("please select only <b>one</b> pic for rotating"))
             return
@@ -711,10 +864,16 @@ def start_resize(widget, event, data=None): #{{{
         try:
             os.mkdir(splitfile[0] + "/" + folder)
         except OSError, (errno, strerror):
+            print
+            print _("# was not able to create target directory: converting has stopped ")
+            print
             text = _("was not able to create your target folder") + "\n\n"
+            text += trimlongline(splitfile[0],48) + "/<b>" + folder + "</b>" + "\n\n"
             text += _("please check that issue first") + "\n\n"
             text += str(errno) + ": " + strerror + "\n\n"
             show_mesbox(general["window"], text)
+#            general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
+            return
     else:
         print _("# sub-folder exists already")
 
@@ -760,13 +919,13 @@ def start_resize(widget, event, data=None): #{{{
         while gtk.events_pending():
             gtk.main_iteration(False)
         if imgprocess["stop_progress"] == True:
+            general["stop_button"].hide()
             label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
             print
             print _("# stop button pressed: converting has stopped ")
             print
             show_mesbox(general["window"], _("progress stopped"))
             general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
-            general["stop_button"].hide()
             return
         counter += 1
         sourcefile = string.replace(sourcefile, "\\","/")
@@ -814,9 +973,10 @@ def start_resize(widget, event, data=None): #{{{
         if sourcefile == targetfile:
             text = _("<b>source</b> and <b>target</b> are the same!") + "\n\n" +\
 _("(...cowardly refuses to overwrite)")
-            print "#### " + _("source and target are the same!") + " ####"
+            print "## " + _("source and target are the same!") 
             show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
             if general["what_error"] != "ok_pressed":
+                general["stop_button"].hide()
                 label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
                 while gtk.events_pending():
                     gtk.main_iteration(False)
@@ -825,7 +985,6 @@ _("(...cowardly refuses to overwrite)")
                 print _("# converting has stopped ")
                 print
                 general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
-                general["stop_button"].hide()
                 return
             else:
                 continue
@@ -840,6 +999,7 @@ _("(...cowardly refuses to overwrite)")
                 continue
             elif general["what_todo"] == "cancel":
                 general["what_todo"] = ""
+                general["stop_button"].hide()
                 label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
                 while gtk.events_pending():
                     gtk.main_iteration(False)
@@ -848,7 +1008,6 @@ _("(...cowardly refuses to overwrite)")
                 print _("# converting has stopped ")
                 print
                 general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
-                general["stop_button"].hide()
                 return
 
         elif general["what_todo"] == "overwrite":
@@ -876,6 +1035,7 @@ _("(...cowardly refuses to overwrite)")
             text += _("(may contact mac@calmar.ws)  ")
             show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
             if general["what_error"] != "ok_pressed":
+                general["stop_button"].hide()
                 label_progress(str(counter),str(total), _("canceled!"),"color='#550000'") 
                 while gtk.events_pending():
                     gtk.main_iteration(False)
@@ -887,14 +1047,13 @@ _("(...cowardly refuses to overwrite)")
                 print _("# converting has stopped ")
                 print
                 general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
-                general["stop_button"].hide()
                 return
-# exitstatus == "" , I optimistically assume, file gots created properly
 
     print
     print _("# the progress finished")
     print 
 
+    general["stop_button"].hide()
     label_progress(str(total),str(total), _("finish!"),"color='#000070'") 
 
     while gtk.events_pending():
@@ -905,7 +1064,6 @@ _("(...cowardly refuses to overwrite)")
     #label_nopic()
     # imgprocess["files_todo"]=[]
     general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
-    general["stop_button"].hide()
 #}}}
 def main(): #{{{ OK
 
@@ -1205,6 +1363,7 @@ def main(): #{{{ OK
     button = gtk.Button()
     button.add(hbox)
     button.connect("clicked", open_filechooser, None)
+
     align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
     align.set_padding(0, 0, 5, 15)
     align.add(button)
@@ -1230,8 +1389,9 @@ def main(): #{{{ OK
     if font_desc:
         general["todolabel"].modify_font(font_desc)
 
-
     general["window"].show_all()
+
+    general["window"].add_accel_group(general["acgroup"])
 
 # if showing depends on size_or_not boolean
     if general["size_or_not"]:
@@ -1275,6 +1435,7 @@ _ = gettext.gettext
 radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
 general = { "todolabel"    : gtk.Label(), 
             "stop_button"  : gtk.Button(),
+            "acgroup"      : gtk.AccelGroup(), # need for global?
             "what_todo"    : "",
             "what_errror"  : "",
             "pic_folder"   : "",
