@@ -7,13 +7,10 @@ depend:	1 - updating target "po"
 depend:	2 - Using dependency "po{virtual=1} : "
 depend:	1 - Updating "po" from "": virtual target
 extra:	Shell commands for updating "po{virtual=1}":
-system:	xgettext -k_ *.py
+system:	xgettext -k_ cal_pixresizer.py
 system:	msgmerge -U de.po messages.po
 system:	msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo
 log:	msgmerge: messages.po: warning: Charset "CHARSET" is not a portable encoding name.
                                 Message conversion to user's charset might not work.
-........ done.
-de.po:146: `msgid' and `msgstr' entries do not both end with '\n'
-msgfmt: found 1 fatal error
+......... done.
 
-error:	Error in recipe "/home/calmar/coding/py/cal_pixresizer/main.aap" line 28: Shell command returned 1

@@ -2,15 +2,40 @@ extra:	Reading recipe "main.aap"
 extra:	Finished reading recipe "main.aap"
 depend:	Adding default dependency for "clean"
 depend:	Adding default dependency for "cleanmore"
-depend:	Building targets specified on command line
-depend:	1 - updating target "po"
-depend:	2 - Using dependency "po{virtual=1} : "
-depend:	1 - Updating "po" from "": virtual target
-extra:	Shell commands for updating "po{virtual=1}":
-system:	xgettext -k_ *.py
-system:	msgmerge -U de.po messages.po
-system:	msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo
-log:	msgmerge: messages.po: warning: Charset "CHARSET" is not a portable encoding name.
-                                Message conversion to user's charset might not work.
-........ done.
+depend:	Building the "all" target
+depend:	1 - updating target "all"
+depend:	2 - Using dependency "all : "
+depend:	1 - Updating "all" from "": virtual target
+changedir:	Entering directory `/home/calmar/coding/py'
+extra:	Shell commands for updating "all{virtual=1}":
+system:	ls
+log:	cal_pixresizer
+cal_pixresizer_setup.exe
+dd
+tezt.zip
 
+print:	zipping
+extra:	Shell commands for updating "all{virtual=1}":
+system:	{f} zip -u -r cal_pixresizer   cal_pixresizer/cal_pixresizer.py cal_pixresizer/COPYING cal_pixresizer/README cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo cal_pixresizer/bilder/calmar.png cal_pixresizer/bilder/exit.png cal_pixresizer/bilder/go.png cal_pixresizer/bilder/open.png cal_pixresizer/bilder/folder.png cal_pixresizer/bilder/file.png
+log:		zip warning: cal_pixresizer.zip not found or empty
+  adding: cal_pixresizer/cal_pixresizer.py (deflated 78%)
+  adding: cal_pixresizer/COPYING (deflated 62%)
+  adding: cal_pixresizer/README (deflated 46%)
+  adding: cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo (deflated 56%)
+  adding: cal_pixresizer/bilder/calmar.png (stored 0%)
+  adding: cal_pixresizer/bilder/exit.png (stored 0%)
+  adding: cal_pixresizer/bilder/go.png (stored 0%)
+  adding: cal_pixresizer/bilder/open.png (stored 0%)
+  adding: cal_pixresizer/bilder/folder.png (stored 0%)
+  adding: cal_pixresizer/bilder/file.png (deflated 1%)
+
+print:	tarring
+extra:	Shell commands for updating "all{virtual=1}":
+system:	tar -czf  cal_pixresizer.tar.gz   cal_pixresizer/cal_pixresizer.py cal_pixresizer/COPYING cal_pixresizer/README cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo cal_pixresizer/bilder/calmar.png cal_pixresizer/bilder/exit.png cal_pixresizer/bilder/go.png cal_pixresizer/bilder/open.png cal_pixresizer/bilder/folder.png cal_pixresizer/bilder/file.png
+info:	Moved "cal_pixresizer.zip" to "/home/calmar/www/calmar/resize/cal_pixresizer.zip"
+info:	Moved "cal_pixresizer.tar.gz" to "/home/calmar/www/calmar/resize/cal_pixresizer.tar.gz"
+extra:	Shell commands for updating "all{virtual=1}":
+system:	aap -f /home/calmar/www/calmar/main.aap
+system:	tar -czf  cal_pixresizer.git.tar.gz cal_pixresizer/.git
+info:	Moved "cal_pixresizer.git.tar.gz" to "/home/calmar/backup/cal_pixresizer.git.tar.gz"
+changedir:	Entering directory `/home/calmar/coding/py/cal_pixresizer'

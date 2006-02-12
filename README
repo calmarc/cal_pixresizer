@@ -1,12 +1,10 @@
-         Calmar's Picture Resizer, Version 0.4
+         Calmar's Picture Resizer, Version 0.5 (beta)
          Resize/convert/rotate your pictures with this 
-        
          --> Imagemagick's convert Frontend <--
         
          The calmar picture resizer checks before is overwrites
          anything - so it's quite safe.
          Nevertheless, use it at your own risk.
-         Mail or visit me for whatever reason:
 
          mac@calmar.ws 
          http://www.calmar.ws

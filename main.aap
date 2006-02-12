@@ -26,6 +26,6 @@ all :
     :cd cal_pixresizer/
 
 po {virtual}:
-    :sys xgettext -k_ *.py
+    :sys xgettext -k_ cal_pixresizer.py
     :sys msgmerge -U de.po messages.po
     :sys msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo

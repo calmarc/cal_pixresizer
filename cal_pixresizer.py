@@ -1,84 +1,110 @@
 #!/usr/bin/env python
-# master branch
 # Copyright (C) 2006 http://www.calmar.ws {{{
 # http://www.calmar.ws/resize/COPYING
 # }}}
-# help functions         SUBROUTINES {{{
-def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?) OK 
+# little FUNCTIONS  {{{
+def toggle_percent(widget, data): #{{{
+    if widget.get_property("visible"):
+        data.show()
+        widget.hide()
+        general["percentbox"].set_sensitive(False)
+        general["sizebox"].set_sensitive(True)
+    else:
+        data.hide()
+        widget.show()
+        general["percentbox"].set_sensitive(True)
+        general["sizebox"].set_sensitive(False)
+#}}}
+def toggle_size(widget, data): #{{{
+    if widget.get_property("visible"):
+        data.show()
+        widget.hide()
+        general["percentbox"].set_sensitive(True)
+        general["sizebox"].set_sensitive(False)
+    else:
+        data.hide()
+        widget.show()
+        general["percentbox"].set_sensitive(False)
+        general["sizebox"].set_sensitive(True)
+#}}}
+def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?) 
     global general
     general["what_error"] = str(data[1])
     data[0].hide()
     data[0].destroy()
 #}}}
-def update_preview_cb(file_chooser, preview): #{{{ OK
-    try:
-        filename = file_chooser.get_preview_filename()
-        preview[1].set_markup("<b>" + os.path.split(filename)[1] + "</b>")
+def update_preview_cb(file_chooser, preview): #{{{ 
+    filename = str(file_chooser.get_preview_filename())  # str needed once on M$
+    tuple = os.path.split(filename)
+    if tuple[1] != "":
+        preview[1].set_markup("<b>" + tuple[1] + "</b>")
+    else:
+        preview[1].set_markup("<b>(got no name)</b>")
+    if os.path.exists(filename): # once was necessary on M$, so...
         if os.path.isfile(filename):
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 200, 125)
-            preview[0].set_from_pixbuf(pixbuf)
-            img = Image.open(filename)
-            size = os.path.getsize(filename)
-            if size/1024 == 0:
-                bytes = str(size) + " bytes"
-            else:
-                bytes = str(size/1024) + " Kb"
-            preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
-            preview[3].set_markup( bytes)
-        else:
+            try:
+                try:
+                    size = os.path.getsize(filename)
+                    if (size/1024) == 0:
+                        bytes = str(size) + " bytes"
+                    else:
+                        bytes = str(size/1024) + " Kb"
+                except (OSError):
+                    bytes = "(got no size)"  # well, should never reach here anyway
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 200, 125)
+                preview[0].set_from_pixbuf(pixbuf)
+                img = Image.open(filename)
+                preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
+                preview[3].set_markup(bytes)
+            except (gobject.GError, TypeError): # file but not viewable
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
+                        "bilder/file.png", 96, 96)
+                preview[0].set_from_pixbuf(pixbuf)
+                preview[2].set_markup(bytes)
+                preview[3].set_markup("")
+        else: # is dir (or so, hm)
             pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
                     "bilder/folder.png", 96, 96)
             preview[0].set_from_pixbuf(pixbuf)
-
             preview[2].set_markup("<b>"+ str(len(os.listdir(filename))) +\
                     _("</b> items inside"))
             preview[3].set_markup("")
-    except:
-        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
-                "bilder/file.png", 96, 96)
-        preview[0].set_from_pixbuf(pixbuf)
-        try:
-            size = os.path.getsize(filename)
-            size = str(size/1024) + " kb"
-        except (TypeError, OSError):
-            size = ""
-        preview[2].set_markup( size )
-        preview[3].set_markup(" ")
     file_chooser.set_preview_widget_active(True)
     return
 #}}}
-def overwrite_destroy(widget, data): #{{{ OK
+def overwrite_destroy(widget, data): #{{{ 
     global general
     general["what_todo"] = str(data[1])
     data[0].hide()
     data[0].destroy()
 #}}}
-def get_spin_focus(widget, spinname): #{{{ OK
+def get_spin_focus(widget, spinname): #{{{ 
     global general
     general[spinname].set_active(True)
 #}}}
-def delete_event(widget, event, data=None): #{{{ OK
+def delete_event(widget, event, data=None): #{{{ 
+    userdata_save()
     gtk.main_quit()
     return False
 #}}}
-def quit_widget(widget, data): #{{{ OK
+def quit_widget(widget, data): #{{{ 
     data.hide()
     data.destroy()
 #}}}
-def quit_self(self, *args): #{{{ OK
+def quit_self(self, *args): #{{{ 
     self.hide()
     self.destroy()
 #}}}
-def setvalue(widget, data): #{{{ OK
+def setvalue(widget, data): #{{{ 
     global general
     imgprocess[data[0]] = data[1]
 #}}}
-def trimlongline(loc_item, size=72): #{{{ OK
+def trimlongline(loc_item, size=72): #{{{ 
     if len(loc_item) >= size:
         loc_item = loc_item[0:size/4] + "..." + loc_item[-1*((size-size/4)-3):]
     return loc_item
 #}}}
-def entries_cb(editable, id_edit): #{{{ OK
+def entries_cb(editable, id_edit): #{{{ 
     global imgprocess
     posi = editable.get_position()
     char = editable.get_chars(posi, posi+1)
@@ -87,16 +113,75 @@ def entries_cb(editable, id_edit): #{{{ OK
         editable.insert_text("_", posi)
     imgprocess[id_edit] = editable.get_text()
 #}}}
-def setcombo(combobox): #{{{ OK
+def setcombo(combobox): #{{{ 
     global imgprocess
     model = combobox.get_model()
     active = combobox.get_active()
     if active >= 0:
         imgprocess["ftype"]=model[active][0]
 #}}}
+def userdata_load(): #{{{
+    global general
+    global imgprocess
+
+    file = general["cwd"] + "data_cal_pixresizer.cpv"
+    try:
+        d = shelve.open(file)
+        for key in ["viewer", "pic_folder", "bin_folder"]:
+            general[key] = d[key]
+        for key in ["ftype", "files_todo", "width", "height", "percent", "quality",\
+                "ent_prefix", "ent_suffix", "ent_folder"]:
+            imgprocess[key] = d[key]
+        general["size_or_not"] = d["size_or_not"]
+    except KeyError:
+        print "## " + _("no valid userdata found")
+    d.close()
+#}}}
+def userdata_save(): #{{{
+    global general
+    global imgprocess
+
+    d = shelve.open(general["cwd"] + "data_cal_pixresizer.cpv")
+    for key in ["viewer", "pic_folder", "bin_folder"]:
+        d[key] = general[key]
+    for key in ["ftype", "files_todo", "width", "height", "percent", "quality",\
+            "ent_prefix", "ent_suffix", "ent_folder"]:
+        d[key] = imgprocess[key]
+    d["size_or_not"] = general["sizebox"].get_property("sensitive")
+    d.close()
+#}}}
+def files_print_label(files_todo): #{{{
+    labeltext=""
+    if len(files_todo) == 1:
+        labeltext += "\n\n" + trimlongline(files_todo[0]) + "\n\n"
+    elif len(imgprocess["files_todo"]) == 2:
+        labeltext += "\n" + trimlongline(files_todo[0]) + "\n" +\
+                trimlongline(files_todo[1]) + "\n\n"
+    elif len(files_todo) == 3:
+        labeltext += "\n" + trimlongline(files_todo[0]) + "\n"  +\
+                trimlongline(files_todo[1]) + "\n"  +\
+                trimlongline(files_todo[2]) + "\n"
+    elif len(files_todo) == 4:
+        labeltext +=  trimlongline(files_todo[0]) + "\n"  +\
+                trimlongline(files_todo[1]) + "\n"  +\
+                trimlongline(files_todo[2]) + "\n"  +\
+                trimlongline(files_todo[3]) + "\n"
+    elif len(files_todo) == 5:
+        labeltext +=  trimlongline(files_todo[0]) + "\n"  +\
+                trimlongline(files_todo[1]) + "\n"  +\
+                trimlongline(files_todo[2]) + "\n"  +\
+                trimlongline(files_todo[3]) + "\n"  +\
+                trimlongline(files_todo[4]) 
+    else:
+        for i in range(0,3):
+            labeltext += trimlongline(files_todo[i]) +"\n"
+        labeltext += ".....\n" 
+        labeltext += trimlongline(files_todo[-1])
+    return labeltext
+#}}}
 #}}}
 # little gui
-def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{ (seems) OK
+def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     global general
     mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
@@ -118,7 +203,7 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{ (seems) OK
     mesbox.show()
     mesbox.run()
 #}}}
-def show_overwrite_dialog(file): #{{{ (seems) OK
+def show_overwrite_dialog(file): #{{{
     global general
     mesbox = gtk.Dialog(_("attention:"), general["window"], gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
@@ -149,15 +234,17 @@ def show_overwrite_dialog(file): #{{{ (seems) OK
     button.show()
     mesbox.show()
     mesbox.run()
+    while gtk.events_pending():
+        gtk.main_iteration(False)
 #}}}
-def label_nopic(): #{{{  OK
+def label_nopic(): #{{{  
     general["todolabel"].set_markup("\n\n  <b>-- " + _("no pictures are selected") + " --</b> \n\n")
 #}}}
-def label_progress(count, tot, text, colorstring): #{{{ OK
+def label_progress(count, tot, text, colorstring): #{{{ 
     general["todolabel"].set_markup("\n\n<b>" + _("progress") + " (" + count + "/" + tot +\
             "): <span " + colorstring + ">" + text + "</span></b>\n\n")
 #}}}
-def show_mesbox(parent, text): #{{{ OK
+def show_mesbox(parent, text): #{{{ 
     mesbox = gtk.Dialog(_("Calmar's Picture Resizer"), parent, gtk.DIALOG_MODAL,\
             (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)) 
     mesbox.connect("destroy", quit_self)
@@ -170,7 +257,7 @@ def show_mesbox(parent, text): #{{{ OK
     response = mesbox.run()
     mesbox.destroy()
 #}}}
-def create_radios(vbox,values,text, id_radio, default): #{{{ OK
+def create_radios(vbox,values,text, id_radio, default): #{{{ 
     for i in range(len(values)):
         if i == 0: # first should not get other radios as reference
             radio = None
@@ -186,7 +273,7 @@ def open_filechooser(widget, event, data=None): #{{{
     global general
 
     dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
-                                   None,
+                                   general["window"],
                                    gtk.FILE_CHOOSER_ACTION_OPEN,
                                    (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                    gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -194,14 +281,31 @@ def open_filechooser(widget, event, data=None): #{{{
     dialog.set_default_response(gtk.RESPONSE_OK)
     dialog.set_select_multiple(True)
 
-    vbox = gtk.VBox(False, 0)
+#########################################################
+# main vbox
+    vbox = gtk.VBox()
     vbox.show()
+
+# set main widget
     dialog.set_extra_widget(vbox)
 
-    hbbox = gtk.HButtonBox()
-    hbbox.set_layout(gtk.BUTTONBOX_DEFAULT_STYLE)
-    vbox.pack_start(hbbox, False, False, 0)
-    hbbox.show()
+###############################################
+# first hbox packed in align packed in main vbox
+    hbox = gtk.HBox()
+    hbox.show()
+
+    align = gtk.Alignment(xalign=0.5, yalign=0.0, xscale=0.0, yscale=0.0)
+    align.set_padding(0, 0, 0, 0)
+    align.add(hbox)
+    align.show()
+
+    vbox.pack_start(align, False, False, 0)
+
+    table = gtk.Table(rows=4, columns=3, homogeneous=False)
+    table.show()
+    hbox.pack_start(table, False, False, 0)
+
+# first vbox
 
     label = gtk.Label()
     label.set_markup(_('<span color="#8a0000"><b>delete</b> selection</span>'))
@@ -210,7 +314,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", dialog_delete, dialog)
-    hbbox.add(button)
+    table.attach(button, 0, 1, 0, 1, gtk.FILL)
 
     label = gtk.Label()
     label.set_markup(_('<span color="#00008a">select <b>all</b> images</span>'))
@@ -219,7 +323,16 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", lambda w, d: d.select_all(), dialog)
-    hbbox.add(button)
+    table.attach(button, 1, 2, 0, 1, gtk.FILL)
+
+    label = gtk.Label()
+    label.set_markup(_('<span color="#002a00"><b>preview picture</b></span>'))
+    label.show()
+    button = gtk.Button()
+    button.add(label)
+    button.show()
+    button.connect("clicked", dialog_viewpics, dialog)
+    table.attach(button, 2, 3, 0, 1, gtk.FILL)
 
     label = gtk.Label()
     label.set_markup(_('<span color="#402a20"><b>rotate left</b></span>'))
@@ -228,7 +341,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", dialog_rotate, dialog, "-90")
-    hbbox.add(button)
+    table.attach(button, 0, 1, 1, 2, gtk.FILL)
 
     label = gtk.Label()
     label.set_markup(_('<span color="#402a20"><b>rotate right</b></span>'))
@@ -237,35 +350,39 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", dialog_rotate, dialog, "90")
-    hbbox.add(button)
+    table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#002a00"><b>view</b> (display)</span>'))
+    label.set_markup(_('<span color="#405a30">choose viewer</span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
     button.show()
-    button.connect("clicked", dialog_viewpics, dialog)
-    hbbox.add(button)
+    button.connect("clicked", dialog_setupview, dialog)
+    table.attach(button, 2, 3, 1, 2, gtk.FILL)
 
     label = gtk.Label()
     label.set_markup("\n<b>Ctrl</b> + " + _("left mouse  click - for adding items") +\
             "\n<b>Shift</b> + " + _("left mouse click - for ranges"))
     label.show()
-    vbox.pack_start(label, False, False, 0)
+
+    table.attach(label, 0, 3, 2, 3, gtk.FILL)
 
 
+##################################################
+# file filter
     filter = gtk.FileFilter()
     filter.set_name(_(" images              "))
     filter.add_mime_type("image/jpeg")
-    for i in [
-        "avs", "bmp", "cgm", "dcx", "dib", "eps", "fax", "fig", "fits", "fpx", "gif",
-        "hdf", "jbig", "jpg" "jpeg", "ico", "map", "matte", "miff", "mng", "mpeg", "mtv",
-        "null", "pbm", "pcd", "pcl", "pcx", "pdf", "pgm", "pict", "plasma", "png",
-        "pnm", "ppm", "ps", "ps2", "p7", "rad", "rgb", "rla", "rle", "sgi", "sun",
-        "tga", "tiff", "tiff24", "tile", "uil", "uyvy", "vid", "viff", "xc", "xbm",
-        "xpm", "xwd", "yuv" ]:
-            filter.add_pattern("*." + i)
+    list = [\
+        ".avs", ".bmp", ".cgm", ".dcx", ".dib", ".eps", ".fax", ".fig", ".fits", ".fpx", ".gif",\
+        ".hdf", ".jbig", ".jpg" ".jpeg", ".ico", ".map", ".matte", ".miff", ".mng", ".mpeg", ".mtv",\
+        ".null", ".pbm", ".pcd", ".pcl", ".pcx", ".pdf", ".pgm", ".pict", ".plasma", ".png",\
+        ".pnm", ".ppm", ".ps", ".ps2", ".p7", ".rad", ".rgb", ".rla", ".rle", ".sgi", ".sun",\
+        ".tga", ".tiff", ".tiff24", ".tile", ".uil", ".uyvy", ".vid", ".viff", ".xc", ".xbm",\
+        ".pbm", ".xpm", ".pcd" ]
+    for i in list:
+            filter.add_pattern("*" + i)
 
     dialog.add_filter(filter)
     filter = gtk.FileFilter()
@@ -318,32 +435,7 @@ def open_filechooser(widget, event, data=None): #{{{
     if response == gtk.RESPONSE_OK:
         general["pic_folder"] = dialog.get_current_folder()
         imgprocess["files_todo"] =  dialog.get_filenames()
-        labeltext=""
-        if len(imgprocess["files_todo"]) == 1:
-            labeltext += "\n\n" + trimlongline(imgprocess["files_todo"][0]) + "\n\n"
-        elif len(imgprocess["files_todo"]) == 2:
-            labeltext += "\n" + trimlongline(imgprocess["files_todo"][0]) + "\n" +\
-                    trimlongline(imgprocess["files_todo"][1]) + "\n\n"
-        elif len(imgprocess["files_todo"]) == 3:
-            labeltext += "\n" + trimlongline(imgprocess["files_todo"][0]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][1]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][2]) + "\n"
-        elif len(imgprocess["files_todo"]) == 4:
-            labeltext +=  trimlongline(imgprocess["files_todo"][0]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][1]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][2]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][3]) + "\n"
-        elif len(imgprocess["files_todo"]) == 5:
-            labeltext +=  trimlongline(imgprocess["files_todo"][0]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][1]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][2]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][3]) + "\n"  +\
-                    trimlongline(imgprocess["files_todo"][4]) 
-        else:
-            for i in range(0,3):
-                labeltext += trimlongline(imgprocess["files_todo"][i]) +"\n"
-            labeltext += ".....\n" 
-            labeltext += trimlongline(imgprocess["files_todo"][-1])
+        labeltext = files_print_label(imgprocess["files_todo"])
         general["todolabel"].set_text(labeltext)
         counter=0
         print "## Die Bilder Auswahl:"
@@ -368,10 +460,10 @@ def dialog_delete(widget, dialog): # {{{  needs more work
             try: 
                 os.rmdir(item) 
             except OSError,  (errno, strerror): 
-                print  _('## sorry, could not remove directory:')
-                print  "## " + item
+                print "## " +  _('sorry, could not remove directory:')
+                print "## " + item
                 print "## " + str(errno) + ": " + strerror
-                message = _('sorry, could not remove diretory:')
+                message = _('sorry, could not remove directory:')
                 message += item + "\n\n"
                 message += str(errno) + ": " + strerror + "\n" 
                 show_mesbox(dialog, message)
@@ -379,8 +471,8 @@ def dialog_delete(widget, dialog): # {{{  needs more work
             try: 
                 os.remove(item) 
             except OSError,  (errno, strerror): 
-                print  _('## sorry, could not remove file:')
-                print  "## " + item
+                print "## " +  _('sorry, could not remove file:')
+                print "## " + item
                 print "## " + str(errno) + ": " + strerror
                 message = _('sorry, could not remove file:')
                 message += item + "\n\n"
@@ -391,29 +483,93 @@ def dialog_delete(widget, dialog): # {{{  needs more work
     general["what_error"] == ""
 #}}}
 def dialog_viewpics(widget, dialog): # {{{
-    try:
+    if general["viewer"] == "":
+        if sys.platform in ["win32", "win16", "win64"]:
+            print "## " + _("select first your viewer (whatever you have) and then try again")
+            dialog_setupview(None, dialog)
+            return
+        else:
+            general["viewer"] == "display"
+    try:   # Probably when a folder is selected. Should change later
         file = dialog.get_filenames()[0]
     except IndexError:
         return
     if os.path.isfile(file):
+# I assume window wiever not capable of open multiple files. will check later
         if sys.platform in ["win32", "win16", "win64"]:
-            if general["py2exe"]:
-                exe = general["cwd"] + "imdisplay.exe"
-            else:
-                exe = "imdisplay.exe"
-            tot = exe + ' "' + file + '"'
+            tot = general["viewer"] + ' "' + file + '"'
             exitstatus = os.popen(tot + " 2>&1").read()
             if exitstatus != "" :
-                print _("## catched some error while trying to display picture")
+                print _("## error while trying to display picture")
                 print "## " + exitstatus
         else:  # on linux open multiple selection
-            tot = "display " + '"' +  '" "'.join(dialog.get_filenames()) + '"'
+            tot = general["viewer"] + ' "' +  '" "'.join(dialog.get_filenames()) + '"'
             exitstatus = os.popen(tot + " 2>&1").read()
             if exitstatus != "" :
-                print _("## catched some error while trying to display picture")
+                print _("## error while trying to display picture")
                 print "## " + exitstatus
     else:
         show_mesbox(dialog, _("that is no regular file, can not display it"))
+#}}}
+def dialog_setupview(widget, dialog_main): #{{{
+    dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
+                                   dialog_main,
+                                   gtk.FILE_CHOOSER_ACTION_OPEN,
+                                   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                   gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+
+    dialog.set_default_response(gtk.RESPONSE_OK)
+    dialog.set_select_multiple(False)
+
+    align = gtk.Alignment(xalign=0.5, yalign=0.0, xscale=0.0, yscale=0.0)
+    align.set_padding(0, 0, 0, 0)
+    align.show()
+
+    dialog.set_extra_widget(align)
+
+    label = gtk.Label()
+    label.set_markup("\n" +\
+            _("<b>Select</b> your <b>previewer</b> for your images - e.g:") +\
+            "\n\n" +\
+            _("/usr/bin/<i>display</i> (*nix's)") + \
+            "\n" +\
+            _('C:\Programs\irfanview\<i>i_view32.exe</i> (MS-Win)'))
+    label.show()
+
+    align.add(label)
+
+##################################################
+# file filter
+    filter = gtk.FileFilter()
+    filter.set_name(_(" all files          "))
+    filter.add_pattern("*")
+    dialog.add_filter(filter)
+
+    filter = gtk.FileFilter()
+    filter.set_name(_(" MS-Win executables "))
+    filter.add_pattern("*.exe")
+    dialog.add_filter(filter)
+
+# preview widget
+    dialog.set_use_preview_label(False)
+
+# starting folder
+    if general["bin_folder"] != "":
+        dialog.set_current_folder(general["bin_folder"])
+
+    response = dialog.run()
+
+    if response == gtk.RESPONSE_OK: 
+        general["bin_folder"] = dialog.get_current_folder()
+        try:   # Probably when folder is selected, should do in a different way, so
+            general["viewer"]  = dialog.get_filenames()[0]
+        except IndexError:
+            print "## " + _("no binary selected? May try again")
+            return
+
+    elif response == gtk.RESPONSE_CANCEL:
+        dialog.destroy()
+    dialog.destroy()
 #}}}
 def dialog_rotate(widget, dialog, direction): # {{{
     try:
@@ -426,7 +582,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
             return
     except IndexError:
         return
-# well or use mogrify. both don't provide useful error codes on MSwin at least
+
     fileext =  os.path.splitext(file)
     targetfile = file + ".rotate_tmp" + fileext[1]
     if general["py2exe"]:
@@ -436,7 +592,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
     command = exe + ' -rotate "' + direction + '" ' + '"' + file + '" ' + '"' + targetfile + '"'
     exitstatus = os.popen(command + " 2>&1").read()
     if exitstatus == "": # seems ok
-    ## secure overwriting
+    ## (hopefully) secure overwriting
         if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
             try:
                 os.remove(file)
@@ -447,10 +603,10 @@ def dialog_rotate(widget, dialog, direction): # {{{
                     print "## " + _("Error while tyring to replace the original file")
                     print "## " + _("you find your file now at:\n") + trimlongline(targetfile, 65)
                     text =  _("replacing your original file didn't succeed on:")
-                    text += _(" \n\n " + file + "\n\n")
+                    text += "\n\n" + file + "\n\n"
                     text += "<b>" + str(errno) + ": " + strerror + "</b>\n\n"
-                    text += _("\nyou find your original file now at:\n") + targetfile
-                    text += _("\n\n(may contact mac@calmar.ws )  ")
+                    text += "\n" + _("you find your original file now at:") + "\n" + targetfile
+                    text += "\n\n" + _("(may contact mac@calmar.ws)")
                     show_mesbox(dialog,text)
 
             except OSError, (errno, strerror):
@@ -460,8 +616,8 @@ def dialog_rotate(widget, dialog, direction): # {{{
                text = _("replacing your original file didn't succeed on:")
                text += "\n\n " + file + "\n\n"
                text += "<b>" + str(errno) + ": " + strerror + "</b>\n\n"
-               text += _("\nyou find your rotated file now at:\n") + targetfile
-               text += _("\n\n(may contact mac@calmar.ws )  ")
+               text += "\n" + _("you find your rotated file now at:") + "\n" + targetfile
+               text += "\n\n" + _("(may contact mac@calmar.ws)")
                show_mesbox(dialog,text)
         else:
             print "## " + _("Error while tyring to rotate the file")
@@ -483,44 +639,13 @@ def dialog_rotate(widget, dialog, direction): # {{{
         text += "<b>" + exitstatus + "</b>\n\n"
         if plustext != "":
             text += plustext
-        text += _("\n\n(may contact mac@calmar.ws )  ")
+        text += "\n\n" + _("(may contact mac@calmar.ws)")
         show_mesbox(dialog,text)
             
     dialog.emit("update-preview")
 #}}}
-# new
-def toggle_percent(widget, data): #{{{
-    if widget.get_property("visible"):
-        data.show()
-        widget.hide()
-        general["percentbox"].set_sensitive(False)
-        general["sizebox"].set_sensitive(True)
-    else:
-        data.hide()
-        widget.show()
-        general["percentbox"].set_sensitive(True)
-        general["sizebox"].set_sensitive(False)
-#}}}
-def toggle_size(widget, data): #{{{
-    if widget.get_property("visible"):
-        data.show()
-        widget.hide()
-        general["percentbox"].set_sensitive(True)
-        general["sizebox"].set_sensitive(False)
-    else:
-        data.hide()
-        widget.show()
-        general["percentbox"].set_sensitive(False)
-        general["sizebox"].set_sensitive(True)
-#}}}
-def options_cb(widget): #{{{
-    pass
-#}}}
-def create_commandline(): #{{{
-    pass
-#}}}
 # major work
-def start_resize(widget, event, data=None): #{{{ (probably) OK 
+def start_resize(widget, event, data=None): #{{{ 
     global general
     global imgprocess
 
@@ -536,7 +661,6 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
     usesize = True
     if general["percentbox"].get_property("sensitive"):
         usesize = False
-        
 
     if imgprocess["width"] == "0": # then, the spinner is selected
         width = str(imgprocess["spinWidth"].get_value_as_int())
@@ -554,9 +678,12 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
         quality = str(imgprocess["spinQuality"].get_value_as_int())
     else:
         quality = str(imgprocess["quality"])
+
     ftype = imgprocess["ftype"]
 
-    text = _("""  At least <u>one</u> must be set:  
+# messagebox when there is no suff, pre or folder
+    if prefix == "" and suffix == "" and folder == "" and ftype == "":
+            text = _("""  At least <u>one</u> must be set:  
 
               -> <b>Prefix</b>
               -> <b>Suffix</b>
@@ -564,8 +691,6 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
               -> <b>picture type</b>
      
  in order to prevent overwriting the original pictures""")
-# messagebox when there is no suff, pre or folder
-    if prefix == "" and suffix == "" and folder == "" and ftype == "":
             show_mesbox(general["window"], text)
             return
 
@@ -661,10 +786,6 @@ def start_resize(widget, event, data=None): #{{{ (probably) OK
         label_progress(str(counter), str(total), text,"") 
         print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
 
-# wait and update
-        while gtk.events_pending():
-            gtk.main_iteration(False)
-
 # source und target the same?   refuse then, may continue     
         if sourcefile == targetfile:
             text = _("<b>source</b> and <b>target</b> are the same!") + "\n\n" +\
@@ -672,13 +793,14 @@ _("(...cowardly refuses to overwrite)")
             print "#### " + _("source and target are the same!") + " ####"
             show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
             if general["what_error"] != "ok_pressed":
-                imgprocess["files_todo"]=[]
                 label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
 
                 while gtk.events_pending():
                     gtk.main_iteration(False)
                 time.sleep(2.0)
-                label_nopic()
+                # label_nopic()
+                # imgprocess["files_todo"]=[]
+                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
                 print
                 print _("# converting has stopped ")
                 print
@@ -696,12 +818,13 @@ _("(...cowardly refuses to overwrite)")
                 continue
             elif general["what_todo"] == "cancel":
                 general["what_todo"] = ""
-                imgprocess["files_todo"]=[]
                 label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
                 while gtk.events_pending():
                     gtk.main_iteration(False)
                 time.sleep(2.0)
-                label_nopic()
+                #label_nopic()
+                # imgprocess["files_todo"]=[]
+                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
                 print
                 print _("# converting has stopped ")
                 print
@@ -717,7 +840,7 @@ _("(...cowardly refuses to overwrite)")
                 try:
                     os.remove(targetfile)
                 except OSError,  (errno, strerror): 
-                    print _("## there is a currupt (filesize == 0 Bytes) generated file")
+                    print _("## there is a currupt (filesize == 0 bytes) generated file")
                     print "## " + targetfile
                     print _("## trying to delete it, didn't succeed")
                     print "## " + str(errno) + ": " + strerror
@@ -732,12 +855,13 @@ _("(...cowardly refuses to overwrite)")
             text += _("(may contact mac@calmar.ws)  ")
             show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
             if general["what_error"] != "ok_pressed":
-                imgprocess["files_todo"]=[]
                 label_progress(str(counter),str(total), _("canceled!"),"color='#550000'") 
                 while gtk.events_pending():
                     gtk.main_iteration(False)
                 time.sleep(2.4)
-                label_nopic()
+                #label_nopic()
+                # imgprocess["files_todo"]=[]
+                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
                 print
                 print _("# converting has stopped ")
                 print
@@ -755,18 +879,13 @@ _("(...cowardly refuses to overwrite)")
     time.sleep(2.0)
 
     general["what_todo"] = ""
-    imgprocess["files_todo"]=[]
-    folder=""
-    label_nopic()
+    #label_nopic()
+    # imgprocess["files_todo"]=[]
+    general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
 #}}}
 def main(): #{{{ OK
 
     global imgprocess
-
-    print "==============================="
-    print "Calmar's Picture Resize Utility"
-    print "==============================="
-    print
 
     general["window"].set_title("Calmar's Picture Resizer - http://www.calmar.ws")
     general["window"].set_default_size(500,300)
@@ -813,7 +932,7 @@ def main(): #{{{ OK
 
     general["sizebox"] = gtk.HBox(True, 0)
     table.attach(general["sizebox"], 0, 2, 0, 1, gtk.EXPAND)
-    general["sizebox"].set_sensitive(True)
+    general["sizebox"].set_sensitive(general["size_or_not"])
 
 #### width
 
@@ -827,9 +946,8 @@ def main(): #{{{ OK
     text = [ _("no limit"), "1600x", "1280x", "1024x", "800x", "640x",\
             "480x", _("specific:") ]
     values = [ "99999", "1600", "1280", "1024", "800", "640", "480", "0"]
-    default = "99999"
+    default = imgprocess["width"]
     general["radio_width"] = create_radios(vbox, values, text, "width", default)
-    imgprocess["width"] = 99999
 
     imgprocess["spinWidth"].set_wrap(False)
     vbox.pack_start(imgprocess["spinWidth"], False, False, 0)
@@ -847,9 +965,8 @@ def main(): #{{{ OK
     text = [ _("no limit"), "x1200", "x1024",  "x768", "x600", "x480",\
              "x320", _("specific:") ]
     values = [ "99999", "1200", "1024", "768", "600", "480", "320", "0"]
-    default = "768"
+    default = imgprocess["height"]
     general["radio_height"] = create_radios(vbox, values, text, "height", default)
-    imgprocess["height"] = 768
 
     imgprocess["spinHeight"].set_wrap(False)
     vbox.pack_start(imgprocess["spinHeight"], False, False, 0)
@@ -861,7 +978,8 @@ def main(): #{{{ OK
 
     general["percentbox"] = gtk.HBox(False, 0)
     table.attach(general["percentbox"], 2, 3, 0, 1, gtk.EXPAND)
-    general["percentbox"].set_sensitive(False)
+    general["percentbox"].set_sensitive(not general["size_or_not"])
+
 
 #### percent
 
@@ -874,9 +992,8 @@ def main(): #{{{ OK
 
     text = [ "100%", "90%", "80%", "70%", "60%", "50%", "40%", _("specific:") ]
     values = [ "100", "90", "80", "70", "60", "50", "40", "0"]
-    default = "60"
+    default = imgprocess["percent"]
     general["radio_percent"] = create_radios(vbox, values, text, "percent", default)
-    imgprocess["percent"] = 60
 
     imgprocess["spinPercent"].set_wrap(False)
     vbox.pack_start(imgprocess["spinPercent"], False, False, 0)
@@ -889,10 +1006,8 @@ def main(): #{{{ OK
     align1 = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
     align1.set_padding(6, 6, 0, 5)
     align1.add(but1)
-#    but1.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#34a1ff"))
     but2 = gtk.Button()
     but2.set_size_request(-1, 8)
-#    but2.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#34a1ff"))
     align2 = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
     align2.set_padding(6, 6, 0, 5)
     align2.add(but2)
@@ -903,7 +1018,7 @@ def main(): #{{{ OK
     but2.connect("clicked", toggle_size, but1)
     table.attach(align2, 2, 3, 1, 2, gtk.FILL)
 
-## separator
+## Vseparator
     align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
     align.set_padding(0, 0, 5, 5)
     separator = gtk.VSeparator()
@@ -921,9 +1036,8 @@ def main(): #{{{ OK
 
     text = [ "100%", "97%", "94%", "90%", "85%", "80%", "60%", _("specific")]
     values = [ "100", "97", "94", "90", "85", "80", "60", "0"]
-    default = "94"
+    default = imgprocess["quality"]
     general["radio_quality"] = create_radios(vbox, values, text, "quality", default)
-    imgprocess["quality"] = 94
 
     imgprocess["spinQuality"].set_wrap(False)
     vbox.pack_start(imgprocess["spinQuality"], False, False, 0)
@@ -945,6 +1059,7 @@ def main(): #{{{ OK
     vbox.pack_start(label, False, False, 0)
     entry = gtk.Entry(15)
     entry.set_alignment(0.49)
+    entry.set_text(imgprocess["ent_prefix"])
     entry.connect('changed',entries_cb, "ent_prefix")
     vbox.pack_start(entry, False, False, 0)
 
@@ -953,6 +1068,7 @@ def main(): #{{{ OK
     vbox.pack_start(label, False, False, 0)
     entry = gtk.Entry(15)
     entry.set_alignment(0.49)
+    entry.set_text(imgprocess["ent_suffix"])
     entry.connect('changed',entries_cb, "ent_suffix")
     vbox.pack_start(entry, False, False, 0)
 
@@ -962,6 +1078,7 @@ def main(): #{{{ OK
     vbox.pack_start(label, False, False, 0)
     entry = gtk.Entry(15)
     entry.set_alignment(0.49)
+    entry.set_text(imgprocess["ent_folder"])
     entry.connect('changed',entries_cb, "ent_folder")
     vbox.pack_start(entry, False, False, 0)
 
@@ -969,12 +1086,19 @@ def main(): #{{{ OK
     label.set_markup("\n" + _("<b>convert</b> to:"))
     vbox.pack_start(label, False, False, 0)
     combo = gtk.combo_box_new_text()
-    combo.set_wrap_width(3)
-    list = ["", ".jpg", ".png", ".tif", ".pdf" ,".bmp", ".gif", ".ico",\
-            ".pbm", ".xpm", ".pcd" ]
+    combo.set_wrap_width(6)
+# the empty one must be there: it's the default, and also set so when no userdata!
+    list = ["", \
+        ".jpg", ".jpeg", ".bmp", ".gif", ".ico", ".pbm", ".tiff", ".pdf", ".png", ".ps",\
+        ".xpm", ".pcd", ".avs", ".cgm", ".dcx", ".dib", ".eps", ".fax", ".fig", ".fits", ".fpx",\
+        ".hdf", ".jbig", ".map", ".matte", ".miff", ".mng", ".mpeg", ".mtv",\
+        ".null", ".pcd", ".pcl", ".pcx", ".pgm", ".pict", ".plasma",\
+        ".pnm", ".ppm", ".ps2", ".p7", ".rad", ".rgb", ".rla", ".rle", ".sgi", ".sun",\
+        ".tga", ".tiff24", ".tile", ".uil", ".uyvy", ".vid", ".viff", ".xc", ".xbm",\
+        ".pbm"]
     for ext in list:
         combo.append_text(ext)
-    combo.set_active(0)
+    combo.set_active(list.index(imgprocess["ftype"]))
     vbox.pack_start(combo, False, False, 0)
     combo.connect('changed', setcombo)
 
@@ -1013,7 +1137,19 @@ def main(): #{{{ OK
     box = gtk.HBox(False, 0)
     mainbox.pack_start(box, False, False, 0)
 
-    label_nopic()
+    if imgprocess["files_todo"] != []:
+        general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
+        counter=0
+        print "## Die Bilder Auswahl:"
+        print
+        for file in imgprocess["files_todo"]:
+            counter += 1
+            string = "%3s: " + trimlongline(file,66)
+            print string % (str(counter))
+        print
+    else:
+        label_nopic()
+
     box.pack_start(general["todolabel"], False, False , 0)
 
     separator = gtk.HSeparator()
@@ -1063,15 +1199,30 @@ def main(): #{{{ OK
 
 
     general["window"].show_all()
-    but1.hide()
+
+# if showing depends on size_or_not boolean
+    if general["size_or_not"]:
+        but1.hide()
+        but2.show()
+        general["percentbox"].set_sensitive(False)
+        general["sizebox"].set_sensitive(True)
+    else:
+        but2.hide()
+        but1.show()
+        general["percentbox"].set_sensitive(True)
+        general["sizebox"].set_sensitive(False)
+
     gtk.main()
     return 0      
 #}}}
-# imports, head (at the bottom haha)
+# imports, head (at the bottom hehe)
 #imports... vars...  {{{ OK
-import os, sys,  time, glob, string
-import gtk, pygtk, pango
-# PIL needs some help, when py2exe-d
+import os, sys,  time, glob, string, shelve
+# for pyexe 
+import dbhash
+
+import gtk, pygtk, pango, gobject
+# PIL needs some help, when py2exe'd
 import Image, PngImagePlugin, JpegImagePlugin
 
 # for pyexe only: comment out
@@ -1091,9 +1242,12 @@ general = { "todolabel"    : gtk.Label(),
             "what_todo"    : "",
             "what_errror"  : "",
             "pic_folder"   : "",
+            "bin_folder"   : "",
+            "viewer"       : "",
             "py2exe"       : False,
             "sizebox"      : True,
             "percentbox"   : False,
+            "size_or_not"  : True,
             "radio_width"  : radio_bogus,
             "radio_height" : radio_bogus,
             "radio_percent" : radio_bogus,
@@ -1113,10 +1267,10 @@ imgprocess = { "ent_prefix"  : "",
                "ent_folder"  : "",
                "ftype"       : "",
                "files_todo"  : [],
-               "width"       : "",
-               "height"      : "",
-               "percent"     : "",
-               "quality"     : ""}
+               "width"       : "99999",
+               "height"      : "768",
+               "percent"     : "60",
+               "quality"     : "94"}
 adj = gtk.Adjustment(1024, 10, 2000, 1, 100, 0)
 adj.connect("value_changed", get_spin_focus, "radio_width" )
 imgprocess["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
@@ -1134,6 +1288,13 @@ adj.connect("value_changed", get_spin_focus, "radio_quality" )
 imgprocess["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
 imgprocess["spinQuality"].set_numeric(True)
 
+# load saved data
+print "================================================="
+print "Calmar's Picture Resizer - a Imagemagick Frontend"
+print "================================================="
+print
+
+userdata_load()
+
 if __name__ == "__main__":
     main()
-#}}}
