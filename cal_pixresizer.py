@@ -644,6 +644,12 @@ def dialog_rotate(widget, dialog, direction): # {{{
             
     dialog.emit("update-preview")
 #}}}
+#new
+def stopprogress(widget, data): #{{{
+    global imgprocess
+
+    imgprocess["stop_progress"]=True
+#}}}
 # major work
 def start_resize(widget, event, data=None): #{{{ 
     global general
@@ -739,11 +745,29 @@ def start_resize(widget, event, data=None): #{{{
 
     print
 
-# begin the loop
     total = len(imgprocess["files_todo"])
     counter=0
     dist = ""
+    imgprocess["stop_progress"] = False
+    general["stop_button"].show()
+    general["stop_button"].grab_focus()
+#######################################################################
+#######################################################################
+# begin the loop
+#######################################################################
+#######################################################################
     for sourcefile in imgprocess["files_todo"]:
+        while gtk.events_pending():
+            gtk.main_iteration(False)
+        if imgprocess["stop_progress"] == True:
+            label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
+            print
+            print _("# stop button pressed: converting has stopped ")
+            print
+            show_mesbox(general["window"], _("progress stopped"))
+            general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
+            general["stop_button"].hide()
+            return
         counter += 1
         sourcefile = string.replace(sourcefile, "\\","/")
         splitfile = os.path.split(sourcefile)
@@ -794,16 +818,14 @@ _("(...cowardly refuses to overwrite)")
             show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
             if general["what_error"] != "ok_pressed":
                 label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
-
                 while gtk.events_pending():
                     gtk.main_iteration(False)
                 time.sleep(2.0)
-                # label_nopic()
-                # imgprocess["files_todo"]=[]
-                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
                 print
                 print _("# converting has stopped ")
                 print
+                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
+                general["stop_button"].hide()
                 return
             else:
                 continue
@@ -822,12 +844,11 @@ _("(...cowardly refuses to overwrite)")
                 while gtk.events_pending():
                     gtk.main_iteration(False)
                 time.sleep(2.0)
-                #label_nopic()
-                # imgprocess["files_todo"]=[]
-                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
                 print
                 print _("# converting has stopped ")
                 print
+                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
+                general["stop_button"].hide()
                 return
 
         elif general["what_todo"] == "overwrite":
@@ -865,11 +886,13 @@ _("(...cowardly refuses to overwrite)")
                 print
                 print _("# converting has stopped ")
                 print
+                general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
+                general["stop_button"].hide()
                 return
 # exitstatus == "" , I optimistically assume, file gots created properly
 
     print
-    print _("# the pics got generated")
+    print _("# the progress finished")
     print 
 
     label_progress(str(total),str(total), _("finish!"),"color='#000070'") 
@@ -882,6 +905,7 @@ _("(...cowardly refuses to overwrite)")
     #label_nopic()
     # imgprocess["files_todo"]=[]
     general["todolabel"].set_text(files_print_label(imgprocess["files_todo"]))
+    general["stop_button"].hide()
 #}}}
 def main(): #{{{ OK
 
@@ -1167,11 +1191,10 @@ def main(): #{{{ OK
     hbox.pack_end(image, False, False, 0)
     label = gtk.Label(_("start converting  "))
     hbox.pack_end(label, False, False, 0)
-    but_start = gtk.Button()
-    but_start.add(hbox)
-    but_start.connect("clicked", start_resize, None)
-    box.pack_end(but_start, False, False, 0)
-
+    button = gtk.Button()
+    button.add(hbox)
+    button.connect("clicked", start_resize, None)
+    box.pack_end(button, False, False, 0)
 
     hbox=gtk.HBox()
     image = gtk.Image()
@@ -1179,15 +1202,25 @@ def main(): #{{{ OK
     hbox.pack_end(image, False, False, 0)
     label = gtk.Label(_("select pictures...  "))
     hbox.pack_end(label, False, False, 0)
-    files = gtk.Button()
-    files.add(hbox)
-    files.connect("clicked", open_filechooser, None)
+    button = gtk.Button()
+    button.add(hbox)
+    button.connect("clicked", open_filechooser, None)
     align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
     align.set_padding(0, 0, 5, 15)
-    align.add(files)
+    align.add(button)
     box.pack_end(align, False, False, 0)
 
-    files.grab_focus()
+    button.grab_focus()
+
+    hbox=gtk.HBox()
+    image = gtk.Image()
+    image.set_from_file(general["cwd"] + "bilder/stop.png")
+    hbox.pack_end(image, False, False, 0)
+    label = gtk.Label(_("STOP "))
+    hbox.pack_end(label, False, False, 0)
+    general["stop_button"].add(hbox)
+    general["stop_button"].connect("clicked", stopprogress, None)
+    box.pack_end(general["stop_button"], False, False, 0)
 
 
 #########################################################################
@@ -1211,6 +1244,8 @@ def main(): #{{{ OK
         but1.show()
         general["percentbox"].set_sensitive(True)
         general["sizebox"].set_sensitive(False)
+
+    general["stop_button"].hide()
 
     gtk.main()
     return 0      
@@ -1239,11 +1274,13 @@ _ = gettext.gettext
 # general (global) - used on many function
 radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
 general = { "todolabel"    : gtk.Label(), 
+            "stop_button"  : gtk.Button(),
             "what_todo"    : "",
             "what_errror"  : "",
             "pic_folder"   : "",
             "bin_folder"   : "",
             "viewer"       : "",
+            "stop_progress": False,
             "py2exe"       : False,
             "sizebox"      : True,
             "percentbox"   : False,
