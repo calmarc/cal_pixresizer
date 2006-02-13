@@ -621,13 +621,13 @@ def dialog_exif_com(widget, dialog): # {{{
         pre = general["cwd"]
     newcomment = show_exif_dialog(dialog, _("Exif Comment (single line only)"),\
             _("cancel"), _("OK, save that"), file)
-    if general["what_error"] == "ok_pressed": # don't allow " or \ then it should work
+    if general["what_error"] == "ok_pressed": # also " or \ possible hopefully
         newcomment = string.replace(newcomment,'\\','\\\\')
         newcomment = string.replace(newcomment,'"','\\"')
         tot = pre + 'jhead -cl "' + str(newcomment) + '" "' + file + '"' 
         jheadoutput = os.popen(tot + " 2>&1").read()
 #        check of correct output (modified...)
-        print jheadoutput
+#        print jheadoutput
         dialog.emit("update-preview")
         return
     else:
