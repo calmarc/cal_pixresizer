@@ -312,7 +312,7 @@ def open_filechooser(widget, event, data=None): #{{{
 
     dialog.set_default_response(gtk.RESPONSE_OK)
     dialog.set_select_multiple(True)
-    dialog.set_size_request(600,300)
+    dialog.set_size_request(600,400)
 #########################################################
     fileac = gtk.AccelGroup()
     dialog.add_accel_group(general["acgroup"])
@@ -344,7 +344,7 @@ def open_filechooser(widget, event, data=None): #{{{
 # first vbox
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#8a0000"><b><u>D</u>elete</b> selection</span>'))
+    label.set_markup(_('<span color="#8a0000"><b><u>d</u>elete</b> selection</span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -354,7 +354,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 1, 2, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#00008a">select <b><u>A</u>ll</b> images</span>'))
+    label.set_markup(_('<span color="#00008a">select <b><u>a</u>ll</b> images</span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -364,7 +364,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 2, 3, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#002a00"><b>pre<u>V</u>iew</b> picture</span>'))
+    label.set_markup(_('<span color="#002a00"><b>pre<u>v</u>iew</b> pictures</span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -374,7 +374,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 3, 4, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#402a20">rotate <b>l<u>E</u>ft</b></span>'))
+    label.set_markup(_('<span color="#402a20">rotate <b>l<u>e</u>ft</b></span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -384,7 +384,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#402a20">rotate <b><u>R</u>ight</b></span>'))
+    label.set_markup(_('<span color="#402a20">rotate <b><u>r</u>ight</b></span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -403,7 +403,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 3, 4, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#405a30">edit <b>E<u>X</u>if</b> comment</span>'))
+    label.set_markup(_('<span color="#405a30">edit/add a <b>e<u>x</u>if</b> comment</span>'))
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -423,12 +423,12 @@ def open_filechooser(widget, event, data=None): #{{{
 
     table.attach(align, 0, 6, 3, 4, gtk.FILL)
 
-    label = gtk.Label()
-    label.set_markup("\n<b>Ctrl</b> + " + _("left mouse  click - for adding items") +\
-            "\n<b>Shift</b> + " + _("left mouse click - for ranges"))
-    label.show()
+#    label = gtk.Label()
+#    label.set_markup("\n<b>Ctrl</b> + " + _("left mouse  click - for adding items") +\
+#            "\n<b>Shift</b> + " + _("left mouse click - for ranges"))
+#    label.show()
 
-    table.attach(label, 0, 6, 4, 5, gtk.FILL)
+#    table.attach(label, 0, 6, 4, 5, gtk.FILL)
 
 
 ##################################################
@@ -619,15 +619,23 @@ def dialog_exif_com(widget, dialog): # {{{
     pre = ""
     if sys.platform in ["win32", "win16", "win64"]:
         pre = general["cwd"]
-    newcomment = show_exif_dialog(dialog, _("Exif Comment (single line only)"),\
+        labeltext = _("<b>Exif Comment Editing</b>") + "\n\n"
+        labeltext += _("MS Win Issue: no multiline comments - will join lines") + "\n"
+        labeltext += _("MS Win Issue: ^ gets replaced with ^^")
+    else:
+        labeltext = _("<b>Exif Comment Editing</b>")
+    newcomment = show_exif_dialog(dialog, labeltext,\
             _("cancel"), _("OK, save that"), file)
     if general["what_error"] == "ok_pressed": # also " or \ possible hopefully
         newcomment = string.replace(newcomment,'\\','\\\\')
         newcomment = string.replace(newcomment,'"','\\"')
-        tot = pre + 'jhead -cl "' + str(newcomment) + '" "' + file + '"' 
-        jheadoutput = os.popen(tot + " 2>&1").read()
+        if sys.platform in ["win32", "win16", "win64"]: 
+            newcomment = string.replace(newcomment, "\n"," - ")
+            newcomment = string.replace(newcomment, "^","^^")
+        tot = pre + 'jhead -cl "' + str(newcomment) + '" "' + file + '"' + " 2>&1"
+        jheadoutput = os.popen(tot).read()
 #        check of correct output (modified...)
-#        print jheadoutput
+        print "## Exif: " + trimlongline(jheadoutput.replace("\n",""),62)
         dialog.emit("update-preview")
         return
     else:
@@ -683,6 +691,7 @@ def dialog_setupview(widget, dialog_main): #{{{
     text = "\n" + _("<b>Select</b> your <b>previewer</b> for your images - e.g:") + "\n\n"
     if sys.platform in ["win32", "win16", "win64"]:
         text += "            C:\\Programs\\irfanview\\<b>i_view32.exe</b>" + "\n"
+        text += "            C:\\Programs\\GIMP-2.0\\bin\\gimp-2.2.exe" + "\n"
         text += "            <b>.....</b>" + "\n"
     else:
         text += "                   /usr/bin/<i>display</i>" + "\n"
