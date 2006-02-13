@@ -9,6 +9,7 @@ files =
     cal_pixresizer/bilder/open.png
     cal_pixresizer/bilder/folder.png
     cal_pixresizer/bilder/file.png
+    cal_pixresizer/bilder/stop.png
 
  
 all : 

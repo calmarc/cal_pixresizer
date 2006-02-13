@@ -312,7 +312,7 @@ def open_filechooser(widget, event, data=None): #{{{
 
     dialog.set_default_response(gtk.RESPONSE_OK)
     dialog.set_select_multiple(True)
-    dialog.set_size_request(700,500)
+    dialog.set_size_request(600,300)
 #########################################################
     fileac = gtk.AccelGroup()
     dialog.add_accel_group(general["acgroup"])
@@ -546,7 +546,8 @@ def get_jhead_exif(file): #{{{
     pre = ""
     if sys.platform in ["win32", "win16", "win64"]:
         pre = general["cwd"]
-    tot = pre + "jhead '" + str(file) + "'" 
+    file = string.replace(file, "\\","/")
+    tot = pre + 'jhead "' + str(file) + '"' 
     jheadoutput = os.popen(tot + " 2>&1").read()
     jheadoutput = jheadoutput.split("\n")
     comment = ""
@@ -618,10 +619,12 @@ def dialog_exif_com(widget, dialog): # {{{
     pre = ""
     if sys.platform in ["win32", "win16", "win64"]:
         pre = general["cwd"]
-    newcomment = show_exif_dialog(dialog, _("Exif Comment"), _("cancel"), _("OK, save that"), file)
+    newcomment = show_exif_dialog(dialog, _("Exif Comment (single line only)"),\
+            _("cancel"), _("OK, save that"), file)
     if general["what_error"] == "ok_pressed": # don't allow " or \ then it should work
-        newcomment = string.replace(newcomment,"'","\'")
-        tot = pre + "jhead -cl '" + str(newcomment) + "' '" + file + "'" 
+        newcomment = string.replace(newcomment,'\\','\\\\')
+        newcomment = string.replace(newcomment,'"','\\"')
+        tot = pre + 'jhead -cl "' + str(newcomment) + '" "' + file + '"' 
         jheadoutput = os.popen(tot + " 2>&1").read()
 #        check of correct output (modified...)
         print jheadoutput
