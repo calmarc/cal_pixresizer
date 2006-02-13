@@ -4,28 +4,16 @@
 # }}}
 # little FUNCTIONS  {{{
 def toggle_percent(widget, data): #{{{
-    if widget.get_property("visible"):
-        data.show()
-        widget.hide()
-        general["percentbox"].set_sensitive(False)
-        general["sizebox"].set_sensitive(True)
-    else:
-        data.hide()
-        widget.show()
-        general["percentbox"].set_sensitive(True)
-        general["sizebox"].set_sensitive(False)
+    data.show()
+    widget.hide()
+    general["percentbox"].set_sensitive(False)
+    general["sizebox"].set_sensitive(True)
 #}}}
 def toggle_size(widget, data): #{{{
-    if widget.get_property("visible"):
-        data.show()
-        widget.hide()
-        general["percentbox"].set_sensitive(True)
-        general["sizebox"].set_sensitive(False)
-    else:
-        data.hide()
-        widget.show()
-        general["percentbox"].set_sensitive(False)
-        general["sizebox"].set_sensitive(True)
+    data.show()
+    widget.hide()
+    general["percentbox"].set_sensitive(True)
+    general["sizebox"].set_sensitive(False)
 #}}}
 def dialog_2_destroy(widget, data): #{{{ (merge with overwritedestroy?) 
     global general
@@ -344,7 +332,7 @@ def open_filechooser(widget, event, data=None): #{{{
 # first vbox
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#8a0000"><b><u>d</u>elete</b> selection</span>'))
+    label.set_markup('<span color="#8a0000">' + _("<b><u>d</u>elete</b> selection") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -354,7 +342,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 1, 2, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#00008a">select <b><u>a</u>ll</b> images</span>'))
+    label.set_markup('<span color="#00008a">' + _("select <b><u>a</u>ll</b> images") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -364,7 +352,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 2, 3, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#002a00"><b>pre<u>v</u>iew</b> pictures</span>'))
+    label.set_markup('<span color="#002a00">' + _("<b>pre<u>v</u>iew</b> pictures") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -374,7 +362,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 3, 4, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#402a20">rotate <b>l<u>e</u>ft</b></span>'))
+    label.set_markup('<span color="#402a20">' + _("rotate <b>l<u>e</u>ft</b>") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -384,7 +372,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#402a20">rotate <b><u>r</u>ight</b></span>'))
+    label.set_markup('<span color="#402a20">' + _("rotate <b><u>r</u>ight</b>") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -394,7 +382,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 2, 3, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#405a30">choose viewer</span>'))
+    label.set_markup('<span color="#405a30">' + _("choose viewer") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -403,14 +391,14 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 3, 4, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup(_('<span color="#405a30">edit/add a <b>e<u>x</u>if</b> comment</span>'))
+    label.set_markup('<span color="#610e4d">' + _('edit <b>e<u>x</u>if</b> comment') + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
     button.show()
     button.add_accelerator('clicked', general["acgroup"], ord('x'), 0, gtk.ACCEL_VISIBLE )
     button.connect("clicked", dialog_exif_com, dialog)
-    table.attach(button, 1, 4, 2, 3, gtk.FILL)
+    table.attach(button, 2, 3, 2, 3, gtk.FILL)
 
     
     align = gtk.Alignment(0.5, 0.0, 0.0, 0.0)

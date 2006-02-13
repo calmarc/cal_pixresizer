@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-02-13 11:23+0100\n"
+"POT-Creation-Date: 2006-02-13 11:41+0100\n"
 "PO-Revision-Date: 2006-02-08 04:55+0100\n"
 "Last-Translator: calmar <mac@calmar.ws>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -66,33 +66,32 @@ msgid "Calmar's Picture Resizer - select pictures..."
 msgstr "Calmar's Picture Resizer - Bilder auswaehlen..."
 
 #: cal_pixresizer.py:347
-msgid "<span color=\"#8a0000\"><b><u>d</u>elete</b> selection</span>"
-msgstr ""
-"<span color=\"#8a0000\"><b><u>D</u></b>ie Auswahl <b>loeschen</b></span>"
+msgid "<b><u>d</u>elete</b> selection"
+msgstr "<b><u>D</u></b>ie Auswahl <b>loeschen</b>"
 
 #: cal_pixresizer.py:357
-msgid "<span color=\"#00008a\">select <b><u>a</u>ll</b> images</span>"
-msgstr "<span color=\"#00008a\"><b><u>A</u>lle</b> Dateien waehlen</span>"
+msgid "select <b><u>a</u>ll</b> images"
+msgstr "<b><u>A</u>lle</b> Dateien waehlen"
 
 #: cal_pixresizer.py:367
-msgid "<span color=\"#002a00\"><b>pre<u>v</u>iew</b> pictures</span>"
-msgstr "<span color=\"#002a00\">Bild Ansicht <b>(<u>V</u>)</b></span>"
+msgid "<b>pre<u>v</u>iew</b> pictures"
+msgstr "Bild Ansicht <b>(<u>V</u>)</b>"
 
 #: cal_pixresizer.py:377
-msgid "<span color=\"#402a20\">rotate <b>l<u>e</u>ft</b></span>"
-msgstr "<span color=\"#402a20\"><b>Roti<u>e</u>ren -90</b></span>"
+msgid "rotate <b>l<u>e</u>ft</b>"
+msgstr "<b>Roti<u>e</u>ren -90</b>"
 
 #: cal_pixresizer.py:387
-msgid "<span color=\"#402a20\">rotate <b><u>r</u>ight</b></span>"
-msgstr "<span color=\"#402a20\"><b><u>R</u>otieren +90</b></span>"
+msgid "rotate <b><u>r</u>ight</b>"
+msgstr "<b><u>R</u>otieren +90</b>"
 
 #: cal_pixresizer.py:397
-msgid "<span color=\"#405a30\">choose viewer</span>"
-msgstr "<span color=\"#405a30\">'Bild' Programm..</span>"
+msgid "choose viewer"
+msgstr ""
 
 #: cal_pixresizer.py:406
-msgid "<span color=\"#405a30\">edit/add a <b>e<u>x</u>if</b> comment</span>"
-msgstr "<span color=\"#405a30\"><b>E<u>x</u>if</b> Kommentar..</span>"
+msgid "edit/add a <b>e<u>x</u>if</b> comment"
+msgstr "<b>E<u>x</u>if</b> Kommentar.."
 
 #: cal_pixresizer.py:437
 msgid " images              "
@@ -428,6 +427,9 @@ msgstr "Bilder auswaehlen  "
 #: cal_pixresizer.py:1390
 msgid "STOP "
 msgstr "STOP "
+
+#~ msgid "<span color=\"#405a30\">choose viewer</span>"
+#~ msgstr "<span color=\"#405a30\">'Bild' Programm..</span>"
 
 #~ msgid "left mouse  click - for adding items"
 #~ msgstr "linke Maus Taste - fuer einzelne Bilder"
