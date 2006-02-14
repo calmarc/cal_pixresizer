@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-02-13 11:41+0100\n"
+"POT-Creation-Date: 2006-02-14 07:58+0100\n"
 "PO-Revision-Date: 2006-02-08 04:55+0100\n"
 "Last-Translator: calmar <mac@calmar.ws>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -17,232 +17,229 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: cal_pixresizer.py:98
+#: cal_pixresizer.py:85
 msgid "no valid userdata found"
 msgstr "keine gueltigen Userdaten gefunden"
 
-#: cal_pixresizer.py:147 cal_pixresizer.py:177
+#: cal_pixresizer.py:135 cal_pixresizer.py:167
 msgid "attention:"
 msgstr "Achtung:"
 
-#: cal_pixresizer.py:190
+#: cal_pixresizer.py:175
 msgid "Target picture <b>already exists</b>:"
 msgstr "Ziel Bild/Datei <b>existiert bereits:</b>"
 
-#: cal_pixresizer.py:194 cal_pixresizer.py:989 cal_pixresizer.py:1048
+#: cal_pixresizer.py:185 cal_pixresizer.py:992 cal_pixresizer.py:1058
+#: cal_pixresizer.py:1091
 msgid "quit processing"
 msgstr "Bearbeitung beenden"
 
-#: cal_pixresizer.py:199
+#: cal_pixresizer.py:190
 msgid "skip"
 msgstr "ueberspringen"
 
-#: cal_pixresizer.py:205
+#: cal_pixresizer.py:196
 msgid "overwrite"
 msgstr "ueberschreiben"
 
-#: cal_pixresizer.py:209
+#: cal_pixresizer.py:200
 msgid "ALL overwrite"
 msgstr "Alles ueberschreiben"
 
-#: cal_pixresizer.py:219
-msgid "no pictures are selected"
-msgstr "keine Bilder ausgewaehlt"
-
-#: cal_pixresizer.py:222
-msgid "progress"
-msgstr "Progress"
-
-#: cal_pixresizer.py:226
+#: cal_pixresizer.py:210
 msgid "Calmar's Picture Resizer"
 msgstr "Calmar's Picture Resizer"
 
-#: cal_pixresizer.py:298
-msgid "</b> items inside"
-msgstr "</b> Dateien/Ordner"
+#: cal_pixresizer.py:234
+msgid "no pictures are selected"
+msgstr "keine Bilder ausgewaehlt"
 
-#: cal_pixresizer.py:307 cal_pixresizer.py:674
+#: cal_pixresizer.py:237
+msgid "progress"
+msgstr "Progress"
+
+#: cal_pixresizer.py:255 cal_pixresizer.py:678
 msgid "Calmar's Picture Resizer - select pictures..."
 msgstr "Calmar's Picture Resizer - Bilder auswaehlen..."
 
-#: cal_pixresizer.py:347
+#: cal_pixresizer.py:294
 msgid "<b><u>d</u>elete</b> selection"
 msgstr "<b><u>D</u></b>ie Auswahl <b>loeschen</b>"
 
-#: cal_pixresizer.py:357
+#: cal_pixresizer.py:304
 msgid "select <b><u>a</u>ll</b> images"
 msgstr "<b><u>A</u>lle</b> Dateien waehlen"
 
-#: cal_pixresizer.py:367
+#: cal_pixresizer.py:314
 msgid "<b>pre<u>v</u>iew</b> pictures"
 msgstr "Bild Ansicht <b>(<u>V</u>)</b>"
 
-#: cal_pixresizer.py:377
+#: cal_pixresizer.py:324
 msgid "rotate <b>l<u>e</u>ft</b>"
 msgstr "<b>Roti<u>e</u>ren -90</b>"
 
-#: cal_pixresizer.py:387
+#: cal_pixresizer.py:334
 msgid "rotate <b><u>r</u>ight</b>"
 msgstr "<b><u>R</u>otieren +90</b>"
 
-#: cal_pixresizer.py:397
+#: cal_pixresizer.py:344
 msgid "choose viewer"
-msgstr ""
+msgstr "Betrachter waehlen"
 
-#: cal_pixresizer.py:406
-msgid "edit/add a <b>e<u>x</u>if</b> comment"
+#: cal_pixresizer.py:353
+msgid "edit <b>e<u>x</u>if</b> comment"
 msgstr "<b>E<u>x</u>if</b> Kommentar.."
 
-#: cal_pixresizer.py:437
+#: cal_pixresizer.py:383
 msgid " images              "
 msgstr " Bilder              "
 
-#: cal_pixresizer.py:451
+#: cal_pixresizer.py:397
 msgid " all files           "
 msgstr " alles anzeigen      "
 
-#: cal_pixresizer.py:514
+#: cal_pixresizer.py:460
 msgid "are you sure you want to <b>delete</b> selected items - forever?"
 msgstr "die Bilder fuer immer <b>loeschen</b>?"
 
-#: cal_pixresizer.py:515 cal_pixresizer.py:628
+#: cal_pixresizer.py:461 cal_pixresizer.py:616
 msgid "cancel"
 msgstr "Abbruch!"
 
-#: cal_pixresizer.py:515
+#: cal_pixresizer.py:461
 msgid "yes"
 msgstr "ja"
 
-#: cal_pixresizer.py:523 cal_pixresizer.py:526
+#: cal_pixresizer.py:469 cal_pixresizer.py:477
+msgid "error while trying to delete"
+msgstr "ein Fehler ergab sich beim Versuch die Datei zu loeschen"
+
+#: cal_pixresizer.py:472
 msgid "sorry, could not remove directory:"
 msgstr "sorry, konnte Verzeichnis nicht loeschen "
 
-#: cal_pixresizer.py:534 cal_pixresizer.py:537
+#: cal_pixresizer.py:480 cal_pixresizer.py:487
 msgid "sorry, could not remove file:"
 msgstr "sorry, konnte Datei nicht loeschen "
 
-#: cal_pixresizer.py:563
+#: cal_pixresizer.py:551
+msgid "</b> items inside"
+msgstr "</b> Dateien/Ordner"
+
+#: cal_pixresizer.py:558
 msgid "Exif Dialog:"
 msgstr "Exif Dialog:"
 
-#: cal_pixresizer.py:617
-msgid "can not set Exif comment to a directory"
+#: cal_pixresizer.py:612
+msgid "can not yet set Exif comments to a directory :P"
 msgstr "kann kein Exif Kommentar einem Verzeichnis hinzufuegen"
 
-#: cal_pixresizer.py:622 cal_pixresizer.py:626
+#: cal_pixresizer.py:614
 msgid "<b>Exif Comment Editing</b>"
-msgstr ""
+msgstr "<b>Exif Kommentar editieren</b>"
 
-#: cal_pixresizer.py:623
-msgid "MS Win Issue: no multiline comments - will join lines"
-msgstr ""
-
-#: cal_pixresizer.py:624
-msgid "MS Win Issue: ^ gets replaced with ^^"
-msgstr ""
-
-#: cal_pixresizer.py:628
+#: cal_pixresizer.py:616
 msgid "OK, save that"
 msgstr "OK, speichern"
 
-#: cal_pixresizer.py:647
+#: cal_pixresizer.py:640
 msgid "select first your viewer (whatever you have) and then try again"
 msgstr "zuerst das Bild Programm (was auch immer) auswaehlen"
 
-#: cal_pixresizer.py:662 cal_pixresizer.py:668
+#: cal_pixresizer.py:655
+msgid "can not display anything, sorry"
+msgstr "kann nichts anzeigen"
+
+#: cal_pixresizer.py:669 cal_pixresizer.py:674
 msgid "## error while trying to display picture"
 msgstr "## ein Fehler ergab sich beim Versuch das Bild anzuzeigen"
 
-#: cal_pixresizer.py:671
-msgid "that is no regular file, can not display it"
-msgstr "das ist keine 'regulaere' Datei - kann nicht angezeigt werden"
-
-#: cal_pixresizer.py:691
+#: cal_pixresizer.py:695
 msgid "<b>Select</b> your <b>previewer</b> for your images - e.g:"
 msgstr ""
 "Das <b>Bild Programm</b> fuer die <b>Bild Ansicht</b> auswaehlen - z.B:"
 
-#: cal_pixresizer.py:709
+#: cal_pixresizer.py:713
 msgid " all files          "
 msgstr " alles anzeigen     "
 
-#: cal_pixresizer.py:714
+#: cal_pixresizer.py:718
 msgid " MS-Win executables "
 msgstr "MS-Win Programme (.exe)"
 
-#: cal_pixresizer.py:732
+#: cal_pixresizer.py:736
 msgid "no binary selected? May try again"
 msgstr "Kein Bild Betrachter gewaehlt"
 
-#: cal_pixresizer.py:743
+#: cal_pixresizer.py:744
 msgid "please select only <b>one</b> pic for rotating"
 msgstr "nur ein Bild zum rotieren auswaehlen"
 
-#: cal_pixresizer.py:746
+#: cal_pixresizer.py:747
 msgid "don't know how to rotate a folder :P"
 msgstr "weiss nicht wie ich einen Ordner kopieren kann :P"
 
-#: cal_pixresizer.py:766
-msgid "rotated"
-msgstr "rotiert"
-
-#: cal_pixresizer.py:768
-msgid "Error while tyring to replace the original file"
-msgstr "Fehler beim Rotieren des Original-Bildes"
-
-#: cal_pixresizer.py:769
-msgid "you find your file now at:\n"
-msgstr "das Bild ist jetzt:\n"
-
-#: cal_pixresizer.py:770 cal_pixresizer.py:781
-msgid "replacing your original file didn't succeed on:"
-msgstr "das Original-Bild zu ersetzen klappte nicht:"
-
-#: cal_pixresizer.py:773
-msgid "you find your original file now at:"
-msgstr "das Bild ist jetzt:"
-
-#: cal_pixresizer.py:774 cal_pixresizer.py:785 cal_pixresizer.py:807
-msgid "(may contact mac@calmar.ws)"
-msgstr "(mac@calmar.ws kontaktieren allenfalls)"
-
-#: cal_pixresizer.py:778
-msgid "ERROR while trying to replace your file with the rotated one"
-msgstr "Fehler beim ersetzen des Original-Bildes mit dem Rotierten"
-
-#: cal_pixresizer.py:779
-msgid "you find the rotated file now at:"
-msgstr "das rotierte Bild ist jetzt:"
-
-#: cal_pixresizer.py:784
-msgid "you find your rotated file now at:"
-msgstr "das rotierte Bild ist jetzt:"
-
-#: cal_pixresizer.py:788 cal_pixresizer.py:798
-msgid "Error while tyring to rotate the file"
+#: cal_pixresizer.py:764 cal_pixresizer.py:772
+msgid "error while trying to rotate the picture"
 msgstr "Fehler beim Versuch das Bild zu rotieren"
 
-#: cal_pixresizer.py:789 cal_pixresizer.py:802
-msgid "rotating didn't succeed on:"
-msgstr "das Rotieren klappte nicht"
-
-#: cal_pixresizer.py:791
-msgid "no further infos, sorry"
-msgstr "keine weiteren Infos, sorry"
-
-#: cal_pixresizer.py:792
-msgid "(may contact mac@calmar.ws )  "
-msgstr "(mac@calmar.ws kontaktieren allenfalls)  "
-
-#: cal_pixresizer.py:797
+#: cal_pixresizer.py:771
 msgid "Nevertheless, there exists an produced (corrupt?) file at:\n"
 msgstr "Aber trotzdem, es existiert eine (korruptes?) Datei:\n"
 
-#: cal_pixresizer.py:825
+#: cal_pixresizer.py:776 cal_pixresizer.py:818
+msgid "rotating didn't succeed on:"
+msgstr "das Rotieren klappte nicht"
+
+#: cal_pixresizer.py:781 cal_pixresizer.py:801 cal_pixresizer.py:813
+msgid "(may contact mac@calmar.ws)"
+msgstr "(mac@calmar.ws kontaktieren allenfalls)"
+
+#: cal_pixresizer.py:792
+msgid "rotated"
+msgstr "rotiert"
+
+#: cal_pixresizer.py:794
+msgid "Error while tyring to replace the original file"
+msgstr "Fehler beim Rotieren des Original-Bildes"
+
+#: cal_pixresizer.py:796
+msgid "you find your file now at:\n"
+msgstr "das Bild ist jetzt:\n"
+
+#: cal_pixresizer.py:797 cal_pixresizer.py:809
+msgid "replacing your original file didn't succeed on:"
+msgstr "das Original-Bild zu ersetzen klappte nicht:"
+
+#: cal_pixresizer.py:800
+msgid "you find your file now at:"
+msgstr "das Bild ist jetzt:"
+
+#: cal_pixresizer.py:805
+msgid "ERROR while trying to replace your file with the rotated one"
+msgstr "Fehler beim ersetzen des Original-Bildes mit dem Rotierten"
+
+#: cal_pixresizer.py:807
+msgid "you find the rotated file now at:"
+msgstr "das rotierte Bild ist jetzt:"
+
+#: cal_pixresizer.py:812
+msgid "you find your rotated file now at:"
+msgstr "das rotierte Bild ist jetzt:"
+
+#: cal_pixresizer.py:816
+msgid "Error while tyring to rotate the file"
+msgstr "Fehler beim Versuch das Bild zu rotieren"
+
+#: cal_pixresizer.py:821
+msgid "(may contact mac@calmar.ws )  "
+msgstr "(mac@calmar.ws kontaktieren allenfalls)  "
+
+#: cal_pixresizer.py:841
 msgid "Select some <b>pics</b> to work on"
 msgstr "es sind keine Bilder zur Bearbeitung ausgewaehlt"
 
-#: cal_pixresizer.py:857
+#: cal_pixresizer.py:873
 msgid ""
 "  At least <u>one</u> must be set:  \n"
 "\n"
@@ -262,149 +259,162 @@ msgstr ""
 " \n"
 " um ein ungewolltes Ueberscheiben der Original-Bilder zu vermeiden"
 
-#: cal_pixresizer.py:873
+#: cal_pixresizer.py:889
 msgid "create new folder: "
 msgstr "Erstelle neuen Ordner: "
 
-#: cal_pixresizer.py:880
-msgid "# was not able to create target directory: converting has stopped "
+#: cal_pixresizer.py:896
+msgid "was not able to create target directory: converting has stopped"
 msgstr ""
-"# konnte kein Ziel-Verzeichnis erstellen ... die Generierung wurde "
+"konnte kein Ziel-Verzeichnis erstellen ... die Generierung wurde "
 "abgebrochen"
 
-#: cal_pixresizer.py:882
+#: cal_pixresizer.py:899
 msgid "was not able to create your target folder"
 msgstr "konnte das Ziel Verzeichnis nicht erstellen"
 
-#: cal_pixresizer.py:884
+#: cal_pixresizer.py:901
 msgid "please check that issue first"
 msgstr "bitte zuerst diesen Sachverhalt pruefen"
 
-#: cal_pixresizer.py:890
-msgid "# sub-folder exists already"
-msgstr "# Unter-Ordner existiert bereits"
+#: cal_pixresizer.py:906
+msgid "sub-folder exists already"
+msgstr "Unter-Ordner existiert bereits"
 
-#: cal_pixresizer.py:894 cal_pixresizer.py:899
+#: cal_pixresizer.py:910 cal_pixresizer.py:915
 msgid "unlimited"
 msgstr "unlimitiert"
 
-#: cal_pixresizer.py:935 cal_pixresizer.py:992 cal_pixresizer.py:1015
+#: cal_pixresizer.py:921
+msgid " --> keep lenghts (100%)"
+msgstr " --> gleiche Masse (100%)"
+
+#: cal_pixresizer.py:954 cal_pixresizer.py:995 cal_pixresizer.py:1018
 msgid "stopped!"
 msgstr "Abbruch"
 
-#: cal_pixresizer.py:937
+#: cal_pixresizer.py:956
 msgid "# stop button pressed: converting has stopped "
 msgstr "# Der Stopp Knopf wurde gedrueckt... die Generierung wurde abgebrochen"
 
-#: cal_pixresizer.py:939
+#: cal_pixresizer.py:958
 msgid "progress stopped"
 msgstr "Progress beendete"
 
-#: cal_pixresizer.py:986
+#: cal_pixresizer.py:989
 msgid "<b>source</b> and <b>target</b> are the same!"
 msgstr "<b>Original</b> und <b>Ziel</b> Datei sind gleich!"
 
-#: cal_pixresizer.py:987
+#: cal_pixresizer.py:990
 msgid "(...cowardly refuses to overwrite)"
 msgstr "(...feige verweigert dir Originale zu ueberschreiben)"
 
-#: cal_pixresizer.py:988
+#: cal_pixresizer.py:991
 msgid "source and target are the same!"
 msgstr "Original und Ziel Datei sind gleich!"
 
-#: cal_pixresizer.py:989 cal_pixresizer.py:1048
+#: cal_pixresizer.py:992 cal_pixresizer.py:1058 cal_pixresizer.py:1091
 msgid "skip and go on..."
 msgstr "uebergehen und weitermachen..."
 
-#: cal_pixresizer.py:997 cal_pixresizer.py:1020 cal_pixresizer.py:1059
+#: cal_pixresizer.py:1000 cal_pixresizer.py:1023 cal_pixresizer.py:1066
+#: cal_pixresizer.py:1101
 msgid "# converting has stopped "
 msgstr "# Die Generierung wurde abgebrochen"
 
-#: cal_pixresizer.py:1010
+#: cal_pixresizer.py:1013
 msgid "# skipped: "
 msgstr "# ausgelassen: "
 
-#: cal_pixresizer.py:1035
-msgid "## there is a currupt (filesize == 0 bytes) generated file"
-msgstr "## es wurde eine korrupte Datei (Groesse == 0 bytes) Datei generiert"
+#: cal_pixresizer.py:1052
+msgid "error while trying to convert the picture"
+msgstr "Fehler beim Versuch das Bild zu convertieren"
 
-#: cal_pixresizer.py:1037
-msgid "## trying to delete it, didn't succeed"
-msgstr "## der Versuch zu loeschen, scheiterte"
-
-#: cal_pixresizer.py:1039
-msgid "## please check that issue yourself as well"
-msgstr "## bitte diesen Sachverhalt pruefen"
-
-#: cal_pixresizer.py:1041
-msgid "ERROR while working on that picture"
-msgstr "Fehler beim Bearbeiten an diesem Bild"
-
-#: cal_pixresizer.py:1044
-msgid "imagemagick terminated with an <b>error</b> while working on:"
+#: cal_pixresizer.py:1054
+msgid "catched an <b>error</b> while working on:"
 msgstr "Imagemagick's convert beendete mit einem <b>Fehler</b> bei der Datei :"
 
-#: cal_pixresizer.py:1047
+#: cal_pixresizer.py:1057 cal_pixresizer.py:1090
 msgid "(may contact mac@calmar.ws)  "
 msgstr "(mac@calmar.ws kontaktieren allenfalls)  "
 
-#: cal_pixresizer.py:1051
+#: cal_pixresizer.py:1061 cal_pixresizer.py:1094
 msgid "canceled!"
 msgstr "Abbruch!"
 
-#: cal_pixresizer.py:1065
-msgid "# the progress finished"
-msgstr "# der Bearbeitung is beendet"
+#: cal_pixresizer.py:1074
+msgid "ERROR while working on that picture"
+msgstr "Fehler beim Bearbeiten an diesem Bild"
 
-#: cal_pixresizer.py:1069
+#: cal_pixresizer.py:1081
+msgid "## there is a currupt (filesize == 0 bytes) generated file"
+msgstr "## es wurde eine korrupte Datei (Groesse == 0 bytes) Datei generiert"
+
+#: cal_pixresizer.py:1083
+msgid "## trying to delete it, didn't succeed"
+msgstr "## der Versuch zu loeschen, scheiterte"
+
+#: cal_pixresizer.py:1085
+msgid "## please check that issue yourself as well"
+msgstr "## bitte diesen Sachverhalt pruefen"
+
+#: cal_pixresizer.py:1087
+msgid "imagemagick terminated with an <b>error</b> while working on:"
+msgstr "Imagemagick's convert beendete mit einem <b>Fehler</b> bei der Datei :"
+
+#: cal_pixresizer.py:1107
+msgid "progress finished"
+msgstr "die Bearbeitung is beendet"
+
+#: cal_pixresizer.py:1111
 msgid "finish!"
 msgstr "fertig!"
 
-#: cal_pixresizer.py:1108
+#: cal_pixresizer.py:1148
 msgid "exit"
 msgstr "Beenden"
 
-#: cal_pixresizer.py:1137
+#: cal_pixresizer.py:1177
 msgid "max. width"
 msgstr "max. Breite"
 
-#: cal_pixresizer.py:1140 cal_pixresizer.py:1159
+#: cal_pixresizer.py:1180 cal_pixresizer.py:1199
 msgid "no limit"
 msgstr "Kein Limit"
 
-#: cal_pixresizer.py:1141 cal_pixresizer.py:1160 cal_pixresizer.py:1187
+#: cal_pixresizer.py:1181 cal_pixresizer.py:1200 cal_pixresizer.py:1227
 msgid "specific:"
 msgstr "spezifisch:"
 
-#: cal_pixresizer.py:1156
+#: cal_pixresizer.py:1196
 msgid "max. height"
 msgstr "max. Hoehe"
 
-#: cal_pixresizer.py:1184
+#: cal_pixresizer.py:1224
 msgid "size in %"
 msgstr "Gr. in %"
 
-#: cal_pixresizer.py:1228
+#: cal_pixresizer.py:1268
 msgid "quality"
 msgstr "Qualitaet"
 
-#: cal_pixresizer.py:1231
+#: cal_pixresizer.py:1271
 msgid "specific"
 msgstr "spezifisch"
 
-#: cal_pixresizer.py:1252
+#: cal_pixresizer.py:1292
 msgid "PREFIX"
 msgstr "PREFIX"
 
-#: cal_pixresizer.py:1261
+#: cal_pixresizer.py:1301
 msgid "SUFFIX"
 msgstr "SUFFIX"
 
-#: cal_pixresizer.py:1270
+#: cal_pixresizer.py:1310
 msgid "sub-folder"
 msgstr "Unter-Ordner"
 
-#: cal_pixresizer.py:1271
+#: cal_pixresizer.py:1311
 msgid ""
 "for\n"
 "the <u>new</u> pics"
@@ -412,21 +422,30 @@ msgstr ""
 "fuer\n"
 "die <u>neuen</u> Bilder"
 
-#: cal_pixresizer.py:1280
+#: cal_pixresizer.py:1320
 msgid "<b>convert</b> to:"
 msgstr "konvertiere zu:"
 
-#: cal_pixresizer.py:1362
+#: cal_pixresizer.py:1402
 msgid "start converting  "
 msgstr "Starten  "
 
-#: cal_pixresizer.py:1373
+#: cal_pixresizer.py:1413
 msgid "select pictures...  "
 msgstr "Bilder auswaehlen  "
 
-#: cal_pixresizer.py:1390
+#: cal_pixresizer.py:1430
 msgid "STOP "
 msgstr "STOP "
+
+#~ msgid "that is no regular file, can not display it"
+#~ msgstr "das ist keine 'regulaere' Datei - kann nicht angezeigt werden"
+
+#~ msgid "you find your original file now at:"
+#~ msgstr "das Bild ist jetzt:"
+
+#~ msgid "no further infos, sorry"
+#~ msgstr "keine weiteren Infos, sorry"
 
 #~ msgid "<span color=\"#405a30\">choose viewer</span>"
 #~ msgstr "<span color=\"#405a30\">'Bild' Programm..</span>"
