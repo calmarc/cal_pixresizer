@@ -125,7 +125,10 @@ def files_print_label(files_todo): #{{{
             labeltext += trimlongline(files_todo[i]) +"\n"
         labeltext += ".....\n" 
         labeltext += trimlongline(files_todo[-1])
-    general["todolabel"].set_text(labeltext)
+
+    obj = unicode(labeltext, 'latin-1') # utf
+    utf8string = obj.encode('utf-8')
+    general["todolabel"].set_text(utf8string)
 #}}}
 #}}}
 # little gui
@@ -141,7 +144,9 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    label.set_markup(text)
+    obj = unicode(text, 'latin-1')
+    utf8string = obj.encode('utf-8')
+    label.set_markup(utf8string)
     label.show()
     vbox.pack_start(label, True, True, 15)
     align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
@@ -172,7 +177,9 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(file,68))
+    obj = unicode(file, 'latin-1') # utf
+    utf8string = obj.encode('utf-8')
+    label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(utf8string,68))
     label.show()
     vbox.pack_start(label, True, True, 10)
     align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
@@ -217,7 +224,9 @@ def show_mesbox(parent, text): #{{{
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    label.set_markup(text)
+    obj = unicode(text, 'latin-1')
+    utf8string = obj.encode('utf-8')
+    label.set_markup(utf8string)
     label.show()
     vbox.pack_start(label, True, True, 15)
     align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
@@ -265,7 +274,6 @@ def open_filechooser(widget, event, data=None): #{{{
     fileac = gtk.AccelGroup()
     dialog.add_accel_group(general["acgroup"])
 
-#########################################################
 # main vbox overall there
     vbox = gtk.VBox()
     vbox.show()
@@ -273,7 +281,6 @@ def open_filechooser(widget, event, data=None): #{{{
 # set main widget
     dialog.set_extra_widget(vbox)
 
-################
 # first hbox packed in align packed in main vbox
     hbox = gtk.HBox()
     hbox.show()
@@ -285,7 +292,7 @@ def open_filechooser(widget, event, data=None): #{{{
 
     vbox.pack_start(align, False, False, 0)
 
-##### then table
+# then table
     table = gtk.Table(rows=6, columns=8, homogeneous=False)
     table.show()
     hbox.pack_start(table, False, False, 0)
@@ -377,7 +384,6 @@ def open_filechooser(widget, event, data=None): #{{{
 
 #    table.attach(label, 0, 6, 4, 5, gtk.FILL)
 
-##################################################
 # file filter
     filter = gtk.FileFilter()
     filter.set_name(_(" images              "))
@@ -461,10 +467,14 @@ def dialog_delete(widget, dialog): # {{{  needs more work
     show_2_dialog(dialog, text, _("cancel"), _("yes"))
     if general["d_what_pressed"] != "ok_pressed":
         return
-    for item in dialog.get_filenames():
+    for items in dialog.get_filenames():
+        obj = unicode(items, 'latin-1')
+        item = obj.encode('utf-8')
         if os.path.isdir(item):
             try: 
                 os.rmdir(item) 
+                print "## " + _("folder removed:") + trimlongline(item,40)
+                dialog.set_current_folder(dialog.get_current_folder())
             except OSError,  (errno, errstr): 
                 print "## " + _("error while trying to delete")
                 print "## " + str(errno) + ": " + errstr
@@ -473,12 +483,13 @@ def dialog_delete(widget, dialog): # {{{  needs more work
         else:
             try: 
                 os.remove(item) 
+                print "## " + _("file removed:") + trimlongline(item,40)
+                dialog.set_current_folder(dialog.get_current_folder())
             except OSError,  (errno, errstr): 
                 print "## " + _("error while trying to delete")
                 print "## " + str(errno) + ": " + errstr
                 dialog_delete_error(dialog, item,\
                         _('sorry, could not remove file:'), errno, errstr)
-
 #}}}
 def dialog_delete_error(dialog, item, text, errno, errstr): #{{{
     print "## " + text
@@ -497,8 +508,12 @@ def get_jhead_exif(file): #{{{
         pre = general["cwd"]
     tot = [pre + "jhead"]
     tot.append(str(file))
-    pipe = subprocess.Popen(tot, stdout=subprocess.PIPE) # no stderr for jhead obviously
-    output = pipe.stdout.read()
+    try:
+        pipe = subprocess.Popen(tot, stdout=subprocess.PIPE, shell=False)
+        output = pipe.stdout.read()
+    except OSError, (errno, errstr):
+        print "## Exif: " + str(errno) + ":" +  errstr
+        return ""
     output = output.split("\n")
     comment = ""
     for item in output:
@@ -518,7 +533,9 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
 
     tuple = os.path.split(filename)
     if tuple[1] != "":
-        preview[1].set_markup("<b>" + tuple[1] + "</b>")
+        obj = unicode(tuple[1], 'latin-1')
+        utf8string = obj.encode('utf-8')
+        preview[1].set_markup("<b>" + utf8string + "</b>")
     else:
         preview[1].set_markup("<b>(got no name)</b>")
     if os.path.exists(filename): # once was necessary on M$, so...
@@ -537,19 +554,25 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
                 img = Image.open(filename)
                 preview[2].set_markup(str(img.size[0]) + " x " + str(img.size[1]))
                 preview[3].set_markup(bytes)
-            except (gobject.GError, TypeError): # file but not viewable
-                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
-                        "bilder/file.png", 96, 96)
-                preview[0].set_from_pixbuf(pixbuf)
-                preview[2].set_markup(bytes)
-                preview[3].set_markup("")
+            except (gobject.GError, TypeError, IOError): # file but not viewable
+                try:
+                    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
+                            "bilder/file.png", 96, 96)
+                    preview[0].set_from_pixbuf(pixbuf)
+                    preview[2].set_markup(bytes)
+                    preview[3].set_markup("")
+                except (gobject.GError, TypeError, IOError): # file but not viewable
+                    pass
         else: # is dir (or so, hm)
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
-                    "bilder/folder.png", 96, 96)
-            preview[0].set_from_pixbuf(pixbuf)
-            preview[2].set_markup("<b>"+ str(len(os.listdir(filename))) +\
-                    _("</b> items inside"))
-            preview[3].set_markup("")
+            try:
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(general["cwd"] +\
+                        "bilder/folder.png", 96, 96)
+                preview[0].set_from_pixbuf(pixbuf)
+                preview[2].set_markup("<b>"+ str(len(os.listdir(filename))) +\
+                        _("</b> items inside"))
+                preview[3].set_markup("")
+            except (gobject.GError, TypeError, IOError): # file but not viewable
+                pass
     return
 #}}}
 def show_exif_dialog(parent_widget, text, button_quit, button_ok, file): #{{{
@@ -568,9 +591,11 @@ def show_exif_dialog(parent_widget, text, button_quit, button_ok, file): #{{{
     mesbox.vbox.pack_start(align, True, True, 15)
 
     label = gtk.Label()
+# need for uft?
     label.set_markup(text)
     label.show()
     vbox.pack_start(label, True, True, 15)
+
 
     textview = gtk.TextView()
     textbuffer = textview.get_buffer()
@@ -589,16 +614,21 @@ def show_exif_dialog(parent_widget, text, button_quit, button_ok, file): #{{{
     sw.show()
     vbox.pack_start(sw, False, False, 0)
 
-    button = gtk.Button(button_quit)
-    mesbox.action_area.pack_start(button, True, True, 0)
-    button.connect("clicked", dialog_2_destroy, (mesbox,"quit"))
-    button.show()
+    button1 = gtk.Button(button_quit)
+    mesbox.action_area.pack_start(button1, True, True, 0)
+    button1.connect("clicked", dialog_2_destroy, (mesbox,"quit"))
+    button1.show()
+
     button = gtk.Button(button_ok)
     mesbox.action_area.pack_start(button, True, True, 0)
     button.connect("clicked", dialog_2_destroy, (mesbox,"ok_pressed"))
     button.show()
+
     mesbox.show()
     textview.grab_focus()
+
+    mesbox.action_area.set_focus_chain((button, button1))
+
     mesbox.run()
     return textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter(), True)
 #}}}
@@ -620,7 +650,12 @@ def dialog_exif_cb(widget, dialog): # {{{
             pre = general["cwd"]
         tot = [pre + "jhead"]
         tot.append("-cl")
-        tot.append(str(newcomment))
+
+        newcomment = newcomment.strip()
+        if str(newcomment) == "":  
+            tot.append(' ')  # cheating! may change later
+        else:
+            tot.append(str(newcomment))
         tot.append(file)
         try:
             pipe = subprocess.Popen(tot, stdout=subprocess.PIPE, shell=False)
@@ -657,7 +692,7 @@ def dialog_viewpics(widget, dialog): # {{{
 
     tot = [general["viewer"]]
     if sys.platform in ["win32", "win16", "win64"]:
-        tot.append(file[0])  # for windows viewer only one file?
+        tot.append(files[0])  # for windows viewer only one file?
     else:
         tot += files
     try:
@@ -666,13 +701,19 @@ def dialog_viewpics(widget, dialog): # {{{
         exitstatus = pipe.stdout.read()
         error = pipe.stderr.read()
     except OSError, (errno, errstr):
-        print _("## error while trying to display picture")
+        print _("## error while trying to display the picture(s)")
         print "## " + str(errno) + ": " + errstr
+        text = _("Error while trying to display the pictures(s)")
+        text += "\n\n" + str(errno) + ": " + errstr
+        show_mesbox(dialog, text )
         return
         
     if error != "" :
-        print _("## error while trying to display picture")
+        print _("## error while trying to display the picture(s)")
         print "## " + error
+        text = _("Error while trying to display the pictures(s)")
+        text += "\n\n" + str(errno) + ": " + errstr
+        show_mesbox(dialog, text )
 #}}}
 def dialog_setupview(widget, dialog_main): #{{{
     dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
@@ -707,8 +748,8 @@ def dialog_setupview(widget, dialog_main): #{{{
 
     align.add(label)
 
-##################################################
 # file filter
+
     filter = gtk.FileFilter()
     filter.set_name(_(" all files          "))
     filter.add_pattern("*")
@@ -942,9 +983,7 @@ def start_resize(widget, event, data=None): #{{{
     general["stop_button"].show()
     general["stop_button"].grab_focus()
 #######################################################################
-#######################################################################
 # begin the loop
-#######################################################################
 #######################################################################
     for sourcefile in imgprocess["files_todo"]:
         while gtk.events_pending():
@@ -1129,7 +1168,6 @@ def main(): #{{{ OK
     mainbox = gtk.VBox(False, 0)
     general["window"].add(mainbox)
 
-#########################################################################
 # buttons  in top hbox
 
     box = gtk.HBox(False, 0)
@@ -1154,27 +1192,24 @@ def main(): #{{{ OK
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
 
-#########################################################################
 #  table  for whole thing there
-#########################################################################
 
     table = gtk.Table(rows=6, columns=2, homogeneous=False)
     mainbox.pack_start(table, False, False, 0)
 
-##################
-#  over hbox for sizes
+# over hbox for sizes
 
     general["sizebox"] = gtk.HBox(True, 0)
     table.attach(general["sizebox"], 0, 2, 0, 1, gtk.EXPAND)
     general["sizebox"].set_sensitive(general["size_or_not"])
 
-#### width
+# width
 
     vbox = gtk.VBox(False, 0)
     general["sizebox"].pack_start(vbox, False, False, 5)
     
     label = gtk.Label()
-    label.set_markup('<span foreground="#000060"><b>' + _("max. width") + '</b></span>')
+    label.set_markup('<span foreground="#000060"><b>' + _("width") + '</b></span>')
     vbox.pack_start(label, False, False, 0)
 
     text = [ _("no limit"), "1600x", "1280x", "1024x", "800x", "640x",\
@@ -1187,13 +1222,13 @@ def main(): #{{{ OK
     vbox.pack_start(imgprocess["spinWidth"], False, False, 0)
 
 
-## height
+# height
 
     vbox = gtk.VBox(False, 0)
     general["sizebox"].pack_start(vbox, False, False, 5)
     
     label = gtk.Label()
-    label.set_markup('<span foreground="#000060"><b>' + _("max. height") + '</b></span>')
+    label.set_markup('<span foreground="#000060"><b>' + _("height") + '</b></span>')
     vbox.pack_start(label, False, False, 0)
 
     text = [ _("no limit"), "x1200", "x1024",  "x768", "x600", "x480",\
@@ -1205,17 +1240,16 @@ def main(): #{{{ OK
     imgprocess["spinHeight"].set_wrap(False)
     vbox.pack_start(imgprocess["spinHeight"], False, False, 0)
 
-################## overbox finish
+# overbox finish
 
-##################
-#  over hbox for percent
+# over hbox for percent
 
     general["percentbox"] = gtk.HBox(False, 0)
     table.attach(general["percentbox"], 2, 3, 0, 1, gtk.EXPAND)
     general["percentbox"].set_sensitive(not general["size_or_not"])
 
 
-#### percent
+# percent
 
     vbox = gtk.VBox(False, 0)
     general["percentbox"].pack_start(vbox, False, False, 5)
@@ -1232,7 +1266,7 @@ def main(): #{{{ OK
     imgprocess["spinPercent"].set_wrap(False)
     vbox.pack_start(imgprocess["spinPercent"], False, False, 0)
 
-################## overbox finish
+# overbox finish
 #  to toggle sensitivity of the above boxes
     
     but1 = gtk.Button()
@@ -1283,7 +1317,7 @@ def main(): #{{{ OK
     align.add(separator)
     table.attach(align,5,6,0,2)
 
-#### prefix/suffix/folder entries
+# prefix/suffix/folder entries
 
     vbox = gtk.VBox(False, 0)
     table.attach(vbox, 6, 7, 0, 1)
@@ -1366,7 +1400,6 @@ def main(): #{{{ OK
 #    separator = gtk.HSeparator()
 #    mainbox.pack_start(separator, False, False, 5)
 
-#########################################################################
 ## todo label
     box = gtk.HBox(False, 0)
     mainbox.pack_start(box, False, False, 0)
@@ -1389,7 +1422,6 @@ def main(): #{{{ OK
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
 
-#########################################################################
 # buttons  in last box
 
     box = gtk.HBox(False, 0)
@@ -1433,8 +1465,6 @@ def main(): #{{{ OK
     general["stop_button"].connect("clicked", stopprogress, None)
     box.pack_end(general["stop_button"], False, False, 0)
 
-
-#########################################################################
 # show
 
     font_desc = pango.FontDescription("Courier")
