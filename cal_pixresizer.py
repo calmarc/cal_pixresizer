@@ -188,7 +188,6 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     align.add(vbox)
     mesbox.vbox.pack_start(align, True, True, 15)
 
-
     button = gtk.Button(_("quit processing"))
     mesbox.action_area.pack_start(button, True, True, 0)
     button.connect("clicked", overwrite_destroy, (mesbox,"cancel"))
@@ -218,7 +217,7 @@ def show_mesbox(parent, text): #{{{
             (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)) 
     mesbox.connect("destroy", quit_self)
     mesbox.connect("delete_event", quit_self)    
-    mesbox.set_size_request(500,300)
+    mesbox.set_size_request(400,-1)
 
     vbox = gtk.VBox()
     vbox.show()
@@ -365,7 +364,6 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add_accelerator('clicked', general["acgroup"], ord('x'), 0, gtk.ACCEL_VISIBLE )
     button.connect("clicked", dialog_exif_cb, dialog)
     table.attach(button, 2, 3, 2, 3, gtk.FILL)
-
     
     align = gtk.Alignment(0.5, 0.0, 0.0, 0.0)
     align.set_padding(10, 10, 10, 10)
@@ -463,7 +461,7 @@ def open_filechooser(widget, event, data=None): #{{{
     dialog.destroy()
 #}}}
 def dialog_delete(widget, dialog): # {{{  needs more work
-    text = _("are you sure you want to <b>delete</b> selected items - forever?")
+    text = "<big>" + _("are you sure you want to <b>delete</b> selected items - forever?") + "</big>"
     show_2_dialog(dialog, text, _("cancel"), _("yes"))
     if general["d_what_pressed"] != "ok_pressed":
         return
@@ -495,7 +493,7 @@ def dialog_delete_error(dialog, item, text, errno, errstr): #{{{
     print "## " + text
     print "## " + item
     print "## " + str(errno) + ": " + errstr
-    message = _('sorry, could not remove file:')
+    message = "<big><b>" + _("sorry, could not remove file:") + "</b></big>"
     message += item + "\n\n"
     message += str(errno) + ": " + errstr + "\n" 
     show_mesbox(dialog, message)
@@ -503,25 +501,95 @@ def dialog_delete_error(dialog, item, text, errno, errstr): #{{{
 def get_jhead_exif(file): #{{{
     if not os.path.isfile(file):
         return ""
+    fname,ext=os.path.splitext(file);  # file itself
+    if ext != ".jpg" and ext != ".jpeg" and ext != ".tif" \
+            and ext != ".tiff" and ext != ".tiff24" \
+            and ext != ".JPG" and ext != ".JPEG" and ext != ".TIF" \
+            and ext != ".TIFF" and ext != ".TIFF24":
+        return ""
     pre = ""
     if general["py2exe"]:
         pre = general["cwd"]
     tot = [pre + "jhead"]
     tot.append(str(file))
     try:
-        pipe = subprocess.Popen(tot, stdout=subprocess.PIPE, shell=False)
-        output = pipe.stdout.read()
+        pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
+                stderr=subprocess.PIPE, shell=False)
+        std_output = pipe.stdout.read()
+        err_output = pipe.stderr.read()
     except OSError, (errno, errstr):
-        print "## Exif: " + str(errno) + ":" +  errstr
+        print "## jhead: " + str(errno) + ":" +  errstr
         return ""
-    output = output.split("\n")
+    if err_output != "":
+        print "## jhead (ERROR): " + err_output
+        return ""
+    std_output = std_output.split("\n")
     comment = ""
-    for item in output:
+    for item in std_output:
         if item[0:7] == "Comment":
             if comment != "":
                 comment += "\n"
             comment += item.split(":")[1][1:]
-    return comment
+    obj = unicode(comment, 'latin-1')
+    utf8string = obj.encode('utf-8')
+    return utf8string
+#}}}
+def show_exif_dialog(parent_widget, text, button_quit, button_ok, file): #{{{
+    global general
+    general["d_what_pressed"] == ""
+    mesbox = gtk.Dialog(_("Exif Dialog:"), parent_widget, gtk.DIALOG_MODAL, ()) 
+    mesbox.connect("destroy", quit_self, None)
+    mesbox.connect("delete_event", quit_self, None)    
+
+    align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
+    align.set_padding(5, 5, 20, 20)
+    align.show()
+    vbox = gtk.VBox()
+    vbox.show()
+    align.add(vbox)
+    mesbox.vbox.pack_start(align, True, True, 15)
+
+    label = gtk.Label()
+# need for uft?
+    label.set_markup(text)
+    label.show()
+    vbox.pack_start(label, True, True, 15)
+
+    textview = gtk.TextView()
+    textbuffer = textview.get_buffer()
+    comment = get_jhead_exif(file).strip()
+    textbuffer.set_text(comment)
+    textview.show()
+    textview.set_size_request(400, 10)
+    textview.set_editable(True)
+    textview.set_wrap_mode(gtk.WRAP_NONE)
+    textview.set_justification(gtk.JUSTIFY_LEFT)
+    textview.set_left_margin(0)
+    textview.set_accepts_tab(False)
+
+    sw = gtk.ScrolledWindow()
+    sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+    sw.add(textview)
+    sw.show()
+    vbox.pack_start(sw, False, False, 0)
+
+    button1 = gtk.Button(button_quit)
+    mesbox.action_area.pack_start(button1, True, True, 0)
+    button1.connect("clicked", dialog_2_destroy, (mesbox,"quit"))
+    button1.show()
+
+    button = gtk.Button(button_ok)
+    mesbox.action_area.pack_start(button, True, True, 0)
+    button.connect("clicked", dialog_2_destroy, (mesbox,"ok_pressed"))
+    button.show()
+
+    mesbox.show()
+    textview.grab_focus()
+
+    mesbox.action_area.set_focus_chain((button, button1))
+
+    mesbox.run()
+    return textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter(), True)
 #}}}
 def update_preview_cb(file_chooser, preview, exiflabel ): #{{{ 
     filename = str(file_chooser.get_preview_filename())  # str needed once on M$
@@ -575,63 +643,6 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
                 pass
     return
 #}}}
-def show_exif_dialog(parent_widget, text, button_quit, button_ok, file): #{{{
-    global general
-    general["d_what_pressed"] == ""
-    mesbox = gtk.Dialog(_("Exif Dialog:"), parent_widget, gtk.DIALOG_MODAL, ()) 
-    mesbox.connect("destroy", quit_self, None)
-    mesbox.connect("delete_event", quit_self, None)    
-
-    align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
-    align.set_padding(5, 5, 20, 20)
-    align.show()
-    vbox = gtk.VBox()
-    vbox.show()
-    align.add(vbox)
-    mesbox.vbox.pack_start(align, True, True, 15)
-
-    label = gtk.Label()
-# need for uft?
-    label.set_markup(text)
-    label.show()
-    vbox.pack_start(label, True, True, 15)
-
-
-    textview = gtk.TextView()
-    textbuffer = textview.get_buffer()
-    textbuffer.set_text(get_jhead_exif(file))
-    textview.show()
-    textview.set_size_request(400, 10)
-    textview.set_editable(True)
-    textview.set_wrap_mode(gtk.WRAP_NONE)
-    textview.set_justification(gtk.JUSTIFY_LEFT)
-    textview.set_left_margin(0)
-    textview.set_accepts_tab(False)
-
-    sw = gtk.ScrolledWindow()
-    sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-    sw.add(textview)
-    sw.show()
-    vbox.pack_start(sw, False, False, 0)
-
-    button1 = gtk.Button(button_quit)
-    mesbox.action_area.pack_start(button1, True, True, 0)
-    button1.connect("clicked", dialog_2_destroy, (mesbox,"quit"))
-    button1.show()
-
-    button = gtk.Button(button_ok)
-    mesbox.action_area.pack_start(button, True, True, 0)
-    button.connect("clicked", dialog_2_destroy, (mesbox,"ok_pressed"))
-    button.show()
-
-    mesbox.show()
-    textview.grab_focus()
-
-    mesbox.action_area.set_focus_chain((button, button1))
-
-    mesbox.run()
-    return textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter(), True)
-#}}}
 def dialog_exif_cb(widget, dialog): # {{{
     files =  dialog.get_filenames()
     if len(files) == 0:
@@ -640,10 +651,25 @@ def dialog_exif_cb(widget, dialog): # {{{
 
     if os.path.isdir(file):
         print "## " + _("can not yet set Exif comments to a directory :P")
+        show_mesbox(dialog, "<big><b>" + _("can not yet set Exif comments to a directory :P") + "</b></big>")
         return
-    labeltext = _("<b>Exif Comment Editing</b>")
+    fname,ext=os.path.splitext(file);  # file itself
+    if ext != ".jpg" and ext != ".jpeg" and ext != ".tif" \
+            and ext != ".tiff" and ext != ".tiff24" \
+            and ext != ".JPG" and ext != ".JPEG" and ext != ".TIF" \
+            and ext != ".TIFF" and ext != ".TIFF24":
+        print "## jhead: " + _("does not seem to be a jpg or tiff picture?")
+        show_mesbox(dialog, "<big><b>" + _("does not seem to be a .jpg or .tiff picture?") + "</b></big>")
+        return
+
+    labeltext = "<big><b>" + _("Exif Comment Editing:") + "</b></big>" + "\n" +\
+            _("(see output details on the console)")
     newcomment = show_exif_dialog(dialog, labeltext,\
             _("cancel"), _("OK, save that"), file)
+
+# well, on windows, then the label gets inserted but with a curious endline thing
+# what will produce an error when reentering like that.
+
     if general["d_what_pressed"] == "ok_pressed":
         pre = ""
         if general["py2exe"]:
@@ -652,18 +678,31 @@ def dialog_exif_cb(widget, dialog): # {{{
         tot.append("-cl")
 
         newcomment = newcomment.strip()
+        obj = unicode(newcomment, 'utf-8')
+        newcomment = obj.encode('latin-1')
+
         if str(newcomment) == "":  
             tot.append(' ')  # cheating! may change later
         else:
             tot.append(str(newcomment))
         tot.append(file)
         try:
-            pipe = subprocess.Popen(tot, stdout=subprocess.PIPE, shell=False)
-            output = pipe.stdout.read()
-            print "## Exif: " + trimlongline(output.replace("\n",""),62)
+            pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
+                    stderr=subprocess.PIPE, shell=False)
+            std_output = pipe.stdout.read()
+            err_output = pipe.stderr.read()
         except OSError, (errno, errstr):
-            print "## Exif: " + str(errno) + ":" +  errstr
-#        check of correct output (modified...)
+            print "## jhead (ERROR): " + str(errno) + ":" +  errstr
+            show_mesbox(dialog, "<big><b>" + _("error while trying to set Exif comment:") + "</b></big>" +\
+                          "\n\n" + str(errno) + ": " + errstr)
+            return ""
+        if err_output != "": # does not reach here unfortunately
+            print "## jhead (ERROR): " + err_output
+            return ""
+
+        print "## jhead: " + trimlongline(std_output.replace("\n",""),62)
+
+#        check of correct output, modified... ?
         dialog.emit("update-preview")
         return
     else:
@@ -687,7 +726,7 @@ def dialog_viewpics(widget, dialog): # {{{
         if os.path.isfile(file):
             file_show.append(file)
     if len(file_show) == 0:
-        show_mesbox(dialog, _("can not display anything, sorry"))
+        show_mesbox(dialog, "<big><b>" + _("can not display anything, sorry") + "</b></big>")
         return
 
     tot = [general["viewer"]]
@@ -698,20 +737,20 @@ def dialog_viewpics(widget, dialog): # {{{
     try:
         pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                 stderr=subprocess.PIPE, shell=False)
-        exitstatus = pipe.stdout.read()
-        error = pipe.stderr.read()
+        std_output = pipe.stdout.read()
+        err_output = pipe.stderr.read()
     except OSError, (errno, errstr):
         print _("## error while trying to display the picture(s)")
         print "## " + str(errno) + ": " + errstr
-        text = _("Error while trying to display the pictures(s)")
+        text = "<big><b>" + _("Error while trying to display the pictures(s)") + "</b></big>"
         text += "\n\n" + str(errno) + ": " + errstr
         show_mesbox(dialog, text )
         return
         
-    if error != "" :
+    if err_output != "" :
         print _("## error while trying to display the picture(s)")
-        print "## " + error
-        text = _("Error while trying to display the pictures(s)")
+        print "## (ERROR): " + err_output
+        text = "<big><b>" + _("Error while trying to display the pictures(s)") + "</b></big>"
         text += "\n\n" + str(errno) + ": " + errstr
         show_mesbox(dialog, text )
 #}}}
@@ -782,10 +821,10 @@ def dialog_rotate(widget, dialog, direction): # {{{
     try:
         file = dialog.get_filenames()[0]  # can be 'None' ?
         if len(dialog.get_filenames()) > 1:
-            show_mesbox(dialog, _("please select only <b>one</b> pic for rotating"))
+            show_mesbox(dialog, "<big>" + _("please select only <b>one</b> pic for rotating") + "</big>")
             return
         if os.path.isdir(file):
-            show_mesbox(dialog, _("don't know how to rotate a folder :P"))
+            show_mesbox(dialog, "<big><b>" + _("don't know how to rotate a folder :P") + "</b></big>")
             return
     except IndexError:
         return
@@ -799,24 +838,24 @@ def dialog_rotate(widget, dialog, direction): # {{{
     try: 
         pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                 stderr=subprocess.PIPE, shell=False)
-        exitstatus = pipe.stdout.read()
-        error = pipe.stderr.read()
+        std_output = pipe.stdout.read()
+        err_output = pipe.stderr.read()
     except OSError, (errno, errstr):
         print "## " + _("error while trying to rotate the picture")
         print "## " + str(errno) + ": " + errstr
         return
         
-    if error != "" :
+    if err_output != "" :
         plustext = ""
         if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
             plustext = _("Nevertheless, there exists an produced (corrupt?) file at:\n" + targetfile)
         print "## " + _("error while trying to rotate the picture")
-        print "## " +  exitstatus
+        print "## " +  std_output
         if plustext != "":
             print "## " + plustext
-        text = _("rotating didn't succeed on:")
+        text = "<big><b>" + _("rotating didn't succeed on") + "</b></big>:"
         text += " \n\n " + file + "\n\n" 
-        text += "<b>" + error + "</b>\n\n"
+        text += "<b>" + err_output + "</b>\n\n"
         if plustext != "":
             text += plustext
         text += "\n\n" + _("(may contact mac@calmar.ws)")
@@ -835,7 +874,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
                 print "## " + _("Error while tyring to replace the original file")
                 print "## " + str(errno) + ": " + errstr
                 print "## " + _("you find your file now at:\n") + trimlongline(targetfile, 65)
-                text =  _("replacing your original file didn't succeed on:")
+                text =  "<big><b>" + _("replacing your original file didn't succeed on:") + "</b></big>"
                 text += "\n\n" + file + "\n\n"
                 text += "<b>" + str(errno) + ": " + errstr + "</b>\n\n"
                 text += "\n" + _("you find your file now at:") + "\n" + targetfile
@@ -847,7 +886,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
            print "## " + str(errno) + ": " + errstr
            print "## " + _("you find the rotated file now at:")
            print "## " + trimlongline(targetfile, 65)
-           text = _("replacing your original file didn't succeed on:")
+           text = "<big><b>" + _("replacing your original file didn't succeed on:") + "</b></big>"
            text += "\n\n " + file + "\n\n"
            text += "<b>" + str(errno) + ": " + errstr + "</b>\n\n"
            text += "\n" + _("you find your rotated file now at:") + "\n" + targetfile
@@ -855,10 +894,10 @@ def dialog_rotate(widget, dialog, direction): # {{{
            show_mesbox(dialog,text)
     else:
         print "## " + _("Error while tyring to rotate the file")
-        print "## " + exitstatus
-        text = _("rotating didn't succeed on:")
+        print "## " + std_output
+        text = "<big><b>" + _("rotating didn't succeed on:") + "</b></big>"
         text += "\n\n " + file + "\n\n"
-        text += exitstatus + "\n\n"
+        text += std_output + "\n\n"
         text += _("(may contact mac@calmar.ws )  ")
         show_mesbox(dialog,text)
             
@@ -874,12 +913,9 @@ def stopprogress(widget, data): #{{{
 def start_resize(widget, event, data=None): #{{{ 
     global general
     global imgprocess
-# cheched until 
-#HEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRRRRREEEEEEEEEEEEEEEEEEEEEEEE
-#HEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRRRRREEEEEEEEEEEEEEEEEEEEEEEE
-# messagebox when there are no files selexted
+# messagebox when there are no files selected
     if len(imgprocess["files_todo"]) == 0:
-        show_mesbox(general["window"], _("Select some <b>pics</b> to work on"))
+        show_mesbox(general["window"], "<big><b>" + _("Select some <b>pics</b> to work on") + "</b></big>")
         return
 
     prefix = imgprocess["ent_prefix"]
@@ -927,7 +963,7 @@ def start_resize(widget, event, data=None): #{{{
 
 # create folder when needed
     if folder != "" and not os.path.exists(splitfile[0] + "/" +folder):
-        print "##" + _("create new folder: ") + folder + "  (" + \
+        print "## " + _("create new folder: ") + folder + "  (" + \
                 trimlongline(splitfile[0],38) + "/" + folder + ")"
         print
         try:
@@ -937,7 +973,7 @@ def start_resize(widget, event, data=None): #{{{
             print "## " + _("was not able to create target directory: converting has stopped")
             print "## " + str(errno) + ": " + errstr
             print
-            text = _("was not able to create your target folder") + "\n\n"
+            text = "<big><b>" + _("was not able to create your target folder") + "</b></big>" + "\n\n"
             text += trimlongline(splitfile[0],48) + "/<b>" + folder + "</b>" + "\n\n"
             text += _("please check that issue first") + "\n\n"
             text += str(errno) + ": " + errstr + "\n\n"
@@ -988,30 +1024,31 @@ def start_resize(widget, event, data=None): #{{{
     for sourcefile in imgprocess["files_todo"]:
         while gtk.events_pending():
             gtk.main_iteration(False)
+# check it stop got pressed
         if imgprocess["stop_progress"] == True:
             general["stop_button"].hide()
             label_progress(str(counter),str(total),_("stopped!"),"color='#550000'") 
             print
             print _("# stop button pressed: converting has stopped ")
             print
-            show_mesbox(general["window"], _("progress stopped"))
+            show_mesbox(general["window"], "<big><b>" + _("progress stopped") + "</b></big>")
             files_print_label(imgprocess["files_todo"])
             return
         counter += 1
-        sourcefile = string.replace(sourcefile, "\\","/")
+# split filenames into pieces and create targetfile name
+#        sourcefile = string.replace(sourcefile, "\\","/") # for what?
         splitfile = os.path.split(sourcefile)
-        resultpath = splitfile[0] + "/"  # targetdir of pics
-        if folder != "":
+        resultpath = splitfile[0] + "/" 
+        if folder != "":    # targetdir of pics
             resultpath += folder + "/" 
-        fname,ext=os.path.splitext(splitfile[1]); 
+        fname,ext=os.path.splitext(splitfile[1]);  # file itself
         if ftype == "":
             target_ext = ext
         else:
             target_ext = ftype
         targetfile = resultpath + prefix + fname + suffix + target_ext
-# source and target file not set
 
-# some printing again
+# some printing issue
         if dist == "":  # initialisize only once
             dist = len(splitfile[1]) + 1 # first sourcefile (no path) + 1
 
@@ -1063,9 +1100,8 @@ _("(...cowardly refuses to overwrite)")
                 print
                 files_print_label(imgprocess["files_todo"])
                 return
-
-        elif general["what_todo"] == "overwrite":
-            general["what_todo"] = ""
+            elif general["what_todo"] == "overwrite":
+                general["what_todo"] = ""
 
         pre = ""
         if general["py2exe"]:
@@ -1085,8 +1121,8 @@ _("(...cowardly refuses to overwrite)")
         try: 
             pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                     stderr=subprocess.PIPE, shell=False)
-            exitstatus = pipe.stdout.read()
-            error = pipe.stderr.read()
+            std_output = pipe.stdout.read()
+            err_output = pipe.stderr.read()
         except OSError, (errno, errstr):
             print "## " + _("error while trying to convert the picture")
             print "## " + str(errno) + ": " + errstr
@@ -1109,9 +1145,9 @@ _("(...cowardly refuses to overwrite)")
             else:
                 continue
             
-        if error != "" : # an error, since not empty or so
+        if err_output != "" : # an error, since not empty or so
             print "## " + _("ERROR while working on that picture")
-            print error
+            print "## " + err_output
             print
             if os.path.exists(targetfile) and os.path.getsize(targetfile) == 0 : # del bogus
                 try: 
@@ -1125,7 +1161,7 @@ _("(...cowardly refuses to overwrite)")
 
             text = _("imagemagick terminated with an <b>error</b> while working on:")
             text += " \n\n " + sourcefile + "\n\n"
-            text += "<b>" + error + "</b>\n\n"
+            text += "<b>" + err_output + "</b>\n\n"
             text += _("(may contact mac@calmar.ws)  ")
             show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
             if general["d_what_pressed"] != "ok_pressed":
@@ -1325,7 +1361,7 @@ def main(): #{{{ OK
     label = gtk.Label()
     label.set_markup('<span foreground="#000060"><b>&lt;' + _("PREFIX") + '&gt;</b></span>file.jpg')
     vbox.pack_start(label, False, False, 0)
-    entry = gtk.Entry(15)
+    entry = gtk.Entry(60)
     entry.set_alignment(0.49)
     entry.set_text(imgprocess["ent_prefix"])
     entry.connect('changed',entries_cb, "ent_prefix")
@@ -1334,7 +1370,7 @@ def main(): #{{{ OK
     label = gtk.Label()
     label.set_markup('\nfile<span foreground="#000060"><b>&lt;' + _("SUFFIX") + '&gt;</b></span>.jpg')
     vbox.pack_start(label, False, False, 0)
-    entry = gtk.Entry(15)
+    entry = gtk.Entry(60)
     entry.set_alignment(0.49)
     entry.set_text(imgprocess["ent_suffix"])
     entry.connect('changed',entries_cb, "ent_suffix")
@@ -1344,7 +1380,7 @@ def main(): #{{{ OK
     label.set_markup('\n<span foreground="#000060"><b>' + _("sub-folder") + "</b></span>, " +\
             _("for\nthe <u>new</u> pics"))
     vbox.pack_start(label, False, False, 0)
-    entry = gtk.Entry(15)
+    entry = gtk.Entry(60)
     entry.set_alignment(0.49)
     entry.set_text(imgprocess["ent_folder"])
     entry.connect('changed',entries_cb, "ent_folder")
