@@ -667,9 +667,6 @@ def dialog_exif_cb(widget, dialog): # {{{
     newcomment = show_exif_dialog(dialog, labeltext,\
             _("cancel"), _("OK, save that"), file)
 
-# well, on windows, then the label gets inserted but with a curious endline thing
-# what will produce an error when reentering like that.
-
     if general["d_what_pressed"] == "ok_pressed":
         pre = ""
         if general["py2exe"]:
