@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-don't commind
-#
 # Copyright (C) 2006 http://www.calmar.ws {{{
 # http://www.calmar.ws/resize/COPYING
 # }}}
