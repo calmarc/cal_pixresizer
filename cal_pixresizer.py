@@ -126,7 +126,7 @@ def files_print_label(files_todo): #{{{
         labeltext += ".....\n" 
         labeltext += trimlongline(files_todo[-1])
 
-    obj = unicode(labeltext, 'latin-1') # utf
+    obj = unicode(labeltext, general["encoding"]) # utf
     utf8string = obj.encode('utf-8')
     general["todolabel"].set_text(utf8string)
 #}}}
@@ -144,7 +144,7 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    obj = unicode(text, 'latin-1')
+    obj = unicode(text, general["encoding"])
     utf8string = obj.encode('utf-8')
     label.set_markup(utf8string)
     label.show()
@@ -177,7 +177,7 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    obj = unicode(file, 'latin-1') # utf
+    obj = unicode(file, general["encoding"]) # utf
     utf8string = obj.encode('utf-8')
     label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(utf8string,68))
     label.show()
@@ -223,7 +223,7 @@ def show_mesbox(parent, text): #{{{
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    obj = unicode(text, 'latin-1')
+    obj = unicode(text, general["encoding"])
     utf8string = obj.encode('utf-8')
     label.set_markup(utf8string)
     label.show()
@@ -466,7 +466,7 @@ def dialog_delete(widget, dialog): # {{{  needs more work
     if general["d_what_pressed"] != "ok_pressed":
         return
     for items in dialog.get_filenames():
-        obj = unicode(items, 'latin-1')
+        obj = unicode(items, general["encoding"])
         item = obj.encode('utf-8')
         if os.path.isdir(item):
             try: 
@@ -530,7 +530,7 @@ def get_jhead_exif(file): #{{{
             if comment != "":
                 comment += "\n"
             comment += item.split(":")[1][1:]
-    obj = unicode(comment, 'latin-1')
+    obj = unicode(comment, general["encoding"])
     utf8string = obj.encode('utf-8')
     return utf8string
 #}}}
@@ -601,7 +601,7 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
 
     tuple = os.path.split(filename)
     if tuple[1] != "":
-        obj = unicode(tuple[1], 'latin-1')
+        obj = unicode(tuple[1], general["encoding"])
         utf8string = obj.encode('utf-8')
         preview[1].set_markup("<b>" + utf8string + "</b>")
     else:
@@ -676,7 +676,7 @@ def dialog_exif_cb(widget, dialog): # {{{
 
         newcomment = newcomment.strip()
         obj = unicode(newcomment, 'utf-8')
-        newcomment = obj.encode('latin-1')
+        newcomment = obj.encode( general["encoding"])
 
         if str(newcomment) == "":  
             tot.append(' ')  # cheating! may change later
@@ -1527,7 +1527,7 @@ def main(): #{{{ OK
 #}}}
 # imports, head (at the bottom hehe)
 #imports... vars...  {{{ OK
-import os, sys,  time, glob, string, shelve, subprocess
+import os, sys,  time, glob, string, shelve, subprocess, locale
 # for pyexe 
 import dbhash
 
@@ -1542,6 +1542,7 @@ import gettext
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 
+
 #if gtk.pygtk_version < (2,4,0):
 #   print "PyGtk 2.4.0"
 #   raise SystemExit
@@ -1551,6 +1552,7 @@ radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assig
 general = { "todolabel"      : gtk.Label(), 
             "stop_button"    : gtk.Button(),
             "acgroup"        : gtk.AccelGroup(), # need for global?
+            "encoding"       : locale.getpreferredencoding(),
             "what_todo"      : "",
             "what_errror"    : "",
             "pic_folder"     : "",
