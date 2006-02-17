@@ -139,7 +139,7 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)    
-    mesbox.set_size_request(500,-1)
+    mesbox.set_size_request(700,-1)
 
     vbox = gtk.VBox()
     vbox.show()
@@ -171,11 +171,16 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     mesbox = gtk.Dialog(_("attention:"), general["window"], gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)    
-    mesbox.set_size_request(500,-1)
+    mesbox.set_size_request(700,-1)
     vbox = gtk.VBox()
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
+
+
+    if not sys.platform in ["win32", "win16", "win64"]:
+        file = utf8_enc(file)  
+
     label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" +\
             trimlongline(file ,68))
     label.show()
@@ -215,12 +220,14 @@ def show_mesbox(parent, text): #{{{
             (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)) 
     mesbox.connect("destroy", quit_self)
     mesbox.connect("delete_event", quit_self)    
-    mesbox.set_size_request(400,-1)
+    mesbox.set_size_request(700,-1)
 
     vbox = gtk.VBox()
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
+    if sys.platform in ["win32", "win16", "win64"]:
+        text = utf8_enc(text)
     label.set_markup(text)
     label.show()
     vbox.pack_start(label, True, True, 15)
@@ -264,7 +271,7 @@ def open_filechooser(widget, event, data=None): #{{{
 
     dialog.set_default_response(gtk.RESPONSE_OK)
     dialog.set_select_multiple(True)
-    dialog.set_size_request(600,-1)
+    dialog.set_size_request(700,-1)
 #
     fileac = gtk.AccelGroup()
     dialog.add_accel_group(general["acgroup"])
