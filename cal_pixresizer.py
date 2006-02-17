@@ -893,6 +893,13 @@ def utf8_enc(text): #{{{
     obj = unicode(text, general["encoding"])
     return obj.encode('utf-8')
 #}}}
+def utf8_enc_list(list): #{{{
+    new = []
+    for item in list:
+        obj = unicode(item, general["encoding"])
+        new.append(obj.encode('utf-8'))
+    return new
+#}}}
 def stopprogress(widget, data): #{{{
     global imgprocess
 #   callback for setting var while someone presses stop during progress
@@ -1398,33 +1405,6 @@ def main(): #{{{ OK
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
 
-#########################################################################
-#  advanced options
-
-#    box = gtk.HBox(False, 0)
-#    mainbox.pack_start(box, False, False, 0)
-
-#    label = gtk.Label()
-#    label.set_markup( _("<b>option:</b>"))
-#    box.pack_start(label, False, False, 0)
-#    combo = gtk.combo_box_new_text()
-#    combo.set_wrap_width(1)
-#    list = ["", "-resize", "-strip", "-unsharp", "-vignette" ,"-tint", "-trim", "-unsharp",\
-#            "-threshold", "-radial-blur", "-posterize" ]
-#    list.sort()
-#    for ext in list:
-#        combo.append_text(ext)
-#    combo.set_active(0)
-#    box.pack_start(combo, False, False, 0)
-#    combo.connect('changed', options_cb)
-
-#    button = gtk.CheckButton("Width/Hight as max")
-#    button.connect("toggled", options_cb, "max")
-#    box.pack_start(button, False, False, 0)
-
-#    separator = gtk.HSeparator()
-#    mainbox.pack_start(separator, False, False, 5)
-
 ## todo label
     box = gtk.HBox(False, 0)
     mainbox.pack_start(box, False, False, 0)
@@ -1598,7 +1578,6 @@ adj.connect("value_changed", get_spin_focus, "radio_quality" )
 imgprocess["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
 imgprocess["spinQuality"].set_numeric(True)
 
-# load saved data
 print "================================================="
 print "Calmar's Picture Resizer - a Imagemagick Frontend"
 print "================================================="
