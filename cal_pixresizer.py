@@ -138,7 +138,7 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)    
-    mesbox.set_size_request(500,300)
+    mesbox.set_size_request(500,-1)
 
     vbox = gtk.VBox()
     vbox.show()
@@ -172,7 +172,7 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     mesbox = gtk.Dialog(_("attention:"), general["window"], gtk.DIALOG_MODAL, ()) 
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)    
-    mesbox.set_size_request(500,300)
+    mesbox.set_size_request(500,-1)
     vbox = gtk.VBox()
     vbox.show()
     label = gtk.Label()
@@ -268,7 +268,7 @@ def open_filechooser(widget, event, data=None): #{{{
 
     dialog.set_default_response(gtk.RESPONSE_OK)
     dialog.set_select_multiple(True)
-    dialog.set_size_request(600,500)
+    dialog.set_size_request(600,-1)
 #
     fileac = gtk.AccelGroup()
     dialog.add_accel_group(general["acgroup"])
