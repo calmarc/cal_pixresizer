@@ -126,7 +126,7 @@ def files_print_label(files_todo): #{{{
         labeltext += ".....\n" 
         labeltext += trimlongline(files_todo[-1])
 
-    general["todolabel"].set_text(labeltext)
+    general["todolabel"].set_text(utf8_enc(labeltext))
 #}}}
 #}}}
 # little gui
@@ -173,7 +173,8 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(file,68))
+    label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" +\
+            trimlongline(file ,68))
     label.show()
     vbox.pack_start(label, True, True, 10)
     align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
@@ -587,7 +588,7 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
 
     tuple = os.path.split(filename)
     if tuple[1] != "":
-        preview[1].set_markup("<b>" + tuple[1] + "</b>")
+        preview[1].set_markup("<b>" + utf8_enc(tuple[1]) + "</b>")
     else:
         preview[1].set_markup("<b>(got no name)</b>")
     if os.path.exists(filename): # once was necessary on M$, so...
