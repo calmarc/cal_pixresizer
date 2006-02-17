@@ -126,9 +126,10 @@ def files_print_label(files_todo): #{{{
         labeltext += ".....\n" 
         labeltext += trimlongline(files_todo[-1])
 
-    obj = unicode(labeltext, general["encoding"]) # utf
-    utf8string = obj.encode('utf-8')
-    general["todolabel"].set_text(utf8string)
+#    obj = unicode(labeltext, general["encoding"]) # utf
+#    utf8string = obj.encode('utf-8')
+#    general["todolabel"].set_text(utf8string)
+    general["todolabel"].set_text(labeltext)
 #}}}
 #}}}
 # little gui
@@ -144,9 +145,10 @@ def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    obj = unicode(text, general["encoding"])
-    utf8string = obj.encode('utf-8')
-    label.set_markup(utf8string)
+#    obj = unicode(text, general["encoding"])
+#    utf8string = obj.encode('utf-8')
+#    label.set_markup(utf8string)
+    label.set_markup(text)
     label.show()
     vbox.pack_start(label, True, True, 15)
     align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
@@ -177,9 +179,10 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    obj = unicode(file, general["encoding"]) # utf
-    utf8string = obj.encode('utf-8')
-    label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(utf8string,68))
+#    obj = unicode(file, general["encoding"]) # utf
+#    utf8string = obj.encode('utf-8')
+#    label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(utf8string,68))
+    label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" + trimlongline(file,68))
     label.show()
     vbox.pack_start(label, True, True, 10)
     align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
@@ -223,9 +226,10 @@ def show_mesbox(parent, text): #{{{
     vbox.show()
     label = gtk.Label()
     label.set_line_wrap(True)
-    obj = unicode(text, general["encoding"])
-    utf8string = obj.encode('utf-8')
-    label.set_markup(utf8string)
+#    obj = unicode(text, general["encoding"])
+#    utf8string = obj.encode('utf-8')
+#    label.set_markup(utf8string)
+    label.set_markup(text)
     label.show()
     vbox.pack_start(label, True, True, 15)
     align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
@@ -465,7 +469,8 @@ def dialog_delete(widget, dialog): # {{{  needs more work
     show_2_dialog(dialog, text, _("cancel"), _("yes"))
     if general["d_what_pressed"] != "ok_pressed":
         return
-    for items in dialog.get_filenames():
+    for item in dialog.get_filenames():
+#    for items in dialog.get_filenames():
 #        obj = unicode(items, general["encoding"])
 #        item = obj.encode('utf-8')
         if os.path.isdir(item):
@@ -530,6 +535,7 @@ def get_jhead_exif(file): #{{{
             if comment != "":
                 comment += "\n"
             comment += item.split(":")[1][1:]
+# return as uft-8
     obj = unicode(comment, general["encoding"])
     utf8string = obj.encode('utf-8')
     return utf8string
@@ -601,8 +607,8 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
 
     tuple = os.path.split(filename)
     if tuple[1] != "":
-        obj = unicode(tuple[1], general["encoding"])
-        utf8string = obj.encode('utf-8')
+#        obj = unicode(tuple[1], general["encoding"])
+#        utf8string = obj.encode('utf-8')
         preview[1].set_markup("<b>" + utf8string + "</b>")
     else:
         preview[1].set_markup("<b>(got no name)</b>")
@@ -675,6 +681,7 @@ def dialog_exif_cb(widget, dialog): # {{{
         tot.append("-cl")
 
         newcomment = newcomment.strip()
+# reverse encoding here, hm
         obj = unicode(newcomment, 'utf-8')
         newcomment = obj.encode( general["encoding"])
 
