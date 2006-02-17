@@ -126,7 +126,10 @@ def files_print_label(files_todo): #{{{
         labeltext += ".....\n" 
         labeltext += trimlongline(files_todo[-1])
 
-    general["todolabel"].set_text(utf8_enc(labeltext))
+    if sys.platform in ["win32", "win16", "win64"]:
+        general["todolabel"].set_text(labeltext)
+    else:
+        general["todolabel"].set_text(utf8_enc(labeltext))
 #}}}
 #}}}
 # little gui
@@ -588,7 +591,10 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
 
     tuple = os.path.split(filename)
     if tuple[1] != "":
-        preview[1].set_markup("<b>" + utf8_enc(tuple[1]) + "</b>")
+        if sys.platform in ["win32", "win16", "win64"]:
+            preview[1].set_markup("<b>" + tuple[1] + "</b>")
+        else:
+            preview[1].set_markup("<b>" + utf8_enc(tuple[1]) + "</b>")
     else:
         preview[1].set_markup("<b>(got no name)</b>")
     if os.path.exists(filename): # once was necessary on M$, so...
