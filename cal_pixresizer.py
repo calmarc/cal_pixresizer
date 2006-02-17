@@ -466,8 +466,8 @@ def dialog_delete(widget, dialog): # {{{  needs more work
     if general["d_what_pressed"] != "ok_pressed":
         return
     for items in dialog.get_filenames():
-        obj = unicode(items, general["encoding"])
-        item = obj.encode('utf-8')
+#        obj = unicode(items, general["encoding"])
+#        item = obj.encode('utf-8')
         if os.path.isdir(item):
             try: 
                 os.rmdir(item) 
@@ -1552,7 +1552,8 @@ radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assig
 general = { "todolabel"      : gtk.Label(), 
             "stop_button"    : gtk.Button(),
             "acgroup"        : gtk.AccelGroup(), # need for global?
-            "encoding"       : locale.getpreferredencoding(),
+#            "encoding"       : locale.getpreferredencoding(),
+            "encoding"       : "latin-1",
             "what_todo"      : "",
             "what_errror"    : "",
             "pic_folder"     : "",
