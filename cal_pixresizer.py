@@ -90,7 +90,7 @@ def files_print_label(files_todo): #{{{
         labeltext += trimlongline(files_todo[-1])
 
 # encoding hack. grr
-    if sys.platform in ["win32", "win16", "win64"]:
+    if general["mswin"]:
         general["todolabel"].set_text(labeltext)
     else:
         general["todolabel"].set_text(utf8_enc(labeltext))
@@ -203,7 +203,7 @@ def show_overwrite_dialog(file): #{{{ #merge with the above maybe?
     label = gtk.Label()
     label.set_line_wrap(True)
 # encoding hack. grr
-    if not sys.platform in ["win32", "win16", "win64"]:
+    if not general["mswin"]:
         file = utf8_enc(file)  
 
     label.set_markup(_("Target picture <b>already exists</b>:") + "\n\n" +\
@@ -252,8 +252,9 @@ def show_mesbox(parent, text): #{{{
     label = gtk.Label()
     label.set_line_wrap(True)
 # encoding hack. grr
-    if sys.platform in ["win32", "win16", "win64"]:
-        text = utf8_enc(text)
+#    if general["mswin"]:
+#        text = utf8_enc(text)
+    text = utf8_enc(text)
     label.set_markup(text)
     label.show()
     vbox.pack_start(label, True, True, 15)
@@ -454,7 +455,7 @@ def open_filechooser(widget, event, data=None): #{{{
 
 # starting folder
     if general["pic_folder"] == "":
-        if sys.platform in ["win32", "win16", "win64"]:
+        if general["mswin"]:
           homevar = os.getenv("HOMEDRIVE")
           homevar += "\\" + str(os.getenv("HOMEPATH"))
           if os.path.exists(homevar + "\My Documents"): homevar += "\My Documents"
@@ -496,7 +497,7 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
     tuple = os.path.split(filename)
     if tuple[1] != "":
 # encoding hack. grr
-        if sys.platform in ["win32", "win16", "win64"]:
+        if general["mswin"]:
             preview[1].set_markup("<b>" + tuple[1] + "</b>")
         else:
             preview[1].set_markup("<b>" + utf8_enc(tuple[1]) + "</b>")
@@ -819,7 +820,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
 #             view pics
 def dialog_viewpics(widget, dialog): # {{{
     if general["viewer"] == "":
-        if sys.platform in ["win32", "win16", "win64"]:
+        if general["mswin"]:
             print "## " + _("select first your viewer (whatever you have) and then try again")
             dialog_setupviewer(None, dialog) #### hmmm
             return
@@ -839,7 +840,7 @@ def dialog_viewpics(widget, dialog): # {{{
         return
 
     tot = [general["viewer"]]
-    if sys.platform in ["win32", "win16", "win64"]:
+    if general["mswin"]:
         tot.append(files[0])  # for windows viewer only one file?
     else:
         tot += files_show
@@ -882,7 +883,7 @@ def dialog_setupviewer(widget, dialog_main): #{{{
     label = gtk.Label()
 
     text = "\n" + _("<b>Select</b> your <b>previewer</b> for your images - e.g:") + "\n\n"
-    if sys.platform in ["win32", "win16", "win64"]:
+    if general["mswin"]:
         text += "            C:\\Programs\\irfanview\\<b>i_view32.exe</b>" + "\n"
         text += "            C:\\Programs\\GIMP-2.0\\bin\\<b>gimp-2.2.exe</b>" + "\n"
         text += "            <b>.....</b>" + "\n"
@@ -1552,6 +1553,7 @@ general = { "todolabel"      : gtk.Label(),
             "bin_folder"     : "",
             "d_what_pressed" : "",
             "viewer"         : "",
+            "mswin"          : False,
             "stop_progress"  : False,
             "py2exe"         : False,
             "sizebox"        : True,
@@ -1569,6 +1571,9 @@ if sys.path[0][-12:] == "\library.zip":  #for py2exe
 else:
     general["cwd"] = sys.path[0] + "/"
 gettext.bindtextdomain('cal_pixresizer', general["cwd"] + "locale")
+
+if general["mswin"]:
+    general["mswin"] = True
 
 # imgprocess (global)- data (source) for image processing
 imgprocess = { "ent_prefix"  : "",
