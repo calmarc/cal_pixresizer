@@ -781,7 +781,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
     if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
         try:
             if ( fileext[1] == ".jpg" or fileext[1] == ".jpeg" ) and \
-                    (os.path.getsize(file) - 40920) > os.path.getsize(targetfile):
+                    (os.path.getsize(file) - 51200) > os.path.getsize(targetfile):
                 print "## " + _("Your rotated jpg is smaller than your original file") 
                 print "## " + _("I won't overwrite the file. Find your rotated file, now,") 
                 print "## " + _("with an _rot suffix added") 
