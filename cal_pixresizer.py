@@ -293,7 +293,7 @@ def open_filechooser(widget, event, data=None): #{{{
 
     dialog.set_default_response(gtk.RESPONSE_OK)
     dialog.set_select_multiple(True)
-    dialog.set_size_request(700,-1)
+    dialog.set_size_request(700,500)
 
     fileac = gtk.AccelGroup()
     dialog.add_accel_group(general["acgroup"])
@@ -322,7 +322,7 @@ def open_filechooser(widget, event, data=None): #{{{
     hbox.pack_start(table, False, False, 0)
 
     label = gtk.Label()
-    label.set_markup('<span color="#8a0000">' + _("<b><u>d</u>elete</b> selection") + '</span>')
+    label.set_markup('<span color="#8a0000" size="larger">' + _("<b><u>d</u></b>elete selection") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -332,7 +332,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 1, 2, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup('<span color="#00008a">' + _("select <b><u>a</u>ll</b> images") + '</span>')
+    label.set_markup('<span color="#00008a" size="larger">' + _("select <b><u>a</u></b>ll images") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -342,7 +342,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 2, 3, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup('<span color="#002a00">' + _("<b>pre<u>v</u>iew</b> pictures") + '</span>')
+    label.set_markup('<span color="#002a00" size="larger">' + _("pre<b><u>v</u></b>iew pictures") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -352,7 +352,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 3, 4, 0, 1, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup('<span color="#402a20">' + _("rotate <b>l<u>e</u>ft</b>") + '</span>')
+    label.set_markup('<span color="#402a20" size="larger">' + _("rotate l<b><u>e</u></b>ft") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -362,7 +362,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup('<span color="#402a20">' + _("rotate <b><u>r</u>ight</b>") + '</span>')
+    label.set_markup('<span color="#402a20" size="larger">' + _("rotate <b><u>r</u></b>ight") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -372,7 +372,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 2, 3, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup('<span color="#405a30">' + _("choose viewer") + '</span>')
+    label.set_markup('<span color="#405a30" size="larger">' + _("choose viewer") + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -381,7 +381,7 @@ def open_filechooser(widget, event, data=None): #{{{
     table.attach(button, 3, 4, 1, 2, gtk.FILL)
 
     label = gtk.Label()
-    label.set_markup('<span color="#610e4d">' + _('edit <b>e<u>x</u>if</b> comment') + '</span>')
+    label.set_markup('<span color="#610e4d" size="larger">' + _('edit e<b><u>x</u></b>if comment') + '</span>')
     label.show()
     button = gtk.Button()
     button.add(label)
@@ -744,7 +744,7 @@ def dialog_rotate(widget, dialog, direction): # {{{
         return
 
     fileext = os.path.splitext(file)
-    targetfile = file + ".rotate_tmp" + fileext[1]
+    targetfile = file + "_rot" + fileext[1]
     pre = ""
     if general["py2exe"]:
         pre = general["cwd"]
@@ -780,20 +780,34 @@ def dialog_rotate(widget, dialog, direction): # {{{
     ## (hopefully) secure overwriting
     if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
         try:
-            os.remove(file) # could also first move for more security
-            try:
-                os.rename(targetfile, file)
-                print "## " + _("rotated") + "(" + direction + "): " + trimlongline(file, 62)
-            except OSError, (errno, errstr):
-                print "## " + _("Error while tyring to replace the original file")
-                print "## " + str(errno) + ": " + errstr
-                print "## " + _("you find your file now at:\n") + trimlongline(targetfile, 65)
-                text =  "<big><b>" + _("replacing your original file didn't succeed on:") + "</b></big>"
-                text += "\n\n" + file + "\n\n"
-                text += "<b>" + str(errno) + ": " + errstr + "</b>\n\n"
-                text += "\n" + _("you find your file now at:") + "\n" + targetfile
-                text += "\n\n" + _("(may contact mac@calmar.ws)")
+            if ( fileext[1] == ".jpg" or fileext[1] == ".jpeg" ) and \
+                    (os.path.getsize(file) - 40920) > os.path.getsize(targetfile):
+                print "## " + _("Your rotated jpg is smaller than your original file") 
+                print "## " + _("I won't overwrite the file. Find your rotated file, now,") 
+                print "## " + _("with an _rot suffix added") 
+                text = "<b>" + _("target file is smaller than your original file") + "</b>"
+                text += "\n\n" + _("I won't replace your original file.")
+                text += _("You find your rotated file now with an '_rot' suffix.") + "\n\n"
+                text += _("imagemagick's jpeg rotate is not lossless, so don't use it on ")
+                text += _("your original pictures")
                 show_mesbox(dialog,text)
+                dialog.set_current_folder(dialog.get_current_folder())
+            else:
+                os.remove(file) # could also first move for more security
+                try:
+                    os.rename(targetfile, file)
+                    print "## " + _("rotated") + "(" + direction + "): " + trimlongline(file, 62)
+                except OSError, (errno, errstr):
+                    print "## " + _("Error while tyring to replace the original file")
+                    print "## " + str(errno) + ": " + errstr
+                    print "## " + _("you find your file now at:\n") + trimlongline(targetfile, 65)
+                    text =  "<big><b>" + _("replacing your original file didn't succeed on:") +\
+                            "</b></big>"
+                    text += "\n\n" + file + "\n\n"
+                    text += "<b>" + str(errno) + ": " + errstr + "</b>\n\n"
+                    text += "\n" + _("you find your file now at:") + "\n" + targetfile
+                    text += "\n\n" + _("(may contact mac@calmar.ws)")
+                    show_mesbox(dialog,text)
 
         except OSError, (errno, errstr):
            print "## " + _("ERROR while trying to replace your file with the rotated one")
@@ -843,7 +857,7 @@ def dialog_viewpics(widget, dialog): # {{{
     if general["mswin"]:
         tot.append(files[0])  # for windows viewer only one file?
     else:
-        tot += files_show
+        tot += file_show
     try:
         pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                 stderr=subprocess.PIPE, shell=False)
@@ -1054,7 +1068,7 @@ def start_resize(widget, event, data=None): #{{{
             return
         counter += 1
 # split filenames into pieces and create targetfile name
-#        sourcefile = string.replace(sourcefile, "\\","/") # for what?
+        sourcefile = string.replace(sourcefile, "\\","/") # for later source == target?
         splitfile = os.path.split(sourcefile)
         resultpath = splitfile[0] + "/" 
         if folder != "":    # targetdir of pics
@@ -1572,7 +1586,7 @@ else:
     general["cwd"] = sys.path[0] + "/"
 gettext.bindtextdomain('cal_pixresizer', general["cwd"] + "locale")
 
-if general["mswin"]:
+if sys.platform in ["win32", "win16", "win64"]:
     general["mswin"] = True
 
 # imgprocess (global)- data (source) for image processing
