@@ -4,6 +4,7 @@
 ### little FUNCTIONS 
 #              gui related
 #}}}
+# little gui
 def quit_widget(widget, data): #{{{
     data.hide()
     data.destroy()
@@ -103,6 +104,7 @@ def create_radios(vbox,values,text, id_radio, default): #{{{
     return radio # return last radio thing for spinner
 #              various
 #}}}
+# little various
 def trimlongline(item, size=72): #{{{
     if len(item) >= size:
         item = item[0:size/4] + "..." + item[-1*((size-size/4)-3):]
@@ -153,9 +155,10 @@ def utf8_enc(text): #{{{
     return obj.encode('utf-8')
 ### various mesboxes
 #}}}
+# messageboxes
 def show_2_dialog(parent_widget, text, button_quit, button_ok): #{{{
     global general
-    general["d_what_pressed"] == ""
+    general["dialot2_q"] == ""
     mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ())
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)
@@ -230,8 +233,6 @@ def show_overwrite_dialog(filename): # merge with the above maybe? #{{{
     button.show()
     mesbox.show()
     mesbox.run()
-    while gtk.events_pending():
-        gtk.main_iteration(False)
 #}}}
 def show_mesbox(parent, text): #{{{
     mesbox = gtk.Dialog(_("Calmar's Picture Resizer"), parent, gtk.DIALOG_MODAL,\
@@ -264,18 +265,326 @@ def show_mesbox(parent, text): #{{{
 #}}}
 def overwrite_destroy(widget, data): #{{{
     global general
-    general["what_todo"] = str(data[1])
+    general["overwrite_q"] = str(data[1])
     data[0].hide()
     data[0].destroy()
 #}}}
 def dialog_2_destroy(widget, data): # (merge with overwritedestroy?) #{{{
     global general
-    general["d_what_pressed"] = str(data[1])
+    general["dialot2_q"] = str(data[1])
     data[0].hide()
     data[0].destroy()
 ### FileChooser things
 #}}}
-def open_filechooser(widget, event, data=None): #{{{
+# converting loop
+def create_subfolder(folder, filen): #{{{
+    if folder != "" and not os.path.exists(filen + "/" + folder):
+        print "## %s: %s (%s/%s)" % (_("create new folder: "), folder,
+                     trimlongline(filen, 38), folder)
+        try:
+            os.mkdir(filen + "/" + folder)
+        except OSError, (errno, errstr):
+            print
+            print "## %s" % _("was not able to create target directory: converting will stop")
+            print "## %s: %s" % (str(errno), errstr)
+            print
+
+            text = "<big><b>%s</b></big>\n\n%s/<b>%s</b>\n\n%s\n\n%s: %s" % (
+                    _("was not able to create your target folder"),
+                    trimlongline(filen ,48), folder,
+                    _("please check that issue first"),
+                    str(errno), errstr)
+            show_mesbox(general["window"], text)
+            return False
+    else:
+        print "## %s" % _("sub-folder exists already")
+    return True
+#}}}
+def print_settings(width, height, usesize, quality,  folder, prefix, suffix, ftype): #{{{
+    if width == "9999":
+       width_here = _("unlimited")
+    else:
+       width_here = width
+
+    if height == "9999":
+       height_here = _("unlimited")
+    else:
+       height_here = height
+
+    if usesize:
+        if width == "9999" and height == "9999":
+            reso = "%s x %s (--> keep lenght 100%%)" % (width_here, height_here)
+        else:
+            reso = "%s x %s" % (width_here, height_here)
+    else:
+        reso = percent + "%"
+
+    print """\
+## create new pictures: resizing   : %-s
+                        quality    : %-s
+                        folder     : %-s
+                        prefix     : %-s
+                        suffix     : %-s
+                        convert to : %-s""" % \
+                              (reso, quality, folder, prefix, suffix, ftype)
+
+    print
+#}}}
+def get_imgprocess(): #{{{
+    prefix = imgprocess["ent_prefix"]
+    suffix = imgprocess["ent_suffix"]
+    folder = imgprocess["ent_folder"]
+    usesize = True
+    if general["percentbox"].get_property("sensitive"):
+        usesize = False
+    if imgprocess["width"] == "0": # then, the spinner is selected
+        width = str(imgprocess["spinWidth"].get_value_as_int())
+    else:
+        width = str(imgprocess["width"])
+    if imgprocess["height"] == "0":
+        height = str(imgprocess["spinHeight"].get_value_as_int())
+    else:
+        height = str(imgprocess["height"])
+    if imgprocess["percent"] == "0":
+        percent = str(imgprocess["spinPercent"].get_value_as_int())
+    else:
+        percent = str(imgprocess["percent"])
+    if imgprocess["quality"] == "0":
+        quality = str(imgprocess["spinQuality"].get_value_as_int())
+    else:
+        quality = str(imgprocess["quality"])
+    ftype = imgprocess["ftype"]
+    return (prefix, suffix, folder, usesize, width, height, percent, quality, ftype)
+#}}}
+def no_files_there_selected(): #{{{
+    if not imgprocess["files_todo"]:
+        show_mesbox(general["window"], "<big><b>%s</b></big>" % (
+                _("Select some <b>pics</b> to work on")))
+        return True
+#}}}
+def print_stop_message(counter, total): #{{{
+    general["stop_button"].hide()
+    label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
+    print
+    print "## %s" % _("stop button pressed: converting has stopped")
+    print
+    show_mesbox(general["window"], "<big><b>%s</b></big>" % _("progress stopped"))
+    files_print_label(imgprocess["files_todo"])
+#}}}
+def go_on_source_is_equal_target(counter, total): #{{{
+    print "## " + _("source and target are the same!")
+    text = "%s\n\n%s" % (_("<b>source</b> and <b>target</b> are the same!"),
+            _("(...cowardly refuses to overwrite)"))
+    show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
+    if general["dialot2_q"] != "ok_pressed":
+        general["stop_button"].hide()
+        label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
+        while gtk.events_pending():
+            gtk.main_iteration(False)
+        time.sleep(2.0)
+        print
+        print "## %s" % _("converting has stopped")
+        print
+        files_print_label(imgprocess["files_todo"])
+        return False
+    else:
+        return True
+#}}}
+def start_resize(widget, event, data=None): #{{{
+    global general
+    global imgprocess
+
+    if no_files_there_selected():
+        return
+# get imgprocess data
+    prefix, suffix, folder, usesize, width, height, percent, quality, ftype = get_imgprocess()
+
+# messagebox when there is no suff, pre or folder
+    if prefix == "" and suffix == "" and folder == "" and ftype == "":
+            text = _("""  At least <u>one</u> must be set:
+
+              -> <b>Prefix</b>
+              -> <b>Suffix</b>
+              -> <b>subfolder to create pics in</b>
+              -> <b>picture type</b>
+
+ in order to prevent overwriting the original pictures""")
+            show_mesbox(general["window"], text)
+            return
+
+# to get the path of sample (first) file
+    splitfile = os.path.split(imgprocess["files_todo"][0])
+
+# create folder when needed
+    if not create_subfolder(folder, splitfile[0]):
+        return
+# just some konsole messages
+    print_settings(width, height, usesize, quality, folder, prefix, suffix, ftype)
+
+# loop preparations
+    total = len(imgprocess["files_todo"])
+    counter = 0
+    dist = ""
+    imgprocess["stop_progress"] = False
+    general["stop_button"].show()
+    general["stop_button"].grab_focus()
+    general["overwrite_q"] != ""
+#######################################################################
+# begin the loop
+#######################################################################
+    for sourcefile in imgprocess["files_todo"]:
+        while gtk.events_pending():
+            gtk.main_iteration(False)
+# check if stop got pressed
+        if imgprocess["stop_progress"]:
+            print_stop_message(counter, total)
+            return
+        counter += 1
+# split filenames into pieces and create targetfile name
+        sourcefile = string.replace(sourcefile, "\\","/") # for later source == target?
+        splitfile = os.path.split(sourcefile)
+        resultpath = splitfile[0] + "/"
+        if folder != "":    # targetdir of pics
+            resultpath += folder + "/"
+        fname,ext=os.path.splitext(splitfile[1]);  # file itself
+        if ftype == "":
+            target_ext = ext
+        else:
+            target_ext = ftype
+        targetfile = resultpath + prefix + fname + suffix + target_ext
+
+# some printing issue
+        if dist == "":  # initialisize only once
+            dist = len(splitfile[1]) + 1 # first sourcefile (no path) + 1
+
+# print what you're going to do... preparation here
+        command_print = "convert: " + "%-" + str(dist) + "s --> " +\
+                trimlongline(targetfile,58 - dist )
+
+        text = trimlongline(targetfile,65 - dist )
+        label_progress(str(counter), str(total), text,"")
+        print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
+
+# source und target the same?  continue or stop?
+        if sourcefile == targetfile:
+            if go_on_source_is_equal_target(counter, total):
+                continue
+            else:
+                return
+# check if file exists and may show 'overwrite dialog'
+        if os.path.exists(targetfile):
+            if general["overwrite_q"] != "all_overwrite":
+                show_overwrite_dialog(targetfile)
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                if general["overwrite_q"] == "ok_pressed":
+                    general["overwrite_q"] != ""
+                    print _("# skipped: ") + trimlongline(targetfile,58)
+                    continue
+                elif general["overwrite_q"] == "cancel":
+                    general["overwrite_q"] != ""
+                    general["stop_button"].hide()
+                    label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
+                    while gtk.events_pending():
+                        gtk.main_iteration(False)
+                    time.sleep(2.0)
+                    print
+                    print _("# converting has stopped ")
+                    print
+                    files_print_label(imgprocess["files_todo"])
+                    return
+                elif general["overwrite_q"] == "overwrite":
+                    general["overwrite_q"] != ""
+
+        pre = ""
+        if general["py2exe"]:
+            pre = general["cwd"]
+        exe = pre + "convert"
+
+        if usesize:
+            if width == "9999" and height == "9999":
+                resize = "100%"
+            else:
+                resize = width + "x" + height
+        else:
+            resize = percent + "%"
+
+# the actual work/progress
+        tot = [exe, sourcefile,"-resize", resize, "-quality", quality, targetfile]
+        try:
+            pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
+                    stderr=subprocess.PIPE, shell=False)
+            err_output = pipe.stderr.read()
+        except OSError, (errno, errstr):
+            print "## %s" % _("error while trying to convert the picture")
+            print "## %s: %s" % (str(errno), errstr)
+            text = "%s\n\n%s\n\n%s: %s\n\n%s" % (
+                    _("catched an <b>error</b> while working on:"),
+                    sourcefile, str(errno), errstr,
+                    _("(may contact mac@calmar.ws)"))
+            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
+            if general["dialot2_q"] != "ok_pressed":
+                general["stop_button"].hide()
+                label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                time.sleep(2.4)
+                print
+                print "## %s" % _("converting has stopped")
+                print
+                files_print_label(imgprocess["files_todo"])
+                return
+            else:
+                continue
+
+        if err_output != "" : # an error, since not empty or so
+            print "## %s" % _("ERROR while working on that picture")
+            print "## %s" % err_output
+            print
+            if os.path.exists(targetfile) and os.path.getsize(targetfile) == 0 : # del bogus
+                try:
+                    os.remove(targetfile)
+                except OSError,  (errno, errstr):
+                    print "## %s" % _(" there is a currupt (filesize == 0 bytes) generated file")
+                    print "## %s" % targetfile
+                    print "## %s" % _("trying to delete, didn't succeed")
+                    print "## %s: %s" % (str(errno), errstr)
+                    print "## %s" % _("please check that issue yourself as well")
+
+            text = "%s\n\n%s\n<b>%s</b>\n\n%s" % (
+                    _("imagemagick terminated with an <b>error</b> while working on:"),
+                    sourcefile, err_output, _("(may contact mac@calmar.ws)"))
+            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
+            if general["dialot2_q"] != "ok_pressed":
+                general["stop_button"].hide()
+                label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
+                while gtk.events_pending():
+                    gtk.main_iteration(False)
+                time.sleep(2.4)
+                #label_nopic()
+                # imgprocess["files_todo"]=[]
+                print
+                print _("# converting has stopped ")
+                print
+                files_print_label(imgprocess["files_todo"])
+                return
+
+    print
+    print "## %s" % _("progress finished")
+    print
+
+    general["stop_button"].hide()
+    label_progress(str(total),str(total), _("finish!"),"color='#000070'")
+
+    while gtk.events_pending():
+        gtk.main_iteration(False)
+    time.sleep(2.0)
+
+    files_print_label(imgprocess["files_todo"])
+### major GUI
+#}}}
+# filechooser things
+def open_filechooser(widget, acgroup): #{{{
     global general
 
     dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
@@ -288,7 +597,7 @@ def open_filechooser(widget, event, data=None): #{{{
     dialog.set_select_multiple(True)
     dialog.set_size_request(700,500)
 
-    dialog.add_accel_group(general["acgroup"])
+    dialog.add_accel_group(acgroup)
 
 # main vbox overall there
     vbox = gtk.VBox()
@@ -320,7 +629,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button = gtk.Button()
     button.add(label)
     button.show()
-    button.add_accelerator('clicked', general["acgroup"], ord('d'), 0, gtk.ACCEL_VISIBLE )
+    button.add_accelerator('clicked', acgroup, ord('d'), 0, gtk.ACCEL_VISIBLE )
     button.connect("clicked", dialog_delete, dialog)
     table.attach(button, 1, 2, 0, 1, gtk.FILL)
 
@@ -331,7 +640,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button = gtk.Button()
     button.add(label)
     button.show()
-    button.add_accelerator('clicked', general["acgroup"], ord('a'), 0, gtk.ACCEL_VISIBLE )
+    button.add_accelerator('clicked', acgroup, ord('a'), 0, gtk.ACCEL_VISIBLE )
     button.connect("clicked", lambda w, d: d.select_all(), dialog)
     table.attach(button, 2, 3, 0, 1, gtk.FILL)
 
@@ -343,7 +652,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", dialog_viewpics, dialog)
-    button.add_accelerator('clicked', general["acgroup"], ord('v'), 0, gtk.ACCEL_VISIBLE )
+    button.add_accelerator('clicked', acgroup, ord('v'), 0, gtk.ACCEL_VISIBLE )
     table.attach(button, 3, 4, 0, 1, gtk.FILL)
 
     label = gtk.Label()
@@ -354,7 +663,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", dialog_rotate, dialog, "-90")
-    button.add_accelerator('clicked', general["acgroup"], ord('e'), 0, gtk.ACCEL_VISIBLE )
+    button.add_accelerator('clicked', acgroup, ord('e'), 0, gtk.ACCEL_VISIBLE )
     table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
     label = gtk.Label()
@@ -365,7 +674,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button.add(label)
     button.show()
     button.connect("clicked", dialog_rotate, dialog, "+90")
-    button.add_accelerator('clicked', general["acgroup"], ord('r'), 0, gtk.ACCEL_VISIBLE )
+    button.add_accelerator('clicked', acgroup, ord('r'), 0, gtk.ACCEL_VISIBLE )
     table.attach(button, 2, 3, 1, 2, gtk.FILL)
 
     label = gtk.Label()
@@ -384,7 +693,7 @@ def open_filechooser(widget, event, data=None): #{{{
     button = gtk.Button()
     button.add(label)
     button.show()
-    button.add_accelerator('clicked', general["acgroup"], ord('x'), 0, gtk.ACCEL_VISIBLE )
+    button.add_accelerator('clicked', acgroup, ord('x'), 0, gtk.ACCEL_VISIBLE )
     button.connect("clicked", dialog_exif_cb, dialog)
     table.attach(button, 2, 3, 2, 3, gtk.FILL)
 
@@ -542,7 +851,7 @@ def update_preview_cb(file_chooser, preview, exiflabel ): #{{{
 def dialog_delete(widget, dialog): # needs more work #{{{
     text = "<big>%s</big>" % _("are you sure you want to <b>delete</b> selected items - forever?")
     show_2_dialog(dialog, text, _("cancel"), _("yes"))
-    if general["d_what_pressed"] != "ok_pressed":
+    if general["dialot2_q"] != "ok_pressed":
         return
     for item in dialog.get_filenames():
         if os.path.isdir(item):
@@ -611,7 +920,7 @@ def get_jhead_exif(file): #{{{
 #}}}
 def show_exif_dialog(parent_widget, text, button_quit, button_ok, file): #{{{
     global general
-    general["d_what_pressed"] == ""
+    general["dialot2_q"] == ""
     mesbox = gtk.Dialog(_("Exif Dialog:"), parent_widget, gtk.DIALOG_MODAL, ())
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)
@@ -690,7 +999,7 @@ def dialog_exif_cb(widget, dialog): #{{{
                                               _("(see output details on the console)"))
     newcomment = show_exif_dialog(dialog, labeltext, _("cancel"), _("OK, save that"), filen)
 
-    if general["d_what_pressed"] == "ok_pressed":
+    if general["dialot2_q"] == "ok_pressed":
         pre = ""
         if general["py2exe"]:
             pre = general["cwd"]
@@ -938,304 +1247,30 @@ def dialog_setupviewer(widget, dialog_main): #{{{
     dialog.destroy()
 ### converting
 #}}}
-def start_resize(widget, event, data=None): #{{{
-    global general
-    global imgprocess
-# messagebox when there are no files selected
-    if not imgprocess["files_todo"]:
-        show_mesbox(general["window"], "<big><b>%s</b></big>" % (
-                _("Select some <b>pics</b> to work on")))
-        return
+# main and gui
+def gui_todo_box(mainbox): #{{{
+    box = gtk.HBox(False, 0)
+    mainbox.pack_start(box, False, False, 0)
 
-    prefix = imgprocess["ent_prefix"]
-    suffix = imgprocess["ent_suffix"]
-    folder = imgprocess["ent_folder"]
-
-    usesize = True
-    if general["percentbox"].get_property("sensitive"):
-        usesize = False
-
-    if imgprocess["width"] == "0": # then, the spinner is selected
-        width = str(imgprocess["spinWidth"].get_value_as_int())
-    else:
-        width = str(imgprocess["width"])
-    if imgprocess["height"] == "0":
-        height = str(imgprocess["spinHeight"].get_value_as_int())
-    else:
-        height = str(imgprocess["height"])
-    if imgprocess["percent"] == "0":
-        percent = str(imgprocess["spinPercent"].get_value_as_int())
-    else:
-        percent = str(imgprocess["percent"])
-    if imgprocess["quality"] == "0":
-        quality = str(imgprocess["spinQuality"].get_value_as_int())
-    else:
-        quality = str(imgprocess["quality"])
-
-    ftype = imgprocess["ftype"]
-
-# messagebox when there is no suff, pre or folder
-    if prefix == "" and suffix == "" and folder == "" and ftype == "":
-            text = _("""  At least <u>one</u> must be set:
-
-              -> <b>Prefix</b>
-              -> <b>Suffix</b>
-              -> <b>subfolder to create pics in</b>
-              -> <b>picture type</b>
-
- in order to prevent overwriting the original pictures""")
-            show_mesbox(general["window"], text)
-            return
-
-# to get the path of sample file
-    splitfile = os.path.split(imgprocess["files_todo"][0])
-
-# create folder when needed
-    if folder != "" and not os.path.exists(splitfile[0] + "/" + folder):
-        print "## %s: %s (%s/%s)" % (_("create new folder: "), folder,
-                     trimlongline(splitfile[0],38), folder)
+    if imgprocess["files_todo"] != []:
+        files_print_label(imgprocess["files_todo"])
+        counter=0
+        print "## Die Bilder Auswahl:"
         print
-        try:
-            os.mkdir(splitfile[0] + "/" + folder)
-        except OSError, (errno, errstr):
-            print
-            print "## %s" % _("was not able to create target directory: converting has stopped")
-            print "## %s: %s" % (str(errno), errstr)
-            print
-
-            text = "<big><b>%s</b></big>\n\n%s/<b>%s</b>\n\n%s\n\n%s: %s" % (
-                    _("was not able to create your target folder"),
-                    trimlongline(splitfile[0],48), folder,
-                    _("please check that issue first"),
-                    str(errno), errstr)
-            show_mesbox(general["window"], text)
-            return
+        for filen in imgprocess["files_todo"]:
+            counter += 1
+            string = "%3s: " + trimlongline(filen,66)
+            print string % (str(counter))
+        print
     else:
-        print "## %s" % _("sub-folder exists already")
+        label_nopic()
 
-# just some konsole messages
-    if width == "9999":
-       width_here = _("unlimited")
-    else:
-       width_here = width
+    box.pack_start(general["todolabel"], False, False , 0)
 
-    if height == "9999":
-       height_here = _("unlimited")
-    else:
-       height_here = height
-
-    if usesize:
-        if width == "9999" and height == "9999":
-            reso = "%s x %s (--> keep lenght 100%%)" % (width_here, height_here)
-        else:
-            reso = "%s x %s" % (width_here, height_here)
-    else:
-        reso = percent + "%"
-
-    print """\
-## create new pictures: resizing:    %-s
-                        quality:     %-s
-                        folder:      %-s
-                        prefix:      %-s
-                        suffix:      %-s
-                        convert to:  %-s""" % \
-                              (reso, quality, folder, prefix, suffix, ftype)
-
-    print
-
-    total = len(imgprocess["files_todo"])
-    counter = 0
-    dist = ""
-    imgprocess["stop_progress"] = False
-    general["stop_button"].show()
-    general["stop_button"].grab_focus()
-#######################################################################
-# begin the loop
-#######################################################################
-    for sourcefile in imgprocess["files_todo"]:
-        while gtk.events_pending():
-            gtk.main_iteration(False)
-# check if stop got pressed
-        if imgprocess["stop_progress"]:
-            general["stop_button"].hide()
-            label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
-            print
-            print _("# stop button pressed: converting has stopped ")
-            print
-            show_mesbox(general["window"], "<big><b>%s</b></big>" % _("progress stopped"))
-            files_print_label(imgprocess["files_todo"])
-            return
-        counter += 1
-# split filenames into pieces and create targetfile name
-        sourcefile = string.replace(sourcefile, "\\","/") # for later source == target?
-        splitfile = os.path.split(sourcefile)
-        resultpath = splitfile[0] + "/"
-        if folder != "":    # targetdir of pics
-            resultpath += folder + "/"
-        fname,ext=os.path.splitext(splitfile[1]);  # file itself
-        if ftype == "":
-            target_ext = ext
-        else:
-            target_ext = ftype
-        targetfile = resultpath + prefix + fname + suffix + target_ext
-
-# some printing issue
-        if dist == "":  # initialisize only once
-            dist = len(splitfile[1]) + 1 # first sourcefile (no path) + 1
-
-# print what you're going to do... preparation here
-        command_print = "convert: " + "%-" + str(dist) + "s --> " +\
-                trimlongline(targetfile,58 - dist )
-
-        text = trimlongline(targetfile,65 - dist )
-        label_progress(str(counter), str(total), text,"")
-        print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
-
-# source und target the same?   refuse then, may continue     
-        if sourcefile == targetfile:
-            print "## " + _("source and target are the same!")
-            text = "%s\n\n%s" % (_("<b>source</b> and <b>target</b> are the same!"),
-                    _("(...cowardly refuses to overwrite)"))
-            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
-            if general["d_what_pressed"] != "ok_pressed":
-                general["stop_button"].hide()
-                label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
-                while gtk.events_pending():
-                    gtk.main_iteration(False)
-                time.sleep(2.0)
-                print
-                print _("# converting has stopped ")
-                print
-                files_print_label(imgprocess["files_todo"])
-                return
-            else:
-                continue
-
-# check if file exists and may show 'overwrite dialog'
-        if os.path.exists(targetfile):
-            if general["what_todo"] != "all_overwrite":
-                show_overwrite_dialog(targetfile)
-            if general["what_todo"] == "ok_pressed":
-                general["what_todo"] = ""
-                print _("# skipped: ") + trimlongline(targetfile,58)
-                continue
-            elif general["what_todo"] == "cancel":
-                general["what_todo"] = ""
-                general["stop_button"].hide()
-                label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
-                while gtk.events_pending():
-                    gtk.main_iteration(False)
-                time.sleep(2.0)
-                print
-                print _("# converting has stopped ")
-                print
-                files_print_label(imgprocess["files_todo"])
-                return
-            elif general["what_todo"] == "overwrite":
-                general["what_todo"] = ""
-
-        pre = ""
-        if general["py2exe"]:
-            pre = general["cwd"]
-        exe = pre + "convert"
-
-        if usesize:
-            if width == "9999" and height == "9999":
-                resize = "100%"
-            else:
-                resize = width + "x" + height
-        else:
-            resize = percent + "%"
-
-# the actual work/progress
-        tot = [exe, sourcefile,"-resize", resize, "-quality", quality, targetfile]
-        try:
-            pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
-                    stderr=subprocess.PIPE, shell=False)
-            err_output = pipe.stderr.read()
-        except OSError, (errno, errstr):
-            print "## %s" % _("error while trying to convert the picture")
-            print "## %s: %s" % (str(errno), errstr)
-            text = "%s\n\n%s\n\n%s: %s\n\n%s" % (
-                    _("catched an <b>error</b> while working on:"),
-                    sourcefile, str(errno), errstr,
-                    _("(may contact mac@calmar.ws)"))
-            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
-            if general["d_what_pressed"] != "ok_pressed":
-                general["stop_button"].hide()
-                label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
-                while gtk.events_pending():
-                    gtk.main_iteration(False)
-                time.sleep(2.4)
-                print
-                print "## %s" % _("converting has stopped")
-                print
-                files_print_label(imgprocess["files_todo"])
-                return
-            else:
-                continue
-
-        if err_output != "" : # an error, since not empty or so
-            print "## %s" % _("ERROR while working on that picture")
-            print "## %s" % err_output
-            print
-            if os.path.exists(targetfile) and os.path.getsize(targetfile) == 0 : # del bogus
-                try:
-                    os.remove(targetfile)
-                except OSError,  (errno, errstr):
-                    print "## %s" % _(" there is a currupt (filesize == 0 bytes) generated file")
-                    print "## %s" % targetfile
-                    print "## %s" % _("trying to delete, didn't succeed")
-                    print "## %s: %s" % (str(errno), errstr)
-                    print "## %s" % _("please check that issue yourself as well")
-
-            text = "%s\n\n%s\n<b>%s</b>\n\n%s" % (
-                    _("imagemagick terminated with an <b>error</b> while working on:"),
-                    sourcefile, err_output, _("(may contact mac@calmar.ws)"))
-            show_2_dialog(general["window"], text, _("quit processing"), _("skip and go on..."))
-            if general["d_what_pressed"] != "ok_pressed":
-                general["stop_button"].hide()
-                label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
-                while gtk.events_pending():
-                    gtk.main_iteration(False)
-                time.sleep(2.4)
-                #label_nopic()
-                # imgprocess["files_todo"]=[]
-                print
-                print _("# converting has stopped ")
-                print
-                files_print_label(imgprocess["files_todo"])
-                return
-
-    print
-    print "## %s" % _("progress finished")
-    print
-
-    general["stop_button"].hide()
-    label_progress(str(total),str(total), _("finish!"),"color='#000070'")
-
-    while gtk.events_pending():
-        gtk.main_iteration(False)
-    time.sleep(2.0)
-
-    general["what_todo"] = ""
-    files_print_label(imgprocess["files_todo"])
-### major GUI
+    separator = gtk.HSeparator()
+    mainbox.pack_start(separator, False, False, 5)
 #}}}
-def main(): #{{{
-
-    global imgprocess
-
-    general["window"].set_title("Calmar's Picture Resizer - http://www.calmar.ws")
-    general["window"].set_default_size(500,300)
-    general["window"].connect("delete_event", delete_event)
-    general["window"].set_border_width(10)
-
-    mainbox = gtk.VBox(False, 0)
-    general["window"].add(mainbox)
-
-# buttons  in top hbox
-
+def gui_top_box(mainbox): #{{{
     box = gtk.HBox(False, 0)
     mainbox.pack_start(box, False, False, 0)
 
@@ -1258,8 +1293,50 @@ def main(): #{{{
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
 
-#  table  for whole thing there
+#}}}
+def gui_last_box(mainbox, acgroup): #{{{
+    box = gtk.HBox(False, 0)
+    mainbox.pack_start(box, False, False, 0)
 
+    hbox=gtk.HBox()
+    image = gtk.Image()
+    image.set_from_file(general["cwd"] + "bilder/go.png")
+    hbox.pack_end(image, False, False, 0)
+    label = gtk.Label(_("start converting  "))
+    hbox.pack_end(label, False, False, 0)
+    button = gtk.Button()
+    button.add(hbox)
+    button.connect("clicked", start_resize, None)
+    box.pack_end(button, False, False, 0)
+
+    hbox=gtk.HBox()
+    image = gtk.Image()
+    image.set_from_file(general["cwd"] + "bilder/open.png")
+    hbox.pack_end(image, False, False, 0)
+    label = gtk.Label(_("select pictures...  "))
+    hbox.pack_end(label, False, False, 0)
+    button = gtk.Button()
+    button.add(hbox)
+    button.connect("clicked", open_filechooser, acgroup)
+
+    align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+    align.set_padding(0, 0, 5, 15)
+    align.add(button)
+    box.pack_end(align, False, False, 0)
+
+    button.grab_focus()
+
+    hbox=gtk.HBox()
+    image = gtk.Image()
+    image.set_from_file(general["cwd"] + "bilder/stop.png")
+    hbox.pack_end(image, False, False, 0)
+    label = gtk.Label(_("STOP "))
+    hbox.pack_end(label, False, False, 0)
+    general["stop_button"].add(hbox)
+    general["stop_button"].connect("clicked", stopprogress, None)
+    box.pack_end(general["stop_button"], False, False, 0)
+#}}}
+def gui_setting_box(mainbox): #{{{
     table = gtk.Table(rows=6, columns=2, homogeneous=False)
     mainbox.pack_start(table, False, False, 0)
 
@@ -1438,83 +1515,36 @@ def main(): #{{{
 
     separator = gtk.HSeparator()
     mainbox.pack_start(separator, False, False, 5)
+    return but1, but2
+#}}}
+def main(): #{{{
 
-## todo label
-    box = gtk.HBox(False, 0)
-    mainbox.pack_start(box, False, False, 0)
+    global imgprocess
 
-    if imgprocess["files_todo"] != []:
-        files_print_label(imgprocess["files_todo"])
-        counter=0
-        print "## Die Bilder Auswahl:"
-        print
-        for filen in imgprocess["files_todo"]:
-            counter += 1
-            string = "%3s: " + trimlongline(filen,66)
-            print string % (str(counter))
-        print
-    else:
-        label_nopic()
+    general["window"].set_title("Calmar's Picture Resizer - http://www.calmar.ws")
+    general["window"].set_default_size(500,300)
+    general["window"].connect("delete_event", delete_event)
+    general["window"].set_border_width(10)
 
-    box.pack_start(general["todolabel"], False, False , 0)
+    acgroup = gtk.AccelGroup()
+    general["window"].add_accel_group(acgroup)
 
-    separator = gtk.HSeparator()
-    mainbox.pack_start(separator, False, False, 5)
+    mainbox = gtk.VBox(False, 0)
+    general["window"].add(mainbox)
 
-# buttons  in last box
-
-    box = gtk.HBox(False, 0)
-    mainbox.pack_start(box, False, False, 0)
-
-    hbox=gtk.HBox()
-    image = gtk.Image()
-    image.set_from_file(general["cwd"] + "bilder/go.png")
-    hbox.pack_end(image, False, False, 0)
-    label = gtk.Label(_("start converting  "))
-    hbox.pack_end(label, False, False, 0)
-    button = gtk.Button()
-    button.add(hbox)
-    button.connect("clicked", start_resize, None)
-    box.pack_end(button, False, False, 0)
-
-    hbox=gtk.HBox()
-    image = gtk.Image()
-    image.set_from_file(general["cwd"] + "bilder/open.png")
-    hbox.pack_end(image, False, False, 0)
-    label = gtk.Label(_("select pictures...  "))
-    hbox.pack_end(label, False, False, 0)
-    button = gtk.Button()
-    button.add(hbox)
-    button.connect("clicked", open_filechooser, None)
-
-    align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
-    align.set_padding(0, 0, 5, 15)
-    align.add(button)
-    box.pack_end(align, False, False, 0)
-
-    button.grab_focus()
-
-    hbox=gtk.HBox()
-    image = gtk.Image()
-    image.set_from_file(general["cwd"] + "bilder/stop.png")
-    hbox.pack_end(image, False, False, 0)
-    label = gtk.Label(_("STOP "))
-    hbox.pack_end(label, False, False, 0)
-    general["stop_button"].add(hbox)
-    general["stop_button"].connect("clicked", stopprogress, None)
-    box.pack_end(general["stop_button"], False, False, 0)
+    gui_top_box(mainbox)
+    but1, but2 = gui_setting_box(mainbox)
+    gui_todo_box(mainbox)
+    gui_last_box(mainbox, acgroup)
 
 # show
-
     font_desc = pango.FontDescription("Courier")
     if font_desc:
         general["todolabel"].modify_font(font_desc)
 
     general["window"].show_all()
 
-    general["window"].add_accel_group(general["acgroup"])
-
-# if showing depends on size_or_not boolean
+# if showing depends on size_or_not boolean / needs to be at the end or so
     if general["size_or_not"]:
         but1.hide()
         but2.show()
@@ -1555,13 +1585,11 @@ locale.setlocale(locale.LC_ALL, "")
 radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
 general = dict( todolabel  = gtk.Label(),
                 stop_button    = gtk.Button(),
-                acgroup        = gtk.AccelGroup(), # need for global?
                 encoding       = locale.getpreferredencoding(),
-                what_todo      = "",
-                what_errror    = "",
+                overwrite_q    = "",
                 pic_folder     = "",
                 bin_folder     = "",
-                d_what_pressed = "",
+                dialot2_q      = "",
                 viewer         = "",
                 mswin          = False,
                 stop_progress  = False,
