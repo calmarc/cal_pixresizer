@@ -56,7 +56,7 @@ def setcombo(combobox): #{{{
 #              main label
 #}}}
 def label_nopic(): #{{{
-    general["todolabel"].set_markup("\n\n  <b>-- %s --</b> \n\n" % _("no pictures are selected"))
+    general["todolabel"].set_markup("\n\n  <b>-- %s --</b> \n\n" % _("no pictures selected"))
 #}}}
 def label_progress(count, tot, text, colorstring): #{{{
     general["todolabel"].set_markup("\n\n<b>%s (%s/%s): <span %s>%s</span></b>\n\n" %(
