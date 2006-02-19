@@ -5,7 +5,6 @@
 #              gui related
 #}}}
 class maingui:
-
 # little gui
     def quit_widget(self, widget, data): #{{{
         data.hide()
@@ -153,127 +152,6 @@ class maingui:
         return obj.encode('utf-8')
 ### various mesboxes
 #}}}
-# messageboxes
-    def show_2_dialog(self, parent_widget, text, button_quit, button_ok): #{{{
-        global general
-        self.general["dialot2_q"] == ""
-        mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ())
-        mesbox.connect("destroy", self.quit_self, None)
-        mesbox.connect("delete_event", self.quit_self, None)
-        mesbox.set_size_request(700,-1)
-
-        vbox = gtk.VBox()
-        vbox.show()
-        label = gtk.Label()
-        label.set_line_wrap(True)
-        label.set_markup(text)
-        label.show()
-        vbox.pack_start(label, True, True, 15)
-        align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
-        align.set_padding(5, 5, 20, 20)
-        align.show()
-        align.add(vbox)
-        mesbox.vbox.pack_start(align, True, True, 15)
-
-        button = gtk.Button(button_quit)
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.dialog_2_destroy, (mesbox,"quit"))
-        button.show()
-        button = gtk.Button(button_ok)
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.dialog_2_destroy, (mesbox,"ok_pressed"))
-        button.show()
-        button.grab_focus()
-        mesbox.show()
-        mesbox.run()
-#}}}
-    def show_overwrite_dialog(self, filename): # merge with the above maybe? #{{{
-        global general
-        mesbox = gtk.Dialog(_("attention:"), self.general["window"], gtk.DIALOG_MODAL, ())
-        mesbox.connect("destroy", self.quit_self, None)
-        mesbox.connect("delete_event", self.quit_self, None)
-        mesbox.set_size_request(700,-1)
-        vbox = gtk.VBox()
-        vbox.show()
-        label = gtk.Label()
-        label.set_line_wrap(True)
-# encoding hack. grr
-        if not self.general["mswin"]:
-            filename = self.utf8_enc(filename)
-
-        label.set_markup("%s\n\n%s" % (_("Target picture <b>already exists</b>:"), self.trimlongline(filename ,68)))
-        label.show()
-        vbox.pack_start(label, True, True, 10)
-        align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
-        align.set_padding(5, 5, 20, 20)
-        align.show()
-        align.add(vbox)
-        mesbox.vbox.pack_start(align, True, True, 15)
-
-        button = gtk.Button(_("quit processing"))
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.overwrite_destroy, (mesbox,"cancel"))
-        button.show()
-
-        button = gtk.Button(_("skip"))
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.overwrite_destroy, (mesbox,"ok_pressed"))
-        button.grab_focus()
-        button.show()
-
-        button = gtk.Button(_("overwrite"))
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.overwrite_destroy, (mesbox,"overwrite"))
-        button.show()
-        button = gtk.Button(_("ALL overwrite"))
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.overwrite_destroy, (mesbox,"all_overwrite"))
-        button.show()
-        mesbox.show()
-        mesbox.run()
-#}}}
-    def show_mesbox(self, parent, text): #{{{
-        mesbox = gtk.Dialog(_("Calmar's Picture Resizer"), parent, gtk.DIALOG_MODAL,
-                (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-        mesbox.connect("destroy", self.quit_self)
-        mesbox.connect("delete_event", self.quit_self)
-        mesbox.set_size_request(700,-1)
-
-        vbox = gtk.VBox()
-        vbox.show()
-        label = gtk.Label()
-        label.set_line_wrap(True)
-# encoding hack. grr
-#    if self.general["mswin"]:
-#        text = utf8_enc(text)
-        text = self.utf8_enc(text)
-        label.set_markup(text)
-        label.show()
-        vbox.pack_start(label, True, True, 15)
-        align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
-        align.set_padding(5, 5, 20, 20)
-        align.show()
-        align.add(vbox)
-        mesbox.vbox.pack_start(align, True, True, 15)
-
-        mesbox.show()
-        mesbox.run()
-        mesbox.destroy()
-#             related
-#}}}
-    def overwrite_destroy(self, widget, data): #{{{
-        global general
-        self.general["overwrite_q"] = str(data[1])
-        data[0].hide()
-        data[0].destroy()
-#}}}
-    def dialog_2_destroy(self, widget, data): # (merge with overwritedestroy?) #{{{
-        global general
-        self.general["dialot2_q"] = str(data[1])
-        data[0].hide()
-        data[0].destroy()
-### FileChooser things
-#}}}
 # converting loop
     def create_subfolder(self, folder, filen): #{{{
         if folder != "" and not os.path.exists(filen + "/" + folder):
@@ -292,7 +170,7 @@ class maingui:
                         self.trimlongline(filen ,48), folder,
                         _("please check that issue first"),
                         str(errno), errstr)
-                self.show_mesbox(self.general["window"], text)
+                self.ms.show_mesbox(self.general["window"], text)
                 return False
         else:
             print "## %s" % _("sub-folder exists already")
@@ -356,7 +234,7 @@ class maingui:
 #}}}
     def no_files_there_selected(self): #{{{
         if not self.imgprocess["files_todo"]:
-            self.show_mesbox(self.general["window"], "<big><b>%s</b></big>" % (
+            self.ms.show_mesbox(self.general["window"], "<big><b>%s</b></big>" % (
                     _("Select some <b>pics</b> to work on")))
             return True
 #}}}
@@ -366,15 +244,15 @@ class maingui:
         print
         print "## %s" % _("stop button pressed: converting has stopped")
         print
-        self.show_mesbox(self.general["window"], "<big><b>%s</b></big>" % _("progress stopped"))
+        self.ms.show_mesbox(self.general["window"], "<big><b>%s</b></big>" % _("progress stopped"))
         self.files_print_label(self.imgprocess["files_todo"])
 #}}}
     def go_on_source_is_equal_target(self, counter, total): #{{{
         print "## " + _("source and target are the same!")
         text = "%s\n\n%s" % (_("<b>source</b> and <b>target</b> are the same!"),
                 _("(...cowardly refuses to overwrite)"))
-        self.show_2_dialog(self.general["window"], text, _("quit processing"), _("skip and go on..."))
-        if self.general["dialot2_q"] != "ok_pressed":
+        self.ms.show_2_dialog(self.general["window"], text, _("quit processing"), _("skip and go on..."))
+        if self.ms.dialot2_q != "ok_pressed":
             self.general["stop_button"].hide()
             self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
             while gtk.events_pending():
@@ -407,7 +285,7 @@ class maingui:
                   -> <b>picture type</b>
 
      in order to prevent overwriting the original pictures""")
-                self.show_mesbox(self.general["window"], text)
+                self.ms.show_mesbox(self.general["window"], text)
                 return
 
 # to get the path of sample (first) file
@@ -426,7 +304,7 @@ class maingui:
         self.imgprocess["stop_progress"] = False
         self.general["stop_button"].show()
         self.general["stop_button"].grab_focus()
-        self.general["overwrite_q"] = ""
+        self.ms.overwrite_q = ""
 #######################################################################
 # begin the loop
 #######################################################################
@@ -471,16 +349,16 @@ class maingui:
                     return
 # check if file exists and may show 'overwrite dialog'
             if os.path.exists(targetfile):
-                if self.general["overwrite_q"] != "all_overwrite":
-                    self.show_overwrite_dialog(targetfile)
+                if self.ms.overwrite_q != "all_overwrite":
+                    self.ms.show_overwrite_dialog(self.general["window"], targetfile, self.general["mswin"])
                     while gtk.events_pending():
                         gtk.main_iteration(False)
-                    if self.general["overwrite_q"] == "ok_pressed":
-                        self.general["overwrite_q"] != ""
+                    if self.ms.overwrite_q == "ok_pressed":
+                        self.ms.overwrite_q != ""
                         print _("# skipped: ") + self.trimlongline(targetfile,58)
                         continue
-                    elif self.general["overwrite_q"] == "cancel":
-                        self.general["overwrite_q"] != ""
+                    elif self.ms.overwrite_q == "cancel":
+                        self.ms.overwrite_q != ""
                         self.general["stop_button"].hide()
                         self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
                         while gtk.events_pending():
@@ -491,8 +369,8 @@ class maingui:
                         print
                         self.files_print_label(self.imgprocess["files_todo"])
                         return
-                    elif self.general["overwrite_q"] == "overwrite":
-                        self.general["overwrite_q"] != ""
+                    elif self.ms.overwrite_q == "overwrite":
+                        self.ms.overwrite_q != ""
 
             pre = ""
             if self.general["py2exe"]:
@@ -520,8 +398,8 @@ class maingui:
                         _("catched an <b>error</b> while working on:"),
                         sourcefile, str(errno), errstr,
                         _("(may contact mac@calmar.ws)"))
-                self.show_2_dialog(self.general["window"], text, _("quit processing"), _("skip and go on..."))
-                if self.general["dialot2_q"] != "ok_pressed":
+                self.ms.show_2_dialog(self.general["window"], text, _("quit processing"), _("skip and go on..."))
+                if self.ms.dialot2_q != "ok_pressed":
                     self.general["stop_button"].hide()
                     self.label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
                     while gtk.events_pending():
@@ -552,8 +430,8 @@ class maingui:
                 text = "%s\n\n%s\n<b>%s</b>\n\n%s" % (
                         _("imagemagick terminated with an <b>error</b> while working on:"),
                         sourcefile, err_output, _("(may contact mac@calmar.ws)"))
-                self.show_2_dialog(self.general["window"], text, _("quit processing"), _("skip and go on..."))
-                if self.general["dialot2_q"] != "ok_pressed":
+                self.ms.show_2_dialog(self.general["window"], text, _("quit processing"), _("skip and go on..."))
+                if self.ms.dialot2_q != "ok_pressed":
                     self.general["stop_button"].hide()
                     self.label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
                     while gtk.events_pending():
@@ -881,17 +759,14 @@ class maingui:
         mainbox.pack_start(separator, False, False, 5)
         return but1, but2
 #}}}
+    def __init__(self): #{{{
 
-
-    def __init__(self):
         self.radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
         self.general = dict( todolabel  = gtk.Label(),
                         stop_button    = gtk.Button(),
                         encoding       = locale.getpreferredencoding(),
-                        overwrite_q    = "",
                         pic_folder     = "",
                         bin_folder     = "",
-                        dialot2_q      = "",
                         viewer         = "",
                         mswin          = False,
                         stop_progress  = False,
@@ -904,6 +779,8 @@ class maingui:
                         radio_percent  = self.radio_bogus,
                         radio_quality  = self.radio_bogus,
                         window         = gtk.Window(gtk.WINDOW_TOPLEVEL))
+
+        self.ms = messageboxes.mesbox(self.general["encoding"])
 
         if sys.path[0].endswith("\\library.zip"):  #for py2exe
             self.general["py2exe"] = True
@@ -986,10 +863,8 @@ class maingui:
             self.general["sizebox"].set_sensitive(False)
 
         self.general["stop_button"].hide()
-
-
+#}}}
 def main(): #{{{
-
     maingui()
     gtk.main()
     return 0
@@ -1007,6 +882,7 @@ import Image, PngImagePlugin, JpegImagePlugin
 
 # classes
 import filechoosegui
+import messageboxes
 
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext

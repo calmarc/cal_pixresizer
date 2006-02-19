@@ -2,11 +2,12 @@
 import os, subprocess  #{{{
 import gtk, pygtk, gobject, Image
 import gettext
+import messageboxes
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 #}}}
-class filechoose: #{{{
-    def __init__(self, widget, acgroup, mainwindow, pic_dir,
+class filechoose:
+    def __init__(self, widget, acgroup, mainwindow, pic_dir, #{{{
                  mswin, cwd, py2exe, bin_dir, viewer, encoding, trimlongline):
         self.files = []
         self.pic_dir = pic_dir
@@ -17,7 +18,8 @@ class filechoose: #{{{
         self.viewer = viewer
         self.encoding = encoding
         self.trimlongline = trimlongline
-        self.dialog2_q = ""
+
+        self.ms = messageboxes.mesbox(self.encoding)
 
         dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
                                        mainwindow,
@@ -271,8 +273,8 @@ class filechoose: #{{{
 #}}}
     def dialog_delete(self, widget, dialog): # needs more work #{{{
         text = "<big>%s</big>" % _("are you sure you want to <b>delete</b> selected items - forever?")
-        self.show_2_dialog(dialog, text, _("cancel"), _("yes"))
-        if self.dialog2_q != "ok_pressed":
+        self.ms.show_2_dialog(dialog, text, _("cancel"), _("yes"))
+        if self.ms.dialog2_q != "ok_pressed":
             return
         for item in dialog.get_filenames():
             if os.path.isdir(item):
@@ -302,7 +304,7 @@ class filechoose: #{{{
         print "## %s: %s" % (str(errno), errstr)
         message = "<big><b>%s</b></big>\n\n%s\n\n%s: %s" % (_("sorry, could not remove file:"),
                                                 item, str(errno), errstr)
-        self.show_mesbox(dialog, message)
+        self.ms.show_mesbox(dialog, message)
 #             exif comments
 #}}}
     def get_jhead_exif(self, file): #{{{
@@ -340,7 +342,7 @@ class filechoose: #{{{
         return self.utf8_enc(comment)
 #}}}
     def show_exif_dialog(self, parent_widget, text, button_quit, button_ok, file): #{{{
-        self.dialog2_q == ""
+        self.ms.dialog2_q == ""
         mesbox = gtk.Dialog(_("Exif Dialog:"), parent_widget, gtk.DIALOG_MODAL, ())
         mesbox.connect("destroy", self.quit_self, None)
         mesbox.connect("delete_event", self.quit_self, None)
@@ -378,12 +380,12 @@ class filechoose: #{{{
 
         button1 = gtk.Button(button_quit)
         mesbox.action_area.pack_start(button1, True, True, 0)
-        button1.connect("clicked", self.dialog_2_destroy, (mesbox,"quit"))
+        button1.connect("clicked", self.ms.dialog_2_destroy, (mesbox,"quit"))
         button1.show()
 
         button = gtk.Button(button_ok)
         mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.dialog_2_destroy, (mesbox,"ok_pressed"))
+        button.connect("clicked", self.ms.dialog_2_destroy, (mesbox,"ok_pressed"))
         button.show()
 
         mesbox.show()
@@ -402,7 +404,7 @@ class filechoose: #{{{
 
         if os.path.isdir(filen):
             print "## " + _("can not yet set Exif comments to a directory :P")
-            self.show_mesbox(dialog, "<big><b>%s</b></big>" % (
+            self.ms.show_mesbox(dialog, "<big><b>%s</b></big>" % (
                      _("can not yet set Exif comments to a directory :P")))
             return
         fname,ext=os.path.splitext(filen);  # file itself
@@ -411,7 +413,7 @@ class filechoose: #{{{
                 and ext != ".JPG" and ext != ".JPEG" and ext != ".TIF" \
                 and ext != ".TIFF" and ext != ".TIFF24":
             print "## jhead: %s" %  _("does not seem to be a jpg or tiff picture?")
-            self.show_mesbox(dialog, "<big><b>%s</b></big>" %
+            self.ms.show_mesbox(dialog, "<big><b>%s</b></big>" %
                         _("does not seem to be a .jpg or .tiff picture?"))
             return
 
@@ -419,7 +421,7 @@ class filechoose: #{{{
                                                   _("(see output details on the console)"))
         newcomment = self.show_exif_dialog(dialog, labeltext, _("cancel"), _("OK, save that"), filen)
 
-        if self.dialog2_q == "ok_pressed":
+        if self.ms.dialog2_q == "ok_pressed":
             pre = ""
             if self.py2exe:
                 pre = self.cwd
@@ -442,7 +444,7 @@ class filechoose: #{{{
                 err_output = pipe.stderr.read()
             except OSError, (errno, errstr):
                 print "## jhead (ERROR): %s: %s" % (str(errno), errstr)
-                self.show_mesbox(dialog, "<big><b>%s</b></big>\n\n%s: %s" % (
+                self.ms.show_mesbox(dialog, "<big><b>%s</b></big>\n\n%s: %s" % (
                     _("error while trying to set Exif comment:"), str(errno), errstr))
                 return ""
             if err_output != "": # does not reach here unfortunately
@@ -462,10 +464,10 @@ class filechoose: #{{{
         try:
             filen = dialog.get_filenames()[0]  # can be 'None' ?
             if len(dialog.get_filenames()) > 1:
-                self.show_mesbox(dialog, "<big>%s</big>" % _("please select only <b>one</b> pic for rotating"))
+                self.ms.show_mesbox(dialog, "<big>%s</big>" % _("please select only <b>one</b> pic for rotating"))
                 return
             if os.path.isdir(filen):
-                self.show_mesbox(dialog, "<big>%s</big>" % _("don't know how to rotate a folder :P"))
+                self.ms.show_mesbox(dialog, "<big>%s</big>" % _("don't know how to rotate a folder :P"))
                 return
         except IndexError:
             return
@@ -499,7 +501,7 @@ class filechoose: #{{{
             if plustext != "":
                 text += plustext
             text += "\n\n%s" % _("(may contact mac@calmar.ws)")
-            self.show_mesbox(dialog,text)
+            self.ms.show_mesbox(dialog,text)
             return
 
         ## everything seems to be ok
@@ -519,7 +521,7 @@ class filechoose: #{{{
                             _("imagemagick's jpeg rotate is not lossless, so don't use it on "),
                             _("your original pictures."))
 
-                    self.show_mesbox(dialog,text)
+                    self.ms.show_mesbox(dialog,text)
                     dialog.set_current_folder(dialog.get_current_folder())
                 else:
                     os.remove(filen) # could also first move for more security
@@ -535,7 +537,7 @@ class filechoose: #{{{
                                     _("replacing your original file didn't succeed on:"),
                                     filen, str(errno), errstr, _("you find your file now at:"),
                                     targetfile, _("(may contact mac@calmar.ws)"))
-                        self.show_mesbox(dialog,text)
+                        self.ms.show_mesbox(dialog,text)
 
             except OSError, (errno, errstr):
                print "## %s" % _("ERROR while trying to replace your file with the rotated one")
@@ -546,14 +548,14 @@ class filechoose: #{{{
                            _("replacing your original file didn't succeed on:"),
                            filen, str(errno), errstr, _("you find your file now at:"),
                            targetfile, _("(may contact mac@calmar.ws)"))
-               self.show_mesbox(dialog,text)
+               self.ms.show_mesbox(dialog,text)
         else:
             print "## %s" % _("Error while tyring to rotate the file")
             print "## %s" % std_output
             text = "<big><b>%s</b></big>\n\n%s\n\n%s\n\n%s" % (
                     _("rotating didn't succeed on:"), filen, std_output,
                     _("(may contact mac@calmar.ws)"))
-            self.show_mesbox(dialog,text)
+            self.ms.show_mesbox(dialog,text)
 
         dialog.emit("update-preview")
 #             view pics
@@ -576,7 +578,7 @@ class filechoose: #{{{
             if os.path.isfile(filen):
                 file_show.append(filen)
         if not file_show:
-            self.show_mesbox(dialog, "<big><b>%s</b></big>" % _("can not display anything, sorry"))
+            self.ms.show_mesbox(dialog, "<big><b>%s</b></big>" % _("can not display anything, sorry"))
             return
 
         tot = [self.viewer]
@@ -593,7 +595,7 @@ class filechoose: #{{{
             print "## %s: %s" % (str(errno), errstr)
             text = "<big><b>%s</b></big>\n\n%s: %s" % (
                     _("Error while trying to display the pictures(s)"), str(errno), errstr)
-            self.show_mesbox(dialog, text)
+            self.ms.show_mesbox(dialog, text)
             return
 
         if err_output != "" :
@@ -601,7 +603,7 @@ class filechoose: #{{{
             print "## (ERROR): %s" % err_output
             text = "<big><b>%s</b></big>\n\n%s" % (
                     _("Error while trying to display the pictures(s)"), err_output )
-            self.show_mesbox(dialog, text )
+            self.ms.show_mesbox(dialog, text )
 #}}}
     def dialog_setupviewer(self, widget, dialog_main): #{{{
         dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
@@ -666,43 +668,6 @@ class filechoose: #{{{
                 return
         dialog.destroy()
 #}}}
-    def show_2_dialog(self, parent_widget, text, button_quit, button_ok): #{{{
-        self.dialog2_q == ""
-        mesbox = gtk.Dialog(_("attention:"), parent_widget, gtk.DIALOG_MODAL, ())
-        mesbox.connect("destroy", self.quit_self, None)
-        mesbox.connect("delete_event", self.quit_self, None)
-        mesbox.set_size_request(700,-1)
-
-        vbox = gtk.VBox()
-        vbox.show()
-        label = gtk.Label()
-        label.set_line_wrap(True)
-        label.set_markup(text)
-        label.show()
-        vbox.pack_start(label, True, True, 15)
-        align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
-        align.set_padding(5, 5, 20, 20)
-        align.show()
-        align.add(vbox)
-        mesbox.vbox.pack_start(align, True, True, 15)
-
-        button = gtk.Button(button_quit)
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.dialog_2_destroy, (mesbox,"quit"))
-        button.show()
-        button = gtk.Button(button_ok)
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.dialog_2_destroy, (mesbox,"ok_pressed"))
-        button.show()
-        button.grab_focus()
-        mesbox.show()
-        mesbox.run()
-
-    def dialog_2_destroy(self, widget, data): #{{{
-        self.dialog2_q = str(data[1])
-        data[0].hide()
-        data[0].destroy()
-#}}}
     def loc_enc(self, text): #{{{
         obj = unicode(text, 'utf-8')
         return obj.encode( self.encoding)
@@ -714,33 +679,5 @@ class filechoose: #{{{
     def quit_self(self, widget, *args): #{{{
         widget.hide()
         widget.destroy()
-#}}}
-    def show_mesbox(self, parent, text): #{{{
-        mesbox = gtk.Dialog(_("Calmar's Picture Resizer"), parent, gtk.DIALOG_MODAL,
-                (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-        mesbox.connect("destroy", self.quit_self)
-        mesbox.connect("delete_event", self.quit_self)
-        mesbox.set_size_request(700,-1)
-        vbox = gtk.VBox()
-        vbox.show()
-        label = gtk.Label()
-        label.set_line_wrap(True)
-# encoding hack. grr
-#    if general["mswin"]:
-#        text = utf8_enc(text)
-        text = self.utf8_enc(text)
-        label.set_markup(text)
-        label.show()
-        vbox.pack_start(label, True, True, 15)
-        align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
-        align.set_padding(5, 5, 20, 20)
-        align.show()
-        align.add(vbox)
-        mesbox.vbox.pack_start(align, True, True, 15)
-
-        mesbox.show()
-        mesbox.run()
-        mesbox.destroy()
-#             related
 #}}}
 # vim: foldmethod=marker
