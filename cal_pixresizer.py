@@ -428,7 +428,7 @@ def start_resize(widget, event, data=None): #{{{
     imgprocess["stop_progress"] = False
     general["stop_button"].show()
     general["stop_button"].grab_focus()
-    general["overwrite_q"] != ""
+    general["overwrite_q"] = ""
 #######################################################################
 # begin the loop
 #######################################################################
@@ -1619,10 +1619,10 @@ imgprocess = dict( ent_prefix  = "",
                    ent_folder  = "",
                    ftype       = "",
                    files_todo  = [],
-                   width       = 9999,
-                   height      = 768,
-                   percent     = 60,
-                   quality     = 94)
+                   width       = "9999",
+                   height      = "768",
+                   percent     = "60",
+                   quality     = "94")
 
 adj = gtk.Adjustment(1024, 10, 2000, 1, 100, 0)
 adj.connect("value_changed", get_spin_focus, "radio_width" )
