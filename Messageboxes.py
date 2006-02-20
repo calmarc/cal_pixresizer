@@ -5,9 +5,6 @@ from Varhelp import  *
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 
-def quit_self(widget, *args):
-    widget.hide()
-    widget.destroy()
 
 def show_2_dialog(parent_widget, text, button_quit, button_ok):
 

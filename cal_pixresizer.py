@@ -73,7 +73,7 @@ class maingui:
             labeltext = "\n%s\n%s\n%s\n" % (trimlongline(files_todo[0]), trimlongline(files_todo[1]),
                     trimlongline(files_todo[2]))
         elif len(files_todo) == 4:
-            labeltext = "%s/\n%s\n%s\n%s\n" % (trimlongline(files_todo[0]),
+            labeltext = "%s\n%s\n%s\n%s\n" % (trimlongline(files_todo[0]),
                     trimlongline(files_todo[1]), trimlongline(files_todo[2]),
                     trimlongline(files_todo[3]))
         elif len(files_todo) == 5:

@@ -231,7 +231,7 @@ class filechoose:
             if self.mswin:
                 preview[1].set_markup("<b>" + fname + "</b>")
             else:
-                preview[1].set_markup("<b>" + self.utf8_enc(fname) + "</b>")
+                preview[1].set_markup("<b>" + utf8_enc(fname, self.encoding) + "</b>")
         else:
             preview[1].set_markup("<b>(got no name)</b>")
         if os.path.exists(filename): # once was necessary on M$, or so...
@@ -339,7 +339,7 @@ class filechoose:
                 if comment != "":
                     comment += "\n"
                 comment += item.split(":")[1][1:]
-        return self.utf8_enc(comment)
+        return utf8_enc(comment, self.encoding)
 #}}}
     def show_exif_dialog(self, text, button_quit, button_ok, file): #{{{
         mesbox = gtk.Dialog(_("attention:"),
@@ -350,8 +350,8 @@ class filechoose:
 
         mesbox.set_default_response(gtk.RESPONSE_OK)
 
-        mesbox.connect("destroy", self.quit_self, None)
-        mesbox.connect("delete_event", self.quit_self, None)
+        mesbox.connect("destroy", quit_self, None)
+        mesbox.connect("delete_event", quit_self, None)
 
         align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
         align.set_padding(5, 5, 20, 20)
@@ -433,7 +433,7 @@ class filechoose:
 
             newcomment = ret_text.strip()
 # reverse encoding here, hm, only win2000?
-            newcomment = self.loc_enc(newcomment)
+            newcomment = loc_enc(newcomment, self.encoding)
 
             if str(newcomment) == "":
                 tot.append(' ')  # cheating! may change later
@@ -670,17 +670,5 @@ class filechoose:
                 print >> sys.stderr, "## %s" % _("no binary selected? May try again")
                 return
         dialog_sw.destroy()
-#}}}
-    def loc_enc(self, text): #{{{
-        obj = unicode(text, 'utf-8')
-        return obj.encode( self.encoding)
-#}}}
-    def utf8_enc(self, text): #{{{
-        obj = unicode(text, self.encoding)
-        return obj.encode('utf-8')
-#}}}
-    def quit_self(self, widget, *args): #{{{
-        widget.hide()
-        widget.destroy()
 #}}}
 # vim: foldmethod=marker
