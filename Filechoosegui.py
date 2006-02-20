@@ -2,13 +2,14 @@
 import os, subprocess  #{{{
 import gtk, pygtk, gobject, Image
 import gettext
-import messageboxes
+import Messageboxes
+from varhelp import *
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 #}}}
 class filechoose:
     def __init__(self, widget, acgroup, mainwindow, pic_dir, #{{{
-                 mswin, cwd, py2exe, bin_dir, viewer, encoding, trimlongline):
+                 mswin, cwd, py2exe, bin_dir, viewer, encoding):
         self.files = []
         self.pic_dir = pic_dir
         self.mswin = mswin
@@ -17,9 +18,8 @@ class filechoose:
         self.bin_dir = bin_dir
         self.viewer = viewer
         self.encoding = encoding
-        self.trimlongline = trimlongline
 
-        self.ms = messageboxes.mesbox(self.encoding)
+        self.ms = Messageboxes.Mesbox(self.encoding)
 
         dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
                                        mainwindow,
@@ -221,7 +221,7 @@ class filechoose:
         filename = str(file_chooser.get_preview_filename())  # str needed once on M$
         comment = self.get_jhead_exif(filename)
         if comment != "":
-            exiflabel.set_text(self.trimlongline(comment,55))
+            exiflabel.set_text(vh().trimlongline(comment,55))
         else:
             exiflabel.set_text("")
         path, filen = os.path.split(filename)
@@ -280,7 +280,7 @@ class filechoose:
             if os.path.isdir(item):
                 try:
                     os.rmdir(item)
-                    print "## %s: %s" % ( _("folder removed:"), self.trimlongline(item,40))
+                    print "## %s: %s" % ( _("folder removed:"), vh().trimlongline(item,40))
                     dialog.set_current_folder(dialog.get_current_folder())
                 except OSError,  (errno, errstr):
                     print "## %s" %  _("error while trying to delete")
@@ -290,7 +290,7 @@ class filechoose:
             else:
                 try:
                     os.remove(item)
-                    print "## %s: %s" % (_("file removed:"), self.trimlongline(item,40))
+                    print "## %s: %s" % (_("file removed:"), vh().trimlongline(item,40))
                     dialog.set_current_folder(dialog.get_current_folder())
                 except OSError,  (errno, errstr):
                     print "## %s" %  _("error while trying to delete")
@@ -451,7 +451,7 @@ class filechoose:
                 print "## jhead (ERROR): %s" % err_output
                 return ""
 
-            print "## jhead: %s" % self.trimlongline(std_output.replace("\n",""),62)
+            print "## jhead: %s" % vh().trimlongline(std_output.replace("\n",""),62)
 
 #        check of correct output, modified... ?
             dialog.emit("update-preview")
@@ -467,7 +467,7 @@ class filechoose:
                 self.ms.show_mesbox(dialog, "<big>%s</big>" % _("please select only <b>one</b> pic for rotating"))
                 return
             if os.path.isdir(filen):
-                self.ms.show_mesbox(dialog, "<big>%s</big>" % _("don't know how to rotate a folder :P"))
+                self.ms.show_mesbox(self.dialog, "<big>%s</big>" % _("don't know how to rotate a folder :P"))
                 return
         except IndexError:
             return
@@ -527,35 +527,35 @@ class filechoose:
                     os.remove(filen) # could also first move for more security
                     try:
                         os.rename(targetfile, filen)
-                        print "## %s (%s): %s" % ( _("rotated"), direction, self.trimlongline(filen, 62))
+                        print "## %s (%s): %s" % ( _("rotated"), direction, vh().trimlongline(filen, 62))
                     except OSError, (errno, errstr):
                         print "## %s" % _("Error while tyring to replace the original file")
                         print "## %s: %s" % (str(errno), errstr)
                         print "## %s:\n## %s" % (_("you find your file now at"),
-                                self.trimlongline(targetfile, 65))
+                                vh().trimlongline(targetfile, 65))
                         text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                                     _("replacing your original file didn't succeed on:"),
                                     filen, str(errno), errstr, _("you find your file now at:"),
                                     targetfile, _("(may contact mac@calmar.ws)"))
-                        self.ms.show_mesbox(dialog,text)
+                        self.ms.show_mesbox(self.dialog,text)
 
             except OSError, (errno, errstr):
                print "## %s" % _("ERROR while trying to replace your file with the rotated one")
                print "## %s: %s" % (str(errno), errstr)
                print "## %s" % _("you find the rotated file now at:")
-               print "## %s" % self.trimlongline(targetfile, 65)
+               print "## %s" % vh().trimlongline(targetfile, 65)
                text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                            _("replacing your original file didn't succeed on:"),
                            filen, str(errno), errstr, _("you find your file now at:"),
                            targetfile, _("(may contact mac@calmar.ws)"))
-               self.ms.show_mesbox(dialog,text)
+               self.ms.show_mesbox(self.dialog,text)
         else:
             print "## %s" % _("Error while tyring to rotate the file")
             print "## %s" % std_output
             text = "<big><b>%s</b></big>\n\n%s\n\n%s\n\n%s" % (
                     _("rotating didn't succeed on:"), filen, std_output,
                     _("(may contact mac@calmar.ws)"))
-            self.ms.show_mesbox(dialog,text)
+            self.ms.show_mesbox(self.dialog,text)
 
         dialog.emit("update-preview")
 #             view pics
@@ -578,7 +578,7 @@ class filechoose:
             if os.path.isfile(filen):
                 file_show.append(filen)
         if not file_show:
-            self.ms.show_mesbox(dialog, "<big><b>%s</b></big>" % _("can not display anything, sorry"))
+            self.ms.show_mesbox(self.dialog, "<big><b>%s</b></big>" % _("can not display anything, sorry"))
             return
 
         tot = [self.viewer]
@@ -595,7 +595,7 @@ class filechoose:
             print "## %s: %s" % (str(errno), errstr)
             text = "<big><b>%s</b></big>\n\n%s: %s" % (
                     _("Error while trying to display the pictures(s)"), str(errno), errstr)
-            self.ms.show_mesbox(dialog, text)
+            self.ms.show_mesbox(self.dialog, text)
             return
 
         if err_output != "" :
@@ -603,23 +603,23 @@ class filechoose:
             print "## (ERROR): %s" % err_output
             text = "<big><b>%s</b></big>\n\n%s" % (
                     _("Error while trying to display the pictures(s)"), err_output )
-            self.ms.show_mesbox(dialog, text )
+            self.ms.show_mesbox(self.dialog, text )
 #}}}
     def dialog_setupviewer(self, widget, dialog_main): #{{{
-        dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
+        dialog_sv = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
                                        dialog_main,
                                        gtk.FILE_CHOOSER_ACTION_OPEN,
                                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                        gtk.STOCK_OPEN, gtk.RESPONSE_OK))
 
-        dialog.set_default_response(gtk.RESPONSE_OK)
-        dialog.set_select_multiple(False)
+        dialog_sv.set_default_response(gtk.RESPONSE_OK)
+        dialog_sv.set_select_multiple(False)
 
         align = gtk.Alignment(xalign=0.5, yalign=0.0, xscale=0.0, yscale=0.0)
         align.set_padding(0, 0, 0, 0)
         align.show()
 
-        dialog.set_extra_widget(align)
+        dialog_sv.set_extra_widget(align)
 
         label = gtk.Label()
 
@@ -643,30 +643,30 @@ class filechoose:
         filefilter = gtk.FileFilter()
         filefilter.set_name(_(" all files          "))
         filefilter.add_pattern("*")
-        dialog.add_filter(filefilter)
+        dialog_sv.add_filter(filefilter)
 
         filefilter = gtk.FileFilter()
         filefilter.set_name(_(" MS-Win executables "))
         filefilter.add_pattern("*.exe")
-        dialog.add_filter(filefilter)
+        dialog_sv.add_filter(filefilter)
 
 # preview widget
-        dialog.set_use_preview_label(False)
+        dialog_sv.set_use_preview_label(False)
 
 # starting folder
         if self.bin_dir != "":
-            dialog.set_current_folder(self.bin_dir)
+            dialog_sv.set_current_folder(self.bin_dir)
 
-        response = dialog.run()
+        response = dialog_sv.run()
 
         if response == gtk.RESPONSE_OK:
-            self.bin_dir = dialog.get_current_folder()
+            self.bin_dir = dialog_sv.get_current_folder()
             try:   # Probably when folder is selected, should do in a different way, so
-                self.viewer  = dialog.get_filenames()[0]
+                self.viewer  = dialog_sv.get_filenames()[0]
             except IndexError:
                 print "## %s" % _("no binary selected? May try again")
                 return
-        dialog.destroy()
+        dialog_sv.destroy()
 #}}}
     def loc_enc(self, text): #{{{
         obj = unicode(text, 'utf-8')
