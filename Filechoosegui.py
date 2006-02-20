@@ -225,13 +225,13 @@ class filechoose:
             exiflabel.set_text(trimlongline(comment,55))
         else:
             exiflabel.set_text("")
-        path, filen = os.path.split(filename)
+        path, fname = os.path.split(filename)
         if file != "":
 # encoding hack. grr
             if self.mswin:
-                preview[1].set_markup("<b>" + filen + "</b>")
+                preview[1].set_markup("<b>" + fname + "</b>")
             else:
-                preview[1].set_markup("<b>" + self.utf8_enc(filen) + "</b>")
+                preview[1].set_markup("<b>" + self.utf8_enc(fname) + "</b>")
         else:
             preview[1].set_markup("<b>(got no name)</b>")
         if os.path.exists(filename): # once was necessary on M$, or so...
@@ -273,7 +273,7 @@ class filechoose:
 #             rotate
 #}}}
     def dialog_delete(self, widget): # needs more work #{{{
-        text = "<big>%s</big>" % _("are you sure you want to <b>delete</b> selected items - forever?")
+        text = "<big>%s</big>" % _("are you sure you want to <b>delete</b> selected items - <b>forever</b>?")
         if not show_2_dialog(self.dialog, text, _("cancel"), _("yes")):
             return
         for item in self.dialog.get_filenames():
@@ -405,19 +405,16 @@ class filechoose:
         files =  self.dialog.get_filenames()
         if not files:
             return
-        filen = files[0]
+        fname = files[0]
 
-        if os.path.isdir(filen):
+        if os.path.isdir(fname):
             print >> sys.stderr, "## " + _("can not yet set Exif comments to a directory :P")
             show_mesbox(self.dialog, "<big><b>%s</b></big>" % (
                      _("can not yet set Exif comments to a directory :P")), self.encoding)
             return
-        fname,ext=os.path.splitext(filen);  # file itself
-        if ext != ".jpg" and ext != ".jpeg" and ext != ".tif" \
-                and ext != ".tiff" and ext != ".tiff24" \
-                and ext != ".JPG" and ext != ".JPEG" and ext != ".TIF" \
-                and ext != ".TIFF" and ext != ".TIFF24":
-            print >> sys.stderr, "## jhead: %s" %  _("does not seem to be a jpg or tiff picture?")
+        fname, ext = os.path.splitext(fname);  # file itself
+        if ext != ".jpg" and ext != ".jpeg" and ext != ".JPG" and ext != ".JPEG":
+            print >> sys.stderr, "## jhead: %s" %  _("does not seem to be a jpg picture?")
             show_mesbox(self.dialog, "<big><b>%s</b></big>" %
                         _("does not seem to be a .jpg picture?"), self.encoding)
             return
@@ -425,7 +422,7 @@ class filechoose:
         labeltext = "<big><b>%s</b></big>\n%s" % (_("Exif Comment Editing:"),
                                                   _("(see output details on the console)"))
         ok_or_not, ret_text = self.show_exif_dialog(labeltext, _("cancel"),
-                                                    _("OK, save that"), filen)
+                                                    _("OK, save that"), fname)
 
         if ok_or_not: # ok pressed
             pre = ""
@@ -442,7 +439,7 @@ class filechoose:
                 tot.append(' ')  # cheating! may change later
             else:
                 tot.append(str(newcomment))
-            tot.append(filen)
+            tot.append(fname)
             try:
                 pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                         stderr=subprocess.PIPE, shell=False)
@@ -459,7 +456,7 @@ class filechoose:
 
             print "## jhead: %s" % trimlongline(std_output.replace("\n",""),62)
 
-#        check of correct output, modified... ?
+#        check of correct output, 'modified...' ?
             self.dialog.emit("update-preview")
             return
         else:
@@ -468,22 +465,22 @@ class filechoose:
 #}}}
     def dialog_rotate(self, widget, direction): #{{{
         try:
-            filen = self.dialog.get_filenames()[0]  # can be 'None' ?
+            fname = self.dialog.get_filenames()[0]  # can be 'None' ?
             if len(self.dialog.get_filenames()) > 1:
                 show_mesbox(self.dialog, "<big>%s</big>" % _("please select only <b>one</b> pic for rotating"), self.encoding)
                 return
-            if os.path.isdir(filen):
+            if os.path.isdir(fname):
                 show_mesbox(self.dialog, "<big>%s</big>" % _("don't know how to rotate a folder :P"), self.encoding)
                 return
         except IndexError:
             return
 
-        fileext = os.path.splitext(filen)
-        targetfile = filen + "_rot" + fileext[1]
+        fileext = os.path.splitext(fname)
+        targetfile = fname + "_rot" + fileext[1]
         pre = ""
         if self.py2exe:
             pre = self.cwd
-        tot = [pre + "convert","-rotate", direction, filen, targetfile]
+        tot = [pre + "convert","-rotate", direction, fname, targetfile]
         try:
             pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                     stderr=subprocess.PIPE, shell=False)
@@ -503,7 +500,7 @@ class filechoose:
             if plustext != "":
                 print >> sys.stderr, "## %s" % plustext
             text = "<big><b>%s</b></big>:\n\n%s\n\n<b>%s</b>\n\n" % (
-                             _("rotating didn't succeed on"), filen, err_output)
+                             _("rotating didn't succeed on"), fname, err_output)
             if plustext != "":
                 text += plustext
             text += "\n\n%s" % _("(may contact mac@calmar.ws)")
@@ -515,7 +512,7 @@ class filechoose:
         if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
             try:
                 if ( fileext[1] == ".jpg" or fileext[1] == ".jpeg" ) and ( 
-                        (os.path.getsize(filen) - 51200) > os.path.getsize(targetfile)):
+                        (os.path.getsize(fname) - 51200) > os.path.getsize(targetfile)):
                     print >> sys.stderr, "## %s" % _("Your rotated jpg is smaller than your original file")
                     print >> sys.stderr, "## %s" % _("I won't overwrite the file. Find your rotated file, now,")
                     print >> sys.stderr, "## %s" % _("with an _rot suffix added")
@@ -530,10 +527,10 @@ class filechoose:
                     show_mesbox(self.dialog, text, self.encoding)
                     self.dialog.set_current_folder(self.dialog.get_current_folder())
                 else:
-                    os.remove(filen) # could also first move for more security
+                    os.remove(fname) # could also first move for more security
                     try:
-                        os.rename(targetfile, filen)
-                        print "## %s (%s): %s" % ( _("rotated"), direction, trimlongline(filen, 62))
+                        os.rename(targetfile, fname)
+                        print "## %s (%s): %s" % ( _("rotated"), direction, trimlongline(fname, 62))
                     except OSError, (errno, errstr):
                         print >> sys.stderr, "## %s" % _("Error while tyring to replace the original file")
                         print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
@@ -541,7 +538,7 @@ class filechoose:
                                 trimlongline(targetfile, 65))
                         text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                                     _("replacing your original file didn't succeed on:"),
-                                    filen, str(errno), errstr, _("you find your file now at:"),
+                                    fname, str(errno), errstr, _("you find your file now at:"),
                                     targetfile, _("(may contact mac@calmar.ws)"))
                         show_mesbox(self.dialog, text, self.encoding)
 
@@ -552,14 +549,14 @@ class filechoose:
                print >> sys.stderr, "## %s" % trimlongline(targetfile, 65)
                text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                            _("replacing your original file didn't succeed on:"),
-                           filen, str(errno), errstr, _("you find your file now at:"),
+                           fname, str(errno), errstr, _("you find your file now at:"),
                            targetfile, _("(may contact mac@calmar.ws)"))
                show_mesbox(self.dialog, text, self.encoding)
         else:
             print >> sys.stderr, "## %s" % _("Error while tyring to rotate the file")
             print >> sys.stderr, "## %s" % std_output
             text = "<big><b>%s</b></big>\n\n%s\n\n%s\n\n%s" % (
-                    _("rotating didn't succeed on:"), filen, std_output,
+                    _("rotating didn't succeed on:"), fname, std_output,
                     _("(may contact mac@calmar.ws)"))
             show_mesbox(self.dialog, text, self.encoding)
 
@@ -575,14 +572,14 @@ class filechoose:
             else:
                 self.viewer == "display" # for not windows platorms
         try:   # Probably when a folder is selected. Should change later
-            filen = self.dialog.get_filenames()[0]
+            fname = self.dialog.get_filenames()[0]
         except IndexError:
             return
         files = self.dialog.get_filenames()
         file_show = []
-        for filen in files:
-            if os.path.isfile(filen):
-                file_show.append(filen)
+        for fname in files:
+            if os.path.isfile(fname):
+                file_show.append(fname)
         if not file_show:
             show_mesbox(self.dialog, "<big><b>%s</b></big>" % _("can not display anything, sorry"), self.encoding)
             return

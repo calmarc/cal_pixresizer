@@ -51,12 +51,10 @@ def show_overwrite_dialog(parent, filename, mswin_val, encod):
     mesbox = gtk.Dialog(_("attention:"), 
                            parent , 
                            gtk.DIALOG_MODAL,
-                           (
-                           _("skip"), gtk.RESPONSE_NONE,
-                           _("quit processing"), gtk.RESPONSE_CLOSE,
-                           _("overwrite"), gtk.RESPONSE_YES,
-                           _("overwrite ALL"), gtk.RESPONSE_ACCEPT,
-                           ))
+                           ( _("skip"), gtk.RESPONSE_NONE,
+                             _("quit processing"), gtk.RESPONSE_CLOSE,
+                             _("overwrite"), gtk.RESPONSE_YES,
+                             _("overwrite ALL"), gtk.RESPONSE_ACCEPT))
 
 
     mesbox.set_default_response(gtk.RESPONSE_NONE)

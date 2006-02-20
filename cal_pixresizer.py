@@ -63,7 +63,7 @@ class maingui:
         self.general["todolabel"].set_markup("\n\n<b>%s (%s/%s): <span %s>%s</span></b>\n\n" %(
                 _("progress"), count, tot, colorstring, text))
 #}}}
-    def files_print_label(self, files_todo): #{{{
+    def label_files(self, files_todo): #{{{
         labeltext=""
         if len(files_todo) == 1:
             labeltext = "\n\n%s\n\n" % trimlongline(files_todo[0])
@@ -144,12 +144,12 @@ class maingui:
 #}}}
 #}}}
 # converting loop
-    def create_subfolder(self, folder, filen): #{{{
-        if folder != "" and not os.path.exists(filen + "/" + folder):
+    def create_subfolder(self, folder, fname): #{{{
+        if folder != "" and not os.path.exists(fname + "/" + folder):
             print "## %s: %s (%s/%s)" % (_("create new folder: "), folder,
-                         trimlongline(filen, 38), folder)
+                         trimlongline(fname, 38), folder)
             try:
-                os.mkdir(filen + "/" + folder)
+                os.mkdir(fname + "/" + folder)
             except OSError, (errno, errstr):
                 print >> sys.stderr, ""
                 print >> sys.stderr, "## %s" % _("was not able to create target directory: converting will stop")
@@ -158,7 +158,7 @@ class maingui:
 
                 text = "<big><b>%s</b></big>\n\n%s/<b>%s</b>\n\n%s\n\n%s: %s" % (
                         _("was not able to create your target folder"),
-                        trimlongline(filen ,48), folder,
+                        trimlongline(fname ,48), folder,
                         _("please check that issue first"),
                         str(errno), errstr)
                 show_mesbox(gtkwindow, text, encoding)
@@ -236,7 +236,7 @@ class maingui:
         print "## %s" % _("stop button pressed: converting has stopped")
         print
         show_mesbox(gtkwindow, "<big><b>%s</b></big>" % _("progress stopped"), encoding)
-        self.files_print_label(self.imgprocess["files_todo"])
+        self.label_files(self.imgprocess["files_todo"])
 #}}}
     def go_on_source_is_equal_target(self, counter, total): #{{{
         print >> sys.stderr, "## " + _("source and target are the same!")
@@ -251,7 +251,7 @@ class maingui:
             print
             print "## %s" % _("converting has stopped")
             print
-            self.files_print_label(self.imgprocess["files_todo"])
+            self.label_files(self.imgprocess["files_todo"])
             return False
         else:
             return True
@@ -294,7 +294,7 @@ class maingui:
         self.imgprocess["stop_progress"] = False
         self.general["stop_button"].show()
         self.general["stop_button"].grab_focus()
-        overwrite_retval = ""  # keep overwrite all status
+        overwrite_retval = ""  # reset  'overwrite all' flag
 #######################################################################
 # begin the loop
 #######################################################################
@@ -344,7 +344,7 @@ class maingui:
                     while gtk.events_pending():
                         gtk.main_iteration(False)
                     if overwrite_retval == "skip":
-                        print >> sys.stderr, _("# skipped: ") + trimlongline(targetfile,58)
+                        print _("# skipped: ") + trimlongline(targetfile,58)
                         continue
                     elif overwrite_retval == "quit":
                         overwrite_retval = ""
@@ -356,7 +356,7 @@ class maingui:
                         print
                         print _("# converting has stopped ")
                         print
-                        self.files_print_label(self.imgprocess["files_todo"])
+                        self.label_files(self.imgprocess["files_todo"])
                         return
                     elif overwrite_retval == "overwrite":
                         overwrite_retval = ""
@@ -377,8 +377,8 @@ class maingui:
 # the actual work/progress
             tot = [exe, sourcefile,"-resize", resize, "-quality", quality, targetfile]
             try:
-                pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
-                        stderr=subprocess.PIPE, shell=False)
+                pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE, shell=False)
                 err_output = pipe.stderr.read()
             except OSError, (errno, errstr):
                 print >> sys.stderr, "## %s" % _("error while trying to convert the picture")
@@ -396,7 +396,7 @@ class maingui:
                     print
                     print "## %s" % _("converting has stopped")
                     print
-                    self.files_print_label(self.imgprocess["files_todo"])
+                    self.label_files(self.imgprocess["files_todo"])
                     return
                 else:
                     continue
@@ -429,7 +429,7 @@ class maingui:
                     print
                     print _("# converting has stopped ")
                     print
-                    self.files_print_label(self.imgprocess["files_todo"])
+                    self.label_files(self.imgprocess["files_todo"])
                     return
 
         print
@@ -443,7 +443,7 @@ class maingui:
             gtk.main_iteration(False)
         time.sleep(2.0)
 
-        self.files_print_label(self.imgprocess["files_todo"])
+        self.label_files(self.imgprocess["files_todo"])
 ### major GUI
 #}}}
 # main and gui
@@ -466,7 +466,7 @@ class maingui:
 
         if fcgui.files:
             self.imgprocess["files_todo"] = fcgui.files
-        self.files_print_label(self.imgprocess["files_todo"])
+        self.label_files(self.imgprocess["files_todo"])
 
         counter=0
         print "## Die Bilder Auswahl:"
@@ -481,13 +481,13 @@ class maingui:
         mainbox.pack_start(box, False, False, 0)
 
         if self.imgprocess["files_todo"] != []:
-            self.files_print_label(self.imgprocess["files_todo"])
+            self.label_files(self.imgprocess["files_todo"])
             counter=0
             print "## Die Bilder Auswahl:"
             print
-            for filen in self.imgprocess["files_todo"]:
+            for fname in self.imgprocess["files_todo"]:
                 counter += 1
-                string = "%3s: " + trimlongline(filen,66)
+                string = "%3s: " + trimlongline(fname,66)
                 print string % (str(counter))
             print
         else:
@@ -804,7 +804,7 @@ class maingui:
         gtkwindow.connect("delete_event", self.delete_event)
         gtkwindow.set_border_width(10)
 
-        acgroup = gtk.AccelGroup()
+        acgroup = gtk.AccelGroup()  # not needed actually.
         gtkwindow.add_accel_group(acgroup)
 
         mainbox = gtk.VBox(False, 0)
@@ -857,8 +857,8 @@ import Image, PngImagePlugin, JpegImagePlugin
 import Filechoosegui
 from Messageboxes import *
 from Varhelp import *
-# globals/konstants - used on many function
 
+# globals/konstants - used on many function
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 
