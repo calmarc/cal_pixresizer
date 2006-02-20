@@ -1,9 +1,10 @@
 # filechooser Class
 import os, subprocess  #{{{
-import gtk, pygtk, gobject, Image
+import gtk, gobject, Image
+#import pygtk
 import gettext
-import Messageboxes
-from varhelp import *
+from Messageboxes import *
+from Varhelp import *
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 #}}}
@@ -19,25 +20,23 @@ class filechoose:
         self.viewer = viewer
         self.encoding = encoding
 
-        self.ms = Messageboxes.Mesbox(self.encoding)
-
-        dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
+        self.dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
                                        mainwindow,
                                        gtk.FILE_CHOOSER_ACTION_OPEN,
                                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                        gtk.STOCK_OPEN, gtk.RESPONSE_OK))
 
-        dialog.set_default_response(gtk.RESPONSE_OK)
-        dialog.set_select_multiple(True)
-        dialog.set_size_request(700,500)
+        self.dialog.set_default_response(gtk.RESPONSE_OK)
+        self.dialog.set_select_multiple(True)
+        self.dialog.set_size_request(700,500)
 
-        dialog.add_accel_group(acgroup)
+        self.dialog.add_accel_group(acgroup)
 # main vbox overall there
         vbox = gtk.VBox()
         vbox.show()
 
 # set main widget
-        dialog.set_extra_widget(vbox)
+        self.dialog.set_extra_widget(vbox)
 
 # first hbox packed in align packed in main vbox
         hbox = gtk.HBox()
@@ -63,7 +62,7 @@ class filechoose:
         button.add(label)
         button.show()
         button.add_accelerator('clicked', acgroup, ord('d'), 0, gtk.ACCEL_VISIBLE )
-        button.connect("clicked", self.dialog_delete, dialog)
+        button.connect("clicked", self.dialog_delete)
         table.attach(button, 1, 2, 0, 1, gtk.FILL)
 
         label = gtk.Label()
@@ -74,7 +73,7 @@ class filechoose:
         button.add(label)
         button.show()
         button.add_accelerator('clicked', acgroup, ord('a'), 0, gtk.ACCEL_VISIBLE )
-        button.connect("clicked", lambda w, d: d.select_all(), dialog)
+        button.connect("clicked", lambda w, d: d.select_all())
         table.attach(button, 2, 3, 0, 1, gtk.FILL)
 
         label = gtk.Label()
@@ -84,7 +83,7 @@ class filechoose:
         button = gtk.Button()
         button.add(label)
         button.show()
-        button.connect("clicked", self.dialog_viewpics, dialog)
+        button.connect("clicked", self.dialog_viewpics)
         button.add_accelerator('clicked', acgroup, ord('v'), 0, gtk.ACCEL_VISIBLE )
         table.attach(button, 3, 4, 0, 1, gtk.FILL)
 
@@ -95,7 +94,7 @@ class filechoose:
         button = gtk.Button()
         button.add(label)
         button.show()
-        button.connect("clicked", self.dialog_rotate, dialog, "-90")
+        button.connect("clicked", self.dialog_rotate, "-90")
         button.add_accelerator('clicked', acgroup, ord('e'), 0, gtk.ACCEL_VISIBLE )
         table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
@@ -106,7 +105,7 @@ class filechoose:
         button = gtk.Button()
         button.add(label)
         button.show()
-        button.connect("clicked", self.dialog_rotate, dialog, "+90")
+        button.connect("clicked", self.dialog_rotate, "+90")
         button.add_accelerator('clicked', acgroup, ord('r'), 0, gtk.ACCEL_VISIBLE )
         table.attach(button, 2, 3, 1, 2, gtk.FILL)
 
@@ -116,7 +115,7 @@ class filechoose:
         button = gtk.Button()
         button.add(label)
         button.show()
-        button.connect("clicked", self.dialog_setupviewer, dialog)
+        button.connect("clicked", self.dialog_setupviewer)
         table.attach(button, 3, 4, 1, 2, gtk.FILL)
 
         label = gtk.Label()
@@ -127,7 +126,7 @@ class filechoose:
         button.add(label)
         button.show()
         button.add_accelerator('clicked', acgroup, ord('x'), 0, gtk.ACCEL_VISIBLE )
-        button.connect("clicked", self.dialog_exif_cb, dialog)
+        button.connect("clicked", self.dialog_exif_cb)
         table.attach(button, 2, 3, 2, 3, gtk.FILL)
 
         align = gtk.Alignment(0.5, 0.0, 0.0, 0.0)
@@ -162,14 +161,14 @@ class filechoose:
         for i in ext_list:
                 filefilter.add_pattern("*" + i)
 
-        dialog.add_filter(filefilter)
+        self.dialog.add_filter(filefilter)
         filefilter = gtk.FileFilter()
         filefilter.set_name(_(" all files           "))
         filefilter.add_pattern("*")
-        dialog.add_filter(filefilter)
+        self.dialog.add_filter(filefilter)
 
 # preview widget
-        dialog.set_use_preview_label(False)
+        self.dialog.set_use_preview_label(False)
         preview = gtk.VBox(False)
         preview.set_size_request(220,220)
         label = gtk.Label()
@@ -187,11 +186,11 @@ class filechoose:
         image = gtk.Image()
         image.show()
         preview.pack_start(image, False, False, 10)
-        dialog.set_preview_widget(preview)
-        dialog.set_preview_widget_active(True)
+        self.dialog.set_preview_widget(preview)
+        self.dialog.set_preview_widget_active(True)
 
 # could also 'remove the tupble thing there'
-        dialog.connect("update-preview", self.update_preview_cb, (image, label, label2, label3), exiflabel)
+        self.dialog.connect("update-preview", self.update_preview_cb, (image, label, label2, label3), exiflabel)
 
 # starting folder
         if self.pic_dir == "":
@@ -205,23 +204,23 @@ class filechoose:
             else:
               homevar = os.getenv("HOME")
             if os.path.exists(homevar):
-                dialog.set_current_folder(homevar)
+                self.dialog.set_current_folder(homevar)
         else:
-            dialog.set_current_folder(self.pic_dir)
+            self.dialog.set_current_folder(self.pic_dir)
 # dialog run
-        response = dialog.run()
+        response = self.dialog.run()
         if response == gtk.RESPONSE_OK:
-            self.pic_dir = dialog.get_current_folder()
-            self.files = dialog.get_filenames() 
-            dialog.destroy()
+            self.pic_dir = self.dialog.get_current_folder()
+            self.files = self.dialog.get_filenames() 
+            self.dialog.destroy()
         elif response == gtk.RESPONSE_CANCEL:
-            dialog.destroy()
+            self.dialog.destroy()
 #}}}
     def update_preview_cb(self, file_chooser, preview, exiflabel ): #{{{
         filename = str(file_chooser.get_preview_filename())  # str needed once on M$
         comment = self.get_jhead_exif(filename)
         if comment != "":
-            exiflabel.set_text(vh().trimlongline(comment,55))
+            exiflabel.set_text(trimlongline(comment,55))
         else:
             exiflabel.set_text("")
         path, filen = os.path.split(filename)
@@ -271,40 +270,39 @@ class filechoose:
         return
 #             rotate
 #}}}
-    def dialog_delete(self, widget, dialog): # needs more work #{{{
+    def dialog_delete(self, widget): # needs more work #{{{
         text = "<big>%s</big>" % _("are you sure you want to <b>delete</b> selected items - forever?")
-        self.ms.show_2_dialog(dialog, text, _("cancel"), _("yes"))
-        if self.ms.dialog2_q != "ok_pressed":
+        if not show_2_dialog(self.dialog, text, _("cancel"), _("yes")):
             return
-        for item in dialog.get_filenames():
+        for item in self.dialog.get_filenames():
             if os.path.isdir(item):
                 try:
                     os.rmdir(item)
-                    print "## %s: %s" % ( _("folder removed:"), vh().trimlongline(item,40))
-                    dialog.set_current_folder(dialog.get_current_folder())
+                    print "## %s: %s" % ( _("folder removed:"), trimlongline(item,40))
+                    self.dialog.set_current_folder(self.dialog.get_current_folder())
                 except OSError,  (errno, errstr):
                     print "## %s" %  _("error while trying to delete")
                     print "## %s: %s" % (str(errno), errstr)
-                    dialog_delete_error(dialog, item,
+                    self.dialog_delete_error(item,
                             _('sorry, could not remove directory:'), errno, errstr)
             else:
                 try:
                     os.remove(item)
-                    print "## %s: %s" % (_("file removed:"), vh().trimlongline(item,40))
-                    dialog.set_current_folder(dialog.get_current_folder())
+                    print "## %s: %s" % (_("file removed:"), trimlongline(item,40))
+                    self.dialog.set_current_folder(self.dialog.get_current_folder())
                 except OSError,  (errno, errstr):
                     print "## %s" %  _("error while trying to delete")
                     print "## %s: %s" % (str(errno), errstr)
-                    dialog_delete_error(dialog, item,
+                    self.dialog_delete_error(item,
                             _('sorry, could not remove file:'), errno, errstr)
 #}}}
-    def dialog_delete_error(self, dialog, item, text, errno, errstr): #{{{
+    def dialog_delete_error(self, item, text, errno, errstr): #{{{
         print "## %s" % text
         print "## %s" % item
         print "## %s: %s" % (str(errno), errstr)
         message = "<big><b>%s</b></big>\n\n%s\n\n%s: %s" % (_("sorry, could not remove file:"),
                                                 item, str(errno), errstr)
-        self.ms.show_mesbox(dialog, message)
+        show_mesbox(self.dialog, message, self.encoding)
 #             exif comments
 #}}}
     def get_jhead_exif(self, file): #{{{
@@ -341,9 +339,15 @@ class filechoose:
                 comment += item.split(":")[1][1:]
         return self.utf8_enc(comment)
 #}}}
-    def show_exif_dialog(self, parent_widget, text, button_quit, button_ok, file): #{{{
-        self.ms.dialog2_q == ""
-        mesbox = gtk.Dialog(_("Exif Dialog:"), parent_widget, gtk.DIALOG_MODAL, ())
+    def show_exif_dialog(self, text, button_quit, button_ok, file): #{{{
+        mesbox = gtk.Dialog(_("attention:"),
+                               self.dialog, 
+                               gtk.DIALOG_MODAL,
+                               (button_ok, gtk.RESPONSE_OK,
+                               button_quit, gtk.RESPONSE_CANCEL))
+
+        mesbox.set_default_response(gtk.RESPONSE_OK)
+
         mesbox.connect("destroy", self.quit_self, None)
         mesbox.connect("delete_event", self.quit_self, None)
 
@@ -378,34 +382,34 @@ class filechoose:
         sw.show()
         vbox.pack_start(sw, False, False, 0)
 
-        button1 = gtk.Button(button_quit)
-        mesbox.action_area.pack_start(button1, True, True, 0)
-        button1.connect("clicked", self.ms.dialog_2_destroy, (mesbox,"quit"))
-        button1.show()
-
-        button = gtk.Button(button_ok)
-        mesbox.action_area.pack_start(button, True, True, 0)
-        button.connect("clicked", self.ms.dialog_2_destroy, (mesbox,"ok_pressed"))
-        button.show()
-
         mesbox.show()
+
         textview.grab_focus()
 
-        mesbox.action_area.set_focus_chain((button, button1))
+#        mesbox.action_area.set_focus_chain((button, button1))
 
-        mesbox.run()
-        return textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter(), True)
+        response = mesbox.run()
+        if response == gtk.RESPONSE_OK:
+            print "OK"
+            mesbox.hide()
+            mesbox.destroy()
+            text = textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter(), True)
+            return (True, text)
+        else:
+            mesbox.hide()
+            mesbox.destroy()
+            return (False, "")
 #}}}
-    def dialog_exif_cb(self, widget, dialog): #{{{
-        files =  dialog.get_filenames()
+    def dialog_exif_cb(self, widget): #{{{
+        files =  self.dialog.get_filenames()
         if not files:
             return
         filen = files[0]
 
         if os.path.isdir(filen):
             print "## " + _("can not yet set Exif comments to a directory :P")
-            self.ms.show_mesbox(dialog, "<big><b>%s</b></big>" % (
-                     _("can not yet set Exif comments to a directory :P")))
+            show_mesbox(self.dialog, "<big><b>%s</b></big>" % (
+                     _("can not yet set Exif comments to a directory :P")), self.encoding)
             return
         fname,ext=os.path.splitext(filen);  # file itself
         if ext != ".jpg" and ext != ".jpeg" and ext != ".tif" \
@@ -413,22 +417,23 @@ class filechoose:
                 and ext != ".JPG" and ext != ".JPEG" and ext != ".TIF" \
                 and ext != ".TIFF" and ext != ".TIFF24":
             print "## jhead: %s" %  _("does not seem to be a jpg or tiff picture?")
-            self.ms.show_mesbox(dialog, "<big><b>%s</b></big>" %
-                        _("does not seem to be a .jpg or .tiff picture?"))
+            show_mesbox(self.dialog, "<big><b>%s</b></big>" %
+                        _("does not seem to be a .jpg picture?"), self.encoding)
             return
 
         labeltext = "<big><b>%s</b></big>\n%s" % (_("Exif Comment Editing:"),
                                                   _("(see output details on the console)"))
-        newcomment = self.show_exif_dialog(dialog, labeltext, _("cancel"), _("OK, save that"), filen)
+        ok_or_not, ret_text = self.show_exif_dialog(labeltext, _("cancel"),
+                                                    _("OK, save that"), filen)
 
-        if self.ms.dialog2_q == "ok_pressed":
+        if ok_or_not: # ok pressed
             pre = ""
             if self.py2exe:
                 pre = self.cwd
             tot = [pre + "jhead"]
             tot.append("-cl")
 
-            newcomment = newcomment.strip()
+            newcomment = ret_text.strip()
 # reverse encoding here, hm, only win2000?
             newcomment = self.loc_enc(newcomment)
 
@@ -444,30 +449,30 @@ class filechoose:
                 err_output = pipe.stderr.read()
             except OSError, (errno, errstr):
                 print "## jhead (ERROR): %s: %s" % (str(errno), errstr)
-                self.ms.show_mesbox(dialog, "<big><b>%s</b></big>\n\n%s: %s" % (
-                    _("error while trying to set Exif comment:"), str(errno), errstr))
+                show_mesbox(self.dialog, "<big><b>%s</b></big>\n\n%s: %s" % (
+                    _("error while trying to set Exif comment:"), str(errno), errstr), self.encoding)
                 return ""
             if err_output != "": # does not reach here unfortunately
                 print "## jhead (ERROR): %s" % err_output
                 return ""
 
-            print "## jhead: %s" % vh().trimlongline(std_output.replace("\n",""),62)
+            print "## jhead: %s" % trimlongline(std_output.replace("\n",""),62)
 
 #        check of correct output, modified... ?
-            dialog.emit("update-preview")
+            self.dialog.emit("update-preview")
             return
         else:
             return
-#             rotate
+
 #}}}
-    def dialog_rotate(self, widget, dialog, direction): #{{{
+    def dialog_rotate(self, widget, direction): #{{{
         try:
-            filen = dialog.get_filenames()[0]  # can be 'None' ?
-            if len(dialog.get_filenames()) > 1:
-                self.ms.show_mesbox(dialog, "<big>%s</big>" % _("please select only <b>one</b> pic for rotating"))
+            filen = self.dialog.get_filenames()[0]  # can be 'None' ?
+            if len(self.dialog.get_filenames()) > 1:
+                show_mesbox(self.dialog, "<big>%s</big>" % _("please select only <b>one</b> pic for rotating"), self.encoding)
                 return
             if os.path.isdir(filen):
-                self.ms.show_mesbox(self.dialog, "<big>%s</big>" % _("don't know how to rotate a folder :P"))
+                show_mesbox(self.dialog, "<big>%s</big>" % _("don't know how to rotate a folder :P"), self.encoding)
                 return
         except IndexError:
             return
@@ -501,7 +506,7 @@ class filechoose:
             if plustext != "":
                 text += plustext
             text += "\n\n%s" % _("(may contact mac@calmar.ws)")
-            self.ms.show_mesbox(dialog,text)
+            show_mesbox(self.dialog,text, self.encoding)
             return
 
         ## everything seems to be ok
@@ -521,64 +526,64 @@ class filechoose:
                             _("imagemagick's jpeg rotate is not lossless, so don't use it on "),
                             _("your original pictures."))
 
-                    self.ms.show_mesbox(dialog,text)
-                    dialog.set_current_folder(dialog.get_current_folder())
+                    show_mesbox(self.dialog, text, self.encoding)
+                    self.dialog.set_current_folder(self.dialog.get_current_folder())
                 else:
                     os.remove(filen) # could also first move for more security
                     try:
                         os.rename(targetfile, filen)
-                        print "## %s (%s): %s" % ( _("rotated"), direction, vh().trimlongline(filen, 62))
+                        print "## %s (%s): %s" % ( _("rotated"), direction, trimlongline(filen, 62))
                     except OSError, (errno, errstr):
                         print "## %s" % _("Error while tyring to replace the original file")
                         print "## %s: %s" % (str(errno), errstr)
                         print "## %s:\n## %s" % (_("you find your file now at"),
-                                vh().trimlongline(targetfile, 65))
+                                trimlongline(targetfile, 65))
                         text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                                     _("replacing your original file didn't succeed on:"),
                                     filen, str(errno), errstr, _("you find your file now at:"),
                                     targetfile, _("(may contact mac@calmar.ws)"))
-                        self.ms.show_mesbox(self.dialog,text)
+                        show_mesbox(self.dialog, text, self.encoding)
 
             except OSError, (errno, errstr):
                print "## %s" % _("ERROR while trying to replace your file with the rotated one")
                print "## %s: %s" % (str(errno), errstr)
                print "## %s" % _("you find the rotated file now at:")
-               print "## %s" % vh().trimlongline(targetfile, 65)
+               print "## %s" % trimlongline(targetfile, 65)
                text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                            _("replacing your original file didn't succeed on:"),
                            filen, str(errno), errstr, _("you find your file now at:"),
                            targetfile, _("(may contact mac@calmar.ws)"))
-               self.ms.show_mesbox(self.dialog,text)
+               show_mesbox(self.dialog, text, self.encoding)
         else:
             print "## %s" % _("Error while tyring to rotate the file")
             print "## %s" % std_output
             text = "<big><b>%s</b></big>\n\n%s\n\n%s\n\n%s" % (
                     _("rotating didn't succeed on:"), filen, std_output,
                     _("(may contact mac@calmar.ws)"))
-            self.ms.show_mesbox(self.dialog,text)
+            show_mesbox(self.dialog, text, self.encoding)
 
-        dialog.emit("update-preview")
+        self.dialog.emit("update-preview")
 #             view pics
 #}}}
-    def dialog_viewpics(self, widget, dialog): #{{{
+    def dialog_viewpics(self, widget): #{{{
         if self.viewer == "":
             if self.mswin:
                 print "## %s" % _("select first your viewer (whatever you have) and then try again")
-                self.dialog_setupviewer(None, dialog) #### hmmm
+                self.dialog_setupviewer() #### hmmm
                 return
             else:
                 self.viewer == "display" # for not windows platorms
         try:   # Probably when a folder is selected. Should change later
-            filen = dialog.get_filenames()[0]
+            filen = self.dialog.get_filenames()[0]
         except IndexError:
             return
-        files = dialog.get_filenames()
+        files = self.dialog.get_filenames()
         file_show = []
         for filen in files:
             if os.path.isfile(filen):
                 file_show.append(filen)
         if not file_show:
-            self.ms.show_mesbox(self.dialog, "<big><b>%s</b></big>" % _("can not display anything, sorry"))
+            show_mesbox(self.dialog, "<big><b>%s</b></big>" % _("can not display anything, sorry"), self.encoding)
             return
 
         tot = [self.viewer]
@@ -595,7 +600,7 @@ class filechoose:
             print "## %s: %s" % (str(errno), errstr)
             text = "<big><b>%s</b></big>\n\n%s: %s" % (
                     _("Error while trying to display the pictures(s)"), str(errno), errstr)
-            self.ms.show_mesbox(self.dialog, text)
+            show_mesbox(self.dialog, text, self.encoding)
             return
 
         if err_output != "" :
@@ -603,23 +608,23 @@ class filechoose:
             print "## (ERROR): %s" % err_output
             text = "<big><b>%s</b></big>\n\n%s" % (
                     _("Error while trying to display the pictures(s)"), err_output )
-            self.ms.show_mesbox(self.dialog, text )
+            show_mesbox(self.dialog, text, self.encoding)
 #}}}
-    def dialog_setupviewer(self, widget, dialog_main): #{{{
-        dialog_sv = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
-                                       dialog_main,
+    def dialog_setupviewer(self): #{{{
+        dialog_sw = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
+                                       self.dialog,
                                        gtk.FILE_CHOOSER_ACTION_OPEN,
                                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                        gtk.STOCK_OPEN, gtk.RESPONSE_OK))
 
-        dialog_sv.set_default_response(gtk.RESPONSE_OK)
-        dialog_sv.set_select_multiple(False)
+        dialog_sw.set_default_response(gtk.RESPONSE_OK)
+        dialog_sw.set_select_multiple(False)
 
         align = gtk.Alignment(xalign=0.5, yalign=0.0, xscale=0.0, yscale=0.0)
         align.set_padding(0, 0, 0, 0)
         align.show()
 
-        dialog_sv.set_extra_widget(align)
+        dialog_sw.set_extra_widget(align)
 
         label = gtk.Label()
 
@@ -643,30 +648,30 @@ class filechoose:
         filefilter = gtk.FileFilter()
         filefilter.set_name(_(" all files          "))
         filefilter.add_pattern("*")
-        dialog_sv.add_filter(filefilter)
+        dialog_sw.add_filter(filefilter)
 
         filefilter = gtk.FileFilter()
         filefilter.set_name(_(" MS-Win executables "))
         filefilter.add_pattern("*.exe")
-        dialog_sv.add_filter(filefilter)
+        dialog_sw.add_filter(filefilter)
 
 # preview widget
-        dialog_sv.set_use_preview_label(False)
+        dialog_sw.set_use_preview_label(False)
 
 # starting folder
         if self.bin_dir != "":
-            dialog_sv.set_current_folder(self.bin_dir)
+            dialog_sw.set_current_folder(self.bin_dir)
 
-        response = dialog_sv.run()
+        response = dialog_sw.run()
 
         if response == gtk.RESPONSE_OK:
-            self.bin_dir = dialog_sv.get_current_folder()
+            self.bin_dir = dialog_sw.get_current_folder()
             try:   # Probably when folder is selected, should do in a different way, so
-                self.viewer  = dialog_sv.get_filenames()[0]
+                self.viewer = dialog_sw.get_filenames()[0]
             except IndexError:
                 print "## %s" % _("no binary selected? May try again")
                 return
-        dialog_sv.destroy()
+        dialog_sw.destroy()
 #}}}
     def loc_enc(self, text): #{{{
         obj = unicode(text, 'utf-8')

@@ -66,31 +66,31 @@ class maingui:
     def files_print_label(self, files_todo): #{{{
         labeltext=""
         if len(files_todo) == 1:
-            labeltext = "\n\n%s\n\n" % vh.trimlongline(files_todo[0])
+            labeltext = "\n\n%s\n\n" % trimlongline(files_todo[0])
         elif len(self.imgprocess["files_todo"]) == 2:
-            labeltext = "\n%s\n%s\n\n" % (vh.trimlongline(files_todo[0]), vh.trimlongline(files_todo[1]))
+            labeltext = "\n%s\n%s\n\n" % (trimlongline(files_todo[0]), trimlongline(files_todo[1]))
         elif len(files_todo) == 3:
-            labeltext = "\n%s\n%s\n%s\n" % (vh.trimlongline(files_todo[0]), vh.trimlongline(files_todo[1]),
-                    vh.trimlongline(files_todo[2]))
+            labeltext = "\n%s\n%s\n%s\n" % (trimlongline(files_todo[0]), trimlongline(files_todo[1]),
+                    trimlongline(files_todo[2]))
         elif len(files_todo) == 4:
-            labeltext = "%s/\n%s\n%s\n%s\n" % (vh.trimlongline(files_todo[0]),
-                    vh.trimlongline(files_todo[1]), vh.trimlongline(files_todo[2]),
-                    vh.trimlongline(files_todo[3]))
+            labeltext = "%s/\n%s\n%s\n%s\n" % (trimlongline(files_todo[0]),
+                    trimlongline(files_todo[1]), trimlongline(files_todo[2]),
+                    trimlongline(files_todo[3]))
         elif len(files_todo) == 5:
-            labeltext = "%s\n%s\n%s\n%s\n%s" % (vh.trimlongline(files_todo[0]),
-                    vh.trimlongline(files_todo[1]), vh.trimlongline(files_todo[2]),
-                    vh.trimlongline(files_todo[3]), vh.trimlongline(files_todo[4]))
+            labeltext = "%s\n%s\n%s\n%s\n%s" % (trimlongline(files_todo[0]),
+                    trimlongline(files_todo[1]), trimlongline(files_todo[2]),
+                    trimlongline(files_todo[3]), trimlongline(files_todo[4]))
         else:
             for i in range(0,3):
-                labeltext += "%s\n" % ( vh.trimlongline(files_todo[i]))
+                labeltext += "%s\n" % ( trimlongline(files_todo[i]))
             labeltext += ".....\n"
-            labeltext += vh.trimlongline(files_todo[-1])
+            labeltext += trimlongline(files_todo[-1])
 
 # encoding hack. grr
         if mswin:
             self.general["todolabel"].set_text(labeltext)
         else:
-            self.general["todolabel"].set_text(self.utf8_enc(labeltext))
+            self.general["todolabel"].set_text(utf8_enc(labeltext, encoding))
 #              create radios
 #}}}
     def create_radios(self, vbox, values, text, id_radio, default): #{{{
@@ -142,16 +142,12 @@ class maingui:
         d.close()
 #              encoding stuff
 #}}}
-    def utf8_enc(self, text): #{{{
-        obj = unicode(text, self.general["encoding"])
-        return obj.encode('utf-8')
-### various mesboxes
 #}}}
 # converting loop
     def create_subfolder(self, folder, filen): #{{{
         if folder != "" and not os.path.exists(filen + "/" + folder):
             print "## %s: %s (%s/%s)" % (_("create new folder: "), folder,
-                         vh.trimlongline(filen, 38), folder)
+                         trimlongline(filen, 38), folder)
             try:
                 os.mkdir(filen + "/" + folder)
             except OSError, (errno, errstr):
@@ -162,10 +158,10 @@ class maingui:
 
                 text = "<big><b>%s</b></big>\n\n%s/<b>%s</b>\n\n%s\n\n%s: %s" % (
                         _("was not able to create your target folder"),
-                        vh.trimlongline(filen ,48), folder,
+                        trimlongline(filen ,48), folder,
                         _("please check that issue first"),
                         str(errno), errstr)
-                self.ms.show_mesbox(gtkwindow, text)
+                show_mesbox(gtkwindow, text, encoding)
                 return False
         else:
             print "## %s" % _("sub-folder exists already")
@@ -229,8 +225,8 @@ class maingui:
 #}}}
     def no_files_there_selected(self): #{{{
         if not self.imgprocess["files_todo"]:
-            self.ms.show_mesbox(gtkwindow, "<big><b>%s</b></big>" % (
-                    _("Select some <b>pics</b> to work on")))
+            show_mesbox(gtkwindow, "<big><b>%s</b></big>" % (
+                    _("Select some <b>pics</b> to work on")), encoding)
             return True
 #}}}
     def print_stop_message(self, counter, total): #{{{
@@ -239,15 +235,14 @@ class maingui:
         print
         print "## %s" % _("stop button pressed: converting has stopped")
         print
-        self.ms.show_mesbox(gtkwindow, "<big><b>%s</b></big>" % _("progress stopped"))
+        show_mesbox(gtkwindow, "<big><b>%s</b></big>" % _("progress stopped"), encoding)
         self.files_print_label(self.imgprocess["files_todo"])
 #}}}
     def go_on_source_is_equal_target(self, counter, total): #{{{
         print "## " + _("source and target are the same!")
         text = "%s\n\n%s" % (_("<b>source</b> and <b>target</b> are the same!"),
                 _("(...cowardly refuses to overwrite)"))
-        self.ms.show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on..."))
-        if self.ms.dialot2_q != "ok_pressed":
+        if not show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on...")):
             self.general["stop_button"].hide()
             self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
             while gtk.events_pending():
@@ -280,7 +275,7 @@ class maingui:
                   -> <b>picture type</b>
 
      in order to prevent overwriting the original pictures""")
-                self.ms.show_mesbox(gtkwindow, text)
+                show_mesbox(gtkwindow, text, encoding)
                 return
 
 # to get the path of sample (first) file
@@ -299,7 +294,7 @@ class maingui:
         self.imgprocess["stop_progress"] = False
         self.general["stop_button"].show()
         self.general["stop_button"].grab_focus()
-        self.ms.overwrite_q = ""
+        overwrite_retval = ""  # keep overwrite all status
 #######################################################################
 # begin the loop
 #######################################################################
@@ -330,9 +325,9 @@ class maingui:
 
 # print what you're going to do... preparation here
             command_print = "convert: " + "%-" + str(dist) + "s --> " +\
-                    vh.trimlongline(targetfile,58 - dist )
+                    trimlongline(targetfile,58 - dist )
 
-            text = vh.trimlongline(targetfile,65 - dist )
+            text = trimlongline(targetfile,65 - dist )
             self.label_progress(str(counter), str(total), text,"")
             print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
 
@@ -344,16 +339,15 @@ class maingui:
                     return
 # check if file exists and may show 'overwrite dialog'
             if os.path.exists(targetfile):
-                if self.ms.overwrite_q != "all_overwrite":
-                    self.ms.show_overwrite_dialog(gtkwindow, targetfile, mswin)
+                if overwrite_retval != "all_overwrite":
+                    overwrite_retval = show_overwrite_dialog(gtkwindow, targetfile, mswin, encoding)
                     while gtk.events_pending():
                         gtk.main_iteration(False)
-                    if self.ms.overwrite_q == "ok_pressed":
-                        self.ms.overwrite_q != ""
-                        print _("# skipped: ") + vh.trimlongline(targetfile,58)
+                    if overwrite_retval == "ok_pressed":
+                        print _("# skipped: ") + trimlongline(targetfile,58)
                         continue
-                    elif self.ms.overwrite_q == "cancel":
-                        self.ms.overwrite_q != ""
+                    elif overwrite_retval == "cancel":
+                        overwrite_retval = ""
                         self.general["stop_button"].hide()
                         self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
                         while gtk.events_pending():
@@ -364,8 +358,8 @@ class maingui:
                         print
                         self.files_print_label(self.imgprocess["files_todo"])
                         return
-                    elif self.ms.overwrite_q == "overwrite":
-                        self.ms.overwrite_q != ""
+                    elif overwrite_retval == "overwrite":
+                        overwrite_retval = ""
 
             pre = ""
             if py2exe:
@@ -393,8 +387,7 @@ class maingui:
                         _("catched an <b>error</b> while working on:"),
                         sourcefile, str(errno), errstr,
                         _("(may contact mac@calmar.ws)"))
-                self.ms.show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on..."))
-                if self.ms.dialot2_q != "ok_pressed":
+                if not show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on...")):
                     self.general["stop_button"].hide()
                     self.label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
                     while gtk.events_pending():
@@ -425,8 +418,7 @@ class maingui:
                 text = "%s\n\n%s\n<b>%s</b>\n\n%s" % (
                         _("imagemagick terminated with an <b>error</b> while working on:"),
                         sourcefile, err_output, _("(may contact mac@calmar.ws)"))
-                self.ms.show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on..."))
-                if self.ms.dialot2_q != "ok_pressed":
+                if not show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on...")):
                     self.general["stop_button"].hide()
                     self.label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
                     while gtk.events_pending():
@@ -466,7 +458,7 @@ class maingui:
                                          py2exe,
                                          self.general["bin_folder"],
                                          self.general["viewer"],
-                                         self.general["encoding"])
+                                         encoding)
 
         self.general["bin_folder"] = fcgui.bin_dir
         self.general["viewer"] = fcgui.viewer
@@ -480,7 +472,7 @@ class maingui:
         print
         for filename in self.imgprocess["files_todo"]:
             counter += 1
-            string = "%3s: " + vh.trimlongline(filename,65)
+            string = "%3s: " + trimlongline(filename,65)
             print string % (str(counter))
 #}}} 
     def gui_todo_box(self, mainbox): #{{{
@@ -494,7 +486,7 @@ class maingui:
             print
             for filen in self.imgprocess["files_todo"]:
                 counter += 1
-                string = "%3s: " + vh.trimlongline(filen,66)
+                string = "%3s: " + trimlongline(filen,66)
                 print string % (str(counter))
             print
         else:
@@ -757,7 +749,6 @@ class maingui:
         self.radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
         self.general = dict( todolabel = gtk.Label(),
                         stop_button    = gtk.Button(),
-                        encoding       = locale.getpreferredencoding(),
                         pic_folder     = "",
                         bin_folder     = "",
                         viewer         = "",
@@ -771,8 +762,6 @@ class maingui:
                         radio_percent  = self.radio_bogus,
                         radio_quality  = self.radio_bogus)
 
-
-        self.ms = Messageboxes.Mesbox(self.general["encoding"])
 
 # imgprocess (global)- data (source) for image processing
         self.imgprocess = dict( ent_prefix  = "",
@@ -854,7 +843,8 @@ def main(): #{{{
 ### imports, head (at the bottom :) #{{{
 #imports... vars...
 import os, sys,  time, string, shelve, subprocess
-import gtk, pygtk, pango
+import gtk, pango
+#import pygtk
 import gettext, locale
 
 # for pyexe 
@@ -864,11 +854,9 @@ import Image, PngImagePlugin, JpegImagePlugin
 
 # classes
 import Filechoosegui
-import Messageboxes
-import Varhelp
+from Messageboxes import *
+from Varhelp import *
 # globals/konstants - used on many function
-
-vh = Varhelp.vh()
 
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
@@ -889,7 +877,10 @@ else:
 gettext.bindtextdomain('cal_pixresizer', cwd + "locale")
 locale.setlocale(locale.LC_ALL, "")
 
+encoding = locale.getpreferredencoding()
+
 gtkwindow  = gtk.Window(gtk.WINDOW_TOPLEVEL)
+
 
 if __name__ == "__main__":
     main()
