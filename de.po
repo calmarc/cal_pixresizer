@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-02-20 14:17+0100\n"
+"POT-Creation-Date: 2006-02-20 21:58+0100\n"
 "PO-Revision-Date: 2006-02-08 04:55+0100\n"
 "Last-Translator: calmar <mac@calmar.ws>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -83,7 +83,7 @@ msgid "(...cowardly refuses to overwrite)"
 msgstr "(...feige verweigert dir Originale zu ueberschreiben)"
 
 #: cal_pixresizer.py:245 cal_pixresizer.py:390 cal_pixresizer.py:421
-#: Messageboxes.py:56
+#: Messageboxes.py:52
 msgid "quit processing"
 msgstr "Bearbeitung beenden"
 
@@ -131,8 +131,8 @@ msgstr "Fehler beim Versuch das Bild zu convertieren"
 msgid "catched an <b>error</b> while working on:"
 msgstr "Imagemagick's convert beendete mit einem <b>Fehler</b> bei der Datei :"
 
-#: cal_pixresizer.py:389 cal_pixresizer.py:420 Filechoosegui.py:509
-#: Filechoosegui.py:545 Filechoosegui.py:556 Filechoosegui.py:563
+#: cal_pixresizer.py:389 cal_pixresizer.py:420 Filechoosegui.py:506
+#: Filechoosegui.py:542 Filechoosegui.py:553 Filechoosegui.py:560
 msgid "(may contact mac@calmar.ws)"
 msgstr "(mac@calmar.ws kontaktieren allenfalls)"
 
@@ -236,7 +236,7 @@ msgstr ""
 msgid "<b>convert</b> to:"
 msgstr "konvertiere zu:"
 
-#: Filechoosegui.py:23 Filechoosegui.py:615
+#: Filechoosegui.py:23 Filechoosegui.py:612
 msgid "Calmar's Picture Resizer - select pictures..."
 msgstr "Calmar's Picture Resizer - Bilder auswaehlen..."
 
@@ -281,10 +281,10 @@ msgid "</b> items inside"
 msgstr "</b> Dateien/Ordner"
 
 #: Filechoosegui.py:276
-msgid "are you sure you want to <b>delete</b> selected items - forever?"
-msgstr "die Bilder fuer immer <b>loeschen</b>?"
+msgid "are you sure you want to <b>delete</b> selected items - <b>forever</b>?"
+msgstr "die Bilder <b>fuer immer</b> <b>loeschen</b>?"
 
-#: Filechoosegui.py:277 Filechoosegui.py:427
+#: Filechoosegui.py:277 Filechoosegui.py:424
 msgid "cancel"
 msgstr "Abbruch!"
 
@@ -312,7 +312,7 @@ msgstr "Datei geloescht"
 msgid "sorry, could not remove file:"
 msgstr "sorry, konnte Datei nicht loeschen "
 
-#: Filechoosegui.py:345 Messageboxes.py:14 Messageboxes.py:51
+#: Filechoosegui.py:345 Messageboxes.py:11 Messageboxes.py:48
 msgid "attention:"
 msgstr "Achtung:"
 
@@ -320,167 +320,170 @@ msgstr "Achtung:"
 msgid "can not yet set Exif comments to a directory :P"
 msgstr "kann kein Exif Kommentar einem Verzeichnis hinzufuegen"
 
-#: Filechoosegui.py:420
-msgid "does not seem to be a jpg or tiff picture?"
-msgstr "scheint kein .jpg oder .tiff Bild zu sein?"
+#: Filechoosegui.py:417
+msgid "does not seem to be a jpg picture?"
+msgstr "scheint kein .jpg Bild zu sein?"
 
-#: Filechoosegui.py:422
+#: Filechoosegui.py:419
 msgid "does not seem to be a .jpg picture?"
 msgstr "scheint kein .jpg oder .tiff Bild zu sein?"
 
-#: Filechoosegui.py:425
+#: Filechoosegui.py:422
 msgid "Exif Comment Editing:"
 msgstr "Exif Kommentar editieren:"
 
-#: Filechoosegui.py:426
+#: Filechoosegui.py:423
 msgid "(see output details on the console)"
 msgstr "(Details bei der Konsole)"
 
-#: Filechoosegui.py:428
+#: Filechoosegui.py:425
 msgid "OK, save that"
 msgstr "OK, speichern"
 
-#: Filechoosegui.py:454
+#: Filechoosegui.py:451
 msgid "error while trying to set Exif comment:"
 msgstr "ein Fehler ergab sich beim Versuch die Datei zu loeschen"
 
-#: Filechoosegui.py:473
+#: Filechoosegui.py:470
 msgid "please select only <b>one</b> pic for rotating"
 msgstr "nur ein Bild zum rotieren auswaehlen"
 
-#: Filechoosegui.py:476
+#: Filechoosegui.py:473
 msgid "don't know how to rotate a folder :P"
 msgstr "kann keinen Ordner rotieren"
 
-#: Filechoosegui.py:493 Filechoosegui.py:501
+#: Filechoosegui.py:490 Filechoosegui.py:498
 msgid "error while trying to rotate the picture"
 msgstr "Fehler beim Versuch das Bild zu rotieren"
 
-#: Filechoosegui.py:500
+#: Filechoosegui.py:497
 msgid "Nevertheless, there exists an produced (corrupt?) file at:\n"
 msgstr "Aber trotzdem, es existiert eine (korruptes?) Datei:\n"
 
-#: Filechoosegui.py:506
+#: Filechoosegui.py:503
 msgid "rotating didn't succeed on"
 msgstr "das Rotieren klappte nicht"
 
-#: Filechoosegui.py:519
+#: Filechoosegui.py:516
 msgid "Your rotated jpg is smaller than your original file"
 msgstr "das rotierte jpg Bild ist kleiner als das Original"
 
-#: Filechoosegui.py:520
+#: Filechoosegui.py:517
 msgid "I won't overwrite the file. Find your rotated file, now,"
 msgstr "werde das Bild nicht ueberschreiben. das rotierte Bild ist jetzt:"
 
-#: Filechoosegui.py:521
+#: Filechoosegui.py:518
 msgid "with an _rot suffix added"
 msgstr "mit einem _rot suffix angehaengt"
 
-#: Filechoosegui.py:524
+#: Filechoosegui.py:521
 msgid "target file is smaller than your original file"
 msgstr "Ziel Bild ist kleiner als das original Bild"
 
-#: Filechoosegui.py:525
+#: Filechoosegui.py:522
 msgid "I won't replace your original file."
 msgstr "werde das Original Bild nicht ueberschreiben"
 
-#: Filechoosegui.py:526
+#: Filechoosegui.py:523
 msgid "You find your rotated file now with an '_rot' suffix. "
 msgstr "das rotierte Bild hat jetzt ein '_rot' Suffix angehaengt."
 
-#: Filechoosegui.py:527
+#: Filechoosegui.py:524
 msgid "imagemagick's jpeg rotate is not lossless, so don't use it on "
 msgstr "ImageMagick's Jpeg rotieren ist nicht verlustfrei."
 
-#: Filechoosegui.py:528
+#: Filechoosegui.py:525
 msgid "your original pictures."
 msgstr "das original Bild."
 
-#: Filechoosegui.py:536
+#: Filechoosegui.py:533
 msgid "rotated"
 msgstr "rotiert"
 
-#: Filechoosegui.py:538
+#: Filechoosegui.py:535
 msgid "Error while tyring to replace the original file"
 msgstr "Fehler beim Rotieren des Original-Bildes"
 
-#: Filechoosegui.py:540
+#: Filechoosegui.py:537
 msgid "you find your file now at"
 msgstr "das Bild ist jetzt:"
 
-#: Filechoosegui.py:543 Filechoosegui.py:554
+#: Filechoosegui.py:540 Filechoosegui.py:551
 msgid "replacing your original file didn't succeed on:"
 msgstr "das Original-Bild zu ersetzen klappte nicht:"
 
-#: Filechoosegui.py:544 Filechoosegui.py:555
+#: Filechoosegui.py:541 Filechoosegui.py:552
 msgid "you find your file now at:"
 msgstr "das Bild ist jetzt:"
 
-#: Filechoosegui.py:549
+#: Filechoosegui.py:546
 msgid "ERROR while trying to replace your file with the rotated one"
 msgstr "Fehler beim ersetzen des Original-Bildes mit dem Rotierten"
 
-#: Filechoosegui.py:551
+#: Filechoosegui.py:548
 msgid "you find the rotated file now at:"
 msgstr "das rotierte Bild ist jetzt:"
 
-#: Filechoosegui.py:559
+#: Filechoosegui.py:556
 msgid "Error while tyring to rotate the file"
 msgstr "Fehler beim Versuch das Bild zu rotieren"
 
-#: Filechoosegui.py:562
+#: Filechoosegui.py:559
 msgid "rotating didn't succeed on:"
 msgstr "das Rotieren klappte nicht"
 
-#: Filechoosegui.py:572
+#: Filechoosegui.py:569
 msgid "select first your viewer (whatever you have) and then try again"
 msgstr "zuerst das Bild Programm (was auch immer) auswaehlen"
 
-#: Filechoosegui.py:587
+#: Filechoosegui.py:584
 msgid "can not display anything, sorry"
 msgstr "kann nichts anzeigen"
 
-#: Filechoosegui.py:600 Filechoosegui.py:608
+#: Filechoosegui.py:597 Filechoosegui.py:605
 msgid "## error while trying to display the picture(s)"
 msgstr "## ein Fehler ergab sich beim Versuch das Bild anzuzeigen"
 
-#: Filechoosegui.py:603 Filechoosegui.py:611
+#: Filechoosegui.py:600 Filechoosegui.py:608
 msgid "Error while trying to display the pictures(s)"
 msgstr "ein Fehler ergab sich beim Versuch das Bild anzuzeigen"
 
-#: Filechoosegui.py:632
+#: Filechoosegui.py:629
 msgid "<b>Select</b> your <b>previewer</b> for your images - e.g:"
 msgstr ""
 "Das <b>Bild Programm</b> fuer die <b>Bild Ansicht</b> auswaehlen - z.B:"
 
-#: Filechoosegui.py:650
+#: Filechoosegui.py:647
 msgid " all files          "
 msgstr " alles anzeigen     "
 
-#: Filechoosegui.py:655
+#: Filechoosegui.py:652
 msgid " MS-Win executables "
 msgstr "MS-Win Programme (.exe)"
 
-#: Filechoosegui.py:673
+#: Filechoosegui.py:670
 msgid "no binary selected? May try again"
 msgstr "Kein Bild Betrachter gewaehlt"
 
-#: Messageboxes.py:55
+#: Messageboxes.py:51
 msgid "skip"
 msgstr "ueberspringen"
 
-#: Messageboxes.py:57
+#: Messageboxes.py:53
 msgid "overwrite"
 msgstr "ueberschreiben"
 
-#: Messageboxes.py:58
+#: Messageboxes.py:54
 msgid "overwrite ALL"
 msgstr "Alles ueberschr."
 
-#: Messageboxes.py:74
+#: Messageboxes.py:69
 msgid "Target picture <b>already exists</b>:"
 msgstr "Ziel Bild/Datei <b>existiert bereits:</b>"
 
-#: Messageboxes.py:99
+#: Messageboxes.py:94
 msgid "Calmar's Picture Resizer"
 msgstr "Calmar's Picture Resizer"
+
+#~ msgid "does not seem to be a jpg or tiff picture?"
+#~ msgstr "scheint kein .jpg oder .tiff Bild zu sein?"

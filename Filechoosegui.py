@@ -405,14 +405,14 @@ class filechoose:
         files =  self.dialog.get_filenames()
         if not files:
             return
-        fname = files[0]
+        filename = files[0]
 
-        if os.path.isdir(fname):
+        if os.path.isdir(filename):
             print >> sys.stderr, "## " + _("can not yet set Exif comments to a directory :P")
             show_mesbox(self.dialog, "<big><b>%s</b></big>" % (
                      _("can not yet set Exif comments to a directory :P")), self.encoding)
             return
-        fname, ext = os.path.splitext(fname);  # file itself
+        fname, ext = os.path.splitext(filename);  # file itself
         if ext != ".jpg" and ext != ".jpeg" and ext != ".JPG" and ext != ".JPEG":
             print >> sys.stderr, "## jhead: %s" %  _("does not seem to be a jpg picture?")
             show_mesbox(self.dialog, "<big><b>%s</b></big>" %
@@ -422,7 +422,7 @@ class filechoose:
         labeltext = "<big><b>%s</b></big>\n%s" % (_("Exif Comment Editing:"),
                                                   _("(see output details on the console)"))
         ok_or_not, ret_text = self.show_exif_dialog(labeltext, _("cancel"),
-                                                    _("OK, save that"), fname)
+                                                    _("OK, save that"), filename)
 
         if ok_or_not: # ok pressed
             pre = ""
@@ -439,7 +439,7 @@ class filechoose:
                 tot.append(' ')  # cheating! may change later
             else:
                 tot.append(str(newcomment))
-            tot.append(fname)
+            tot.append(filename)
             try:
                 pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                         stderr=subprocess.PIPE, shell=False)

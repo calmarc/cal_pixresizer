@@ -113,32 +113,35 @@ class maingui:
 #              userdata
 #}}}
     def userdata_load(self): #{{{
-        global general
-        global imgprocess
 
         filename = cwd + "data_cal_pixresizer.cpd"
         d = shelve.open(filename)
         try:
             for key in ["size_or_not", "viewer", "pic_folder", "bin_folder"]:
                 self.general[key] = d[key]
-            for key in ["ftype", "files_todo", "width", "height", "percent", "quality",\
-                    "ent_prefix", "ent_suffix", "ent_folder"]:
+            for key in ["ftype", "files_todo", "width", "height", "percent", "quality",
+                        "width_rad", "height_rad", "percent_rad", "quality_rad", 
+                        "ent_prefix", "ent_suffix", "ent_folder"]:
                 self.imgprocess[key] = d[key]
         except KeyError:
             print >> sys.stderr, "## %s" % _("no valid userdata found")
         d.close()
 #}}}
     def userdata_save(self): #{{{
-        global general
-        global imgprocess
 
         d = shelve.open(cwd + "data_cal_pixresizer.cpd")
         for key in ["viewer", "pic_folder", "bin_folder"]:
             d[key] = self.general[key]
-        for key in ["ftype", "files_todo", "width", "height", "percent", "quality",\
-                "ent_prefix", "ent_suffix", "ent_folder"]:
+        for key in ["ftype", "files_todo", "width", "height", "percent", "quality",
+                    "ent_prefix", "ent_suffix", "ent_folder"]:
             d[key] = self.imgprocess[key]
         d["size_or_not"] = self.general["sizebox"].get_property("sensitive")
+
+        d["width_rad"] = str(self.imgprocess["spinWidth"].get_value_as_int())
+        d["height_rad"] = str(self.imgprocess["spinHeight"].get_value_as_int())
+        d["percent_rad"] = str(self.imgprocess["spinPercent"].get_value_as_int())
+        d["quality_rad"] = str(self.imgprocess["spinQuality"].get_value_as_int())
+
         d.close()
 #              encoding stuff
 #}}}
@@ -771,23 +774,29 @@ class maingui:
                            ftype       = "",
                            files_todo  = [],
                            width       = "9999",
+                           width_rad   = "1024",
                            height      = "768",
+                           height_rad  = "768",
                            percent     = "60",
-                           quality     = "94")
+                           percent_rad = "60",
+                           quality     = "94",
+                           quality_rad = "94")
 
-        adj = gtk.Adjustment(1024, 10, 2000, 1, 100, 0)
+        self.userdata_load()  # if there, overwrites above values if they exists
+
+        adj = gtk.Adjustment(float(self.imgprocess["width_rad"]), 10, 2000, 1, 100, 0)
         adj.connect("value_changed", self.get_spin_focus, "radio_width" )
         self.imgprocess["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
         self.imgprocess["spinWidth"].set_numeric(True)  #spinnervalue needed later
-        adj = gtk.Adjustment(768, 10, 2000, 1, 100, 0)
+        adj = gtk.Adjustment(float(self.imgprocess["height_rad"]), 10, 2000, 1, 100, 0)
         adj.connect("value_changed", self.get_spin_focus, "radio_height" )
         self.imgprocess["spinHeight"] = gtk.SpinButton(adj, 1.0, 0)
         self.imgprocess["spinHeight"].set_numeric(True)
-        adj = gtk.Adjustment(60, 10, 400, 1, 30, 0)
+        adj = gtk.Adjustment(float(self.imgprocess["percent_rad"]), 10, 400, 1, 30, 0)
         adj.connect("value_changed", self.get_spin_focus, "radio_percent" )
         self.imgprocess["spinPercent"] = gtk.SpinButton(adj, 1.0, 0)
         self.imgprocess["spinPercent"].set_numeric(True)
-        adj = gtk.Adjustment(90, 10, 100, 1, 10, 0)
+        adj = gtk.Adjustment(float(self.imgprocess["quality_rad"]), 10, 100, 1, 10, 0)
         adj.connect("value_changed", self.get_spin_focus, "radio_quality" )
         self.imgprocess["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
         self.imgprocess["spinQuality"].set_numeric(True)
@@ -797,7 +806,6 @@ class maingui:
         print "================================================="
         print
 
-        self.userdata_load()
 
         gtkwindow.set_title("Calmar's Picture Resizer - http://www.calmar.ws")
         gtkwindow.set_default_size(500,300)
