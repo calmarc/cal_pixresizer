@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Copyright (C) 2006 http://www.calmar.ws #{{{
 # http://www.calmar.ws/resize/COPYING
 ### little FUNCTIONS 
