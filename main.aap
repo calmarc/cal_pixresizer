@@ -1,7 +1,11 @@
 files =
     cal_pixresizer/cal_pixresizer.py
+    cal_pixresizer/Filechoosegui.py
+    cal_pixresizer/Messageboxes.py
+    cal_pixresizer/Varhelp.py
     cal_pixresizer/COPYING
     cal_pixresizer/README
+    cal_pixresizer/de.po
     cal_pixresizer/locale/de/LC_MESSAGES/cal_pixresizer.mo
     cal_pixresizer/bilder/calmar.png
     cal_pixresizer/bilder/exit.png
@@ -27,6 +31,6 @@ all :
     :cd cal_pixresizer/
 
 po {virtual}:
-    :sys xgettext -k_ cal_pixresizer.py
+    :sys xgettext -k_ cal_pixresizer.py Filechoosegui.py Messageboxes.py
     :sys msgmerge -U de.po messages.po
     :sys msgfmt de.po -o locale/de/LC_MESSAGES/cal_pixresizer.mo
