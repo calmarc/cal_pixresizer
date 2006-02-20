@@ -566,7 +566,7 @@ class filechoose:
         self.dialog.emit("update-preview")
 #             view pics
 #}}}
-    def dialog_viewpics(self): #{{{
+    def dialog_viewpics(self, *args): #{{{
         if self.viewer == "":
             if self.mswin:
                 print "## %s" % _("select first your viewer (whatever you have) and then try again")
