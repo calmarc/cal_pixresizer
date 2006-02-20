@@ -82,7 +82,7 @@ class maingui:
                     trimlongline(files_todo[3]), trimlongline(files_todo[4]))
         else:
             for i in range(0,3):
-                labeltext += "%s\n" % ( trimlongline(files_todo[i]))
+                labeltext += "%s\n" % (trimlongline(files_todo[i]))
             labeltext += ".....\n"
             labeltext += trimlongline(files_todo[-1])
 
@@ -125,7 +125,7 @@ class maingui:
                     "ent_prefix", "ent_suffix", "ent_folder"]:
                 self.imgprocess[key] = d[key]
         except KeyError:
-            print "## " + _("no valid userdata found")
+            print >> sys.stderr, "## %s" % _("no valid userdata found")
         d.close()
 #}}}
     def userdata_save(self): #{{{
@@ -151,10 +151,10 @@ class maingui:
             try:
                 os.mkdir(filen + "/" + folder)
             except OSError, (errno, errstr):
-                print
-                print "## %s" % _("was not able to create target directory: converting will stop")
-                print "## %s: %s" % (str(errno), errstr)
-                print
+                print >> sys.stderr, ""
+                print >> sys.stderr, "## %s" % _("was not able to create target directory: converting will stop")
+                print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+                print >> sys.stderr
 
                 text = "<big><b>%s</b></big>\n\n%s/<b>%s</b>\n\n%s\n\n%s: %s" % (
                         _("was not able to create your target folder"),
@@ -164,7 +164,7 @@ class maingui:
                 show_mesbox(gtkwindow, text, encoding)
                 return False
         else:
-            print "## %s" % _("sub-folder exists already")
+            print >> sys.stderr, "## %s" % _("sub-folder exists already")
         return True
 #}}}
     def print_settings(self, width, height, percent,  usesize, quality,  folder, prefix, suffix, ftype): #{{{
@@ -239,7 +239,7 @@ class maingui:
         self.files_print_label(self.imgprocess["files_todo"])
 #}}}
     def go_on_source_is_equal_target(self, counter, total): #{{{
-        print "## " + _("source and target are the same!")
+        print >> sys.stderr, "## " + _("source and target are the same!")
         text = "%s\n\n%s" % (_("<b>source</b> and <b>target</b> are the same!"),
                 _("(...cowardly refuses to overwrite)"))
         if not show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on...")):
@@ -343,10 +343,10 @@ class maingui:
                     overwrite_retval = show_overwrite_dialog(gtkwindow, targetfile, mswin, encoding)
                     while gtk.events_pending():
                         gtk.main_iteration(False)
-                    if overwrite_retval == "ok_pressed":
-                        print _("# skipped: ") + trimlongline(targetfile,58)
+                    if overwrite_retval == "skip":
+                        print >> sys.stderr, _("# skipped: ") + trimlongline(targetfile,58)
                         continue
-                    elif overwrite_retval == "cancel":
+                    elif overwrite_retval == "quit":
                         overwrite_retval = ""
                         self.general["stop_button"].hide()
                         self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
@@ -381,8 +381,8 @@ class maingui:
                         stderr=subprocess.PIPE, shell=False)
                 err_output = pipe.stderr.read()
             except OSError, (errno, errstr):
-                print "## %s" % _("error while trying to convert the picture")
-                print "## %s: %s" % (str(errno), errstr)
+                print >> sys.stderr, "## %s" % _("error while trying to convert the picture")
+                print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
                 text = "%s\n\n%s\n\n%s: %s\n\n%s" % (
                         _("catched an <b>error</b> while working on:"),
                         sourcefile, str(errno), errstr,
@@ -402,18 +402,18 @@ class maingui:
                     continue
 
             if err_output != "" : # an error, since not empty or so
-                print "## %s" % _("ERROR while working on that picture")
-                print "## %s" % err_output
+                print >> sys.stderr, "## %s" % _("ERROR while working on that picture")
+                print >> sys.stderr, "## %s" % err_output
                 print
                 if os.path.exists(targetfile) and os.path.getsize(targetfile) == 0 : # del bogus
                     try:
                         os.remove(targetfile)
                     except OSError,  (errno, errstr):
-                        print "## %s" % _(" there is a currupt (filesize == 0 bytes) generated file")
-                        print "## %s" % targetfile
-                        print "## %s" % _("trying to delete, didn't succeed")
-                        print "## %s: %s" % (str(errno), errstr)
-                        print "## %s" % _("please check that issue yourself as well")
+                        print >> sys.stderr, "## %s" % _(" there is a currupt (filesize == 0 bytes) generated file")
+                        print >> sys.stderr, "## %s" % targetfile
+                        print >> sys.stderr, "## %s" % _("trying to delete, didn't succeed")
+                        print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+                        print >> sys.stderr, "## %s" % _("please check that issue yourself as well")
 
                 text = "%s\n\n%s\n<b>%s</b>\n\n%s" % (
                         _("imagemagick terminated with an <b>error</b> while working on:"),
@@ -460,13 +460,14 @@ class maingui:
                                          self.general["viewer"],
                                          encoding)
 
+        self.general["pic_folder"] = fcgui.pic_dir
         self.general["bin_folder"] = fcgui.bin_dir
         self.general["viewer"] = fcgui.viewer
 
-        self.general["pic_folder"] = fcgui.pic_dir
         if fcgui.files:
             self.imgprocess["files_todo"] = fcgui.files
         self.files_print_label(self.imgprocess["files_todo"])
+
         counter=0
         print "## Die Bilder Auswahl:"
         print

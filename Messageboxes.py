@@ -51,12 +51,15 @@ def show_overwrite_dialog(parent, filename, mswin_val, encod):
     mesbox = gtk.Dialog(_("attention:"), 
                            parent , 
                            gtk.DIALOG_MODAL,
-                           (_("overwrite ALL"), gtk.RESPONSE_ACCEPT,
-                           _("overwrite"), gtk.RESPONSE_YES,
+                           (
+                           _("skip"), gtk.RESPONSE_NONE,
                            _("quit processing"), gtk.RESPONSE_CLOSE,
-                           _("skip"), gtk.RESPONSE_NONE))
+                           _("overwrite"), gtk.RESPONSE_YES,
+                           _("overwrite ALL"), gtk.RESPONSE_ACCEPT,
+                           ))
 
 
+    mesbox.set_default_response(gtk.RESPONSE_NONE)
     mesbox.connect("destroy", quit_self, None)
     mesbox.connect("delete_event", quit_self, None)
     mesbox.set_size_request(700,-1)
@@ -79,12 +82,12 @@ def show_overwrite_dialog(parent, filename, mswin_val, encod):
 
     mesbox.show()
     response = mesbox.run()
-    if response == gtk.RESPONSE_OK:
-        var = "ok_pressed"
+    if response == gtk.RESPONSE_NONE:
+        var = "skip"
+    elif response == gtk.RESPONSE_CLOSE:
+        var = "quit"
     elif response == gtk.RESPONSE_ACCEPT:
         var = "all_overwrite"
-    elif response == gtk.RESPONSE_CANCEL:
-        var = "cancel"
     elif response == gtk.RESPONSE_YES:
         var = "overwrite"
 
