@@ -15,12 +15,13 @@ files =
     cal_pixresizer/bilder/file.png
     cal_pixresizer/bilder/stop.png
 
+
  
 all : 
     :cd ../
     :sys ls
     :print zipping
-    :sys {f} zip -u -r cal_pixresizer   $files
+    :sys {f} zip -u -r cal_pixresizer   $files cal_pixresizer/bilder/jpegtran.exe
     :print tarring
     :sys tar -czf  cal_pixresizer.tar.gz   $files
     :move cal_pixresizer.zip /home/calmar/www/calmar/resize

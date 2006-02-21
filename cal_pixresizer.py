@@ -469,7 +469,7 @@ class maingui:
 
         if fcgui.files:
             self.imgprocess["files_todo"] = fcgui.files
-        self.label_files(self.imgprocess["files_todo"])
+            self.label_files(self.imgprocess["files_todo"])
 
         counter=0
         print "## Die Bilder Auswahl:"

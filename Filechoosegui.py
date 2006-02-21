@@ -94,7 +94,7 @@ class filechoose:
         button = gtk.Button()
         button.add(label)
         button.show()
-        button.connect("clicked", self.dialog_rotate, "-90")
+        button.connect("clicked", self.dialog_rotate, "270")
         button.add_accelerator('clicked', acgroup, ord('e'), 0, gtk.ACCEL_VISIBLE )
         table.attach(button, 1, 2, 1, 2, gtk.FILL)
 
@@ -105,7 +105,7 @@ class filechoose:
         button = gtk.Button()
         button.add(label)
         button.show()
-        button.connect("clicked", self.dialog_rotate, "+90")
+        button.connect("clicked", self.dialog_rotate, "90")
         button.add_accelerator('clicked', acgroup, ord('r'), 0, gtk.ACCEL_VISIBLE )
         table.attach(button, 2, 3, 1, 2, gtk.FILL)
 
@@ -478,9 +478,14 @@ class filechoose:
         fileext = os.path.splitext(fname)
         targetfile = fname + "_rot" + fileext[1]
         pre = ""
-        if self.py2exe:
+        if self.mswin:   # jpegtrans will not be in path probably
             pre = self.cwd
-        tot = [pre + "convert","-rotate", direction, fname, targetfile]
+
+        if  fileext[1] == ".jpg" or fileext[1] == ".jpeg" or fileext[1] == ".JPG" \
+            or fileext[1] == ".JPEG":
+            tot = [pre + "jpegtran", "-rotate", direction, fname, targetfile]
+        else:
+            tot = [pre + "convert", "-rotate", direction, fname, targetfile]
         try:
             pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                     stderr=subprocess.PIPE, shell=False)
@@ -510,37 +515,22 @@ class filechoose:
         ## everything seems to be ok
         ## (hopefully) secure overwriting
         if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
-            try:
-                if ( fileext[1] == ".jpg" or fileext[1] == ".jpeg" ) and ( 
-                        (os.path.getsize(fname) - 51200) > os.path.getsize(targetfile)):
-                    print >> sys.stderr, "## %s" % _("Your rotated jpg is smaller than your original file")
-                    print >> sys.stderr, "## %s" % _("I won't overwrite the file. Find your rotated file, now,")
-                    print >> sys.stderr, "## %s" % _("with an _rot suffix added")
-
-                    text = "<b>%s</b>\n\n%s\n\n%s%s%s" % (
-                            _("target file is smaller than your original file"),
-                            _("I won't replace your original file."),
-                            _("You find your rotated file now with an '_rot' suffix. "),
-                            _("imagemagick's jpeg rotate is not lossless, so don't use it on "),
-                            _("your original pictures."))
-
+            try:  # not needed anymore with jpegtrans
+                os.remove(fname) # could also first move for more security
+                try:
+                    os.rename(targetfile, fname)
+                    print "## %s (%s): %s" % ( _("rotated"), direction, trimlongline(fname, 62))
+                except OSError, (errno, errstr):
+                    print >> sys.stderr, "## %s" % _("Error while tyring to replace the original file")
+                    print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+                    print >> sys.stderr, "## %s:\n## %s" % (_("you find your file now at"),
+                            trimlongline(targetfile, 65))
+                    text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
+                                _("replacing your original file didn't succeed on:"),
+                                fname, str(errno), errstr, _("you find your file now at:"),
+                                targetfile, _("(may contact mac@calmar.ws)"))
                     show_mesbox(self.dialog, text, self.encoding)
                     self.dialog.set_current_folder(self.dialog.get_current_folder())
-                else:
-                    os.remove(fname) # could also first move for more security
-                    try:
-                        os.rename(targetfile, fname)
-                        print "## %s (%s): %s" % ( _("rotated"), direction, trimlongline(fname, 62))
-                    except OSError, (errno, errstr):
-                        print >> sys.stderr, "## %s" % _("Error while tyring to replace the original file")
-                        print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
-                        print >> sys.stderr, "## %s:\n## %s" % (_("you find your file now at"),
-                                trimlongline(targetfile, 65))
-                        text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
-                                    _("replacing your original file didn't succeed on:"),
-                                    fname, str(errno), errstr, _("you find your file now at:"),
-                                    targetfile, _("(may contact mac@calmar.ws)"))
-                        show_mesbox(self.dialog, text, self.encoding)
 
             except OSError, (errno, errstr):
                print >> sys.stderr, "## %s" % _("ERROR while trying to replace your file with the rotated one")
@@ -552,6 +542,7 @@ class filechoose:
                            fname, str(errno), errstr, _("you find your file now at:"),
                            targetfile, _("(may contact mac@calmar.ws)"))
                show_mesbox(self.dialog, text, self.encoding)
+               self.dialog.set_current_folder(self.dialog.get_current_folder())
         else:
             print >> sys.stderr, "## %s" % _("Error while tyring to rotate the file")
             print >> sys.stderr, "## %s" % std_output
