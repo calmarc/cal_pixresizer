@@ -5,7 +5,6 @@ from Varhelp import  *
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 
-
 def show_2_dialog(parent_widget, text, button_quit, button_ok):
 
     mesbox = gtk.Dialog(_("attention:"),
@@ -116,4 +115,5 @@ def show_mesbox(parent, text, encod):
 
     mesbox.show()
     mesbox.run()
+    mesbox.hide()
     mesbox.destroy()

@@ -148,11 +148,11 @@ class maingui:
 #}}}
 # converting loop
     def create_subfolder(self, folder, fname): #{{{
-        if folder != "" and not os.path.exists(fname + "/" + folder):
+        if folder != "" and not os.path.exists(fname + os.sep + folder):
             print "## %s: %s (%s/%s)" % (_("create new folder: "), folder,
                          trimlongline(fname, 38), folder)
             try:
-                os.mkdir(fname + "/" + folder)
+                os.mkdir(fname + os.sep + folder)
             except OSError, (errno, errstr):
                 print >> sys.stderr, ""
                 print >> sys.stderr, "## %s" % _("was not able to create target directory: converting will stop")
@@ -310,11 +310,11 @@ class maingui:
                 return
             counter += 1
 # split filenames into pieces and create targetfile name
-            sourcefile = string.replace(sourcefile, "\\","/") # for later source == target?
+#            sourcefile = string.replace(sourcefile, "\\","/") # for later source == target?
             splitfile = os.path.split(sourcefile)
-            resultpath = splitfile[0] + "/"
+            resultpath = splitfile[0] + os.sep
             if folder != "":    # targetdir of pics
-                resultpath += folder + "/"
+                resultpath += folder + os.sep
             fname,ext=os.path.splitext(splitfile[1]);  # file itself
             if ftype == "":
                 target_ext = ext
@@ -725,7 +725,7 @@ class maingui:
         vbox.pack_start(entry, False, False, 0)
 
         label = gtk.Label()
-        label.set_markup("%s\n" % _("<b>convert</b> to:"))
+        label.set_markup('\n<span foreground="#000060"><b>%s</b></span> %s' % (_("convert"), _("to:")))
         vbox.pack_start(label, False, False, 0)
         combo = gtk.combo_box_new_text()
         combo.set_wrap_width(6)
@@ -853,13 +853,12 @@ def main(): #{{{
 #imports... vars...
 import os, sys,  time, string, shelve, subprocess
 import gtk, pango
-#import pygtk
 import gettext, locale
+import Image
 
-# for pyexe 
-# PIL needs some help, when py2exe'd
+# for pyexe PIL needs some help, when py2exe'd
 import dbhash
-import Image, PngImagePlugin, JpegImagePlugin
+import PngImagePlugin, JpegImagePlugin
 
 # classes
 import Filechoosegui
@@ -867,15 +866,16 @@ from Messageboxes import *
 from Varhelp import *
 
 # globals/konstants - used on many function
+
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 
 if sys.path[0].endswith("\\library.zip"):  #for py2exe
     py2exe = True
-    cwd = sys.path[0][0:-12] + "/"
+    cwd = sys.path[0][0:-12] + os.sep
 else:
     py2exe = False
-    cwd = sys.path[0] + "/"
+    cwd = sys.path[0] + os.sep
 
 
 if sys.platform in ["win32", "win16", "win64"]:

@@ -1,7 +1,6 @@
 # filechooser Class
 import os, subprocess, sys  #{{{
 import gtk, gobject, Image
-#import pygtk
 import gettext
 from Messageboxes import *
 from Varhelp import *
@@ -29,8 +28,8 @@ class filechoose:
         self.dialog.set_default_response(gtk.RESPONSE_OK)
         self.dialog.set_select_multiple(True)
         self.dialog.set_size_request(700,500)
-
         self.dialog.add_accel_group(acgroup)
+
 # main vbox overall there
         vbox = gtk.VBox()
         vbox.show()
@@ -197,10 +196,10 @@ class filechoose:
             if self.mswin:
               homevar = os.getenv("HOMEDRIVE")
               homevar += "\\" + str(os.getenv("HOMEPATH"))
-              if os.path.exists(homevar + "\My Documents"):
-                  homevar += "\My Documents"
-              elif os.path.exists(homevar + "\Eigene Dateien"):
-                 homevar += "\Eigene Dateien"
+              if os.path.exists(homevar + "\\My Documents"):
+                  homevar += "\\My Documents"
+              elif os.path.exists(homevar + "\\Eigene Dateien"):
+                 homevar += "\\Eigene Dateien"
             else:
               homevar = os.getenv("HOME")
             if os.path.exists(homevar):
@@ -270,7 +269,6 @@ class filechoose:
                 except (gobject.GError, TypeError, IOError): # file but not viewable
                     pass
         return
-#             rotate
 #}}}
     def dialog_delete(self, widget): # needs more work #{{{
         text = "<big>%s</big>" % _("are you sure you want to <b>delete</b> selected items - <b>forever</b>?")
@@ -311,10 +309,7 @@ class filechoose:
         if not os.path.isfile(file):
             return ""
         fname,ext=os.path.splitext(file);  # file itself
-        if ext != ".jpg" and ext != ".jpeg" and ext != ".tif" \
-                and ext != ".tiff" and ext != ".tiff24" \
-                and ext != ".JPG" and ext != ".JPEG" and ext != ".TIF" \
-                and ext != ".TIFF" and ext != ".TIFF24":
+        if ext not in [".jpg", ".jpeg", ".JPG", ".JPEG"] : 
             return ""
         pre = ""
         if self.py2exe:
@@ -478,19 +473,34 @@ class filechoose:
         fileext = os.path.splitext(fname)
         targetfile = fname + "_rot" + fileext[1]
         pre = ""
-        if self.mswin:   # jpegtrans will not be in path probably
-            pre = self.cwd
-
-        if  fileext[1] == ".jpg" or fileext[1] == ".jpeg" or fileext[1] == ".JPG" \
-            or fileext[1] == ".JPEG":
-            tot = [pre + "jpegtran", "-rotate", direction, fname, targetfile]
+        flag = False
+        if self.mswin:
+            pre = self.cwd  # jpegtrans will not be in path probably
+            if  fileext[1] == ".jpg" or fileext[1] == ".jpeg" or fileext[1] == ".JPG" \
+                or fileext[1] == ".JPEG":
+                tot = [pre + "jpegtran", "-rotate", direction, fname, targetfile]
+            else:
+                tot = [pre + "convert", "-rotate", direction, fname, targetfile]
         else:
-            tot = [pre + "convert", "-rotate", direction, fname, targetfile]
+            if  fileext[1] == ".jpg" or fileext[1] == ".jpeg" or fileext[1] == ".JPG" \
+                or fileext[1] == ".JPEG":
+                tot = [pre + "jpegtran", "-rotate", direction, fname]
+                flag = True
+            else:
+                tot = [pre + "convert", "-rotate", direction, fname, targetfile]
+
         try:
-            pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
-                    stderr=subprocess.PIPE, shell=False)
-            std_output = pipe.stdout.read()
-            err_output = pipe.stderr.read()
+            if flag: # jpegtrans works different on *nix's
+                fh = open(targetfile,"w") 
+                pipe = subprocess.Popen(tot, stdout=fh,
+                        stderr=subprocess.PIPE, shell=False)
+                fh.close()
+                err_output = pipe.stderr.read()
+            else:
+                pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, shell=False)
+                std_output = pipe.stdout.read()
+                err_output = pipe.stderr.read()
         except OSError, (errno, errstr):
             print >> sys.stderr, "## " + _("error while trying to rotate the picture")
             print >> sys.stderr, "## " + str(errno) + ": " + errstr
@@ -561,7 +571,7 @@ class filechoose:
                 self.dialog_setupviewer() #### hmmm
                 return
             else:
-                self.viewer == "display" # for not windows platorms
+                self.viewer = "display" # for not windows platorms
         try:   # Probably when a folder is selected. Should change later
             fname = self.dialog.get_filenames()[0]
         except IndexError:
