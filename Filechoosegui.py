@@ -4,7 +4,6 @@ import gtk, gobject, Image
 import gettext
 from Messageboxes import *
 from Varhelp import *
-from PIL import Image
 
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
