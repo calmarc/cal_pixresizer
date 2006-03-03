@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-03-03 23:26+0100\n"
+"POT-Creation-Date: 2006-03-03 23:52+0100\n"
 "PO-Revision-Date: 2006-02-08 04:55+0100\n"
 "Last-Translator: calmar <mac@calmar.ws>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -357,12 +357,13 @@ msgid "don't know how to rotate a folder :P"
 msgstr "kann keinen Ordner rotieren"
 
 #: Filechoosegui.py:480
-msgid "Jpeg rotating is not losless with Imagemagick's Convert"
-msgstr "Jpeg rotieren ist nicht verlustfrei mit Imagemagick's Convert"
+msgid "Jpeg rotating is <b>not losless</b> with Imagemagick's Convert"
+msgstr "Jpeg rotieren ist <b>nicht verlustfrei</b> mit Imagemagick's Convert"
 
 #: Filechoosegui.py:481
-msgid "are you sure you want to proceed rotating jpeg's??"
-msgstr "sind Sie sicher sie wollen Jpge's rotieren?"
+#, fuzzy
+msgid "are you sure you want to <b>proceed rotating jpeg's??</b>"
+msgstr "sind Sie sicher sie wollen <b>Jpeg's rotieren</b>?"
 
 #: Filechoosegui.py:482
 msgid "I know, it's ok"

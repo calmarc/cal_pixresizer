@@ -477,8 +477,8 @@ class filechoose:
 
         if not self.rotate_is_ok and (fileext[1] == ".jpg" or fileext[1] == ".jpeg"\
                 or fileext[1] == ".JPG"  or fileext[1] == ".JPEG"):
-                text = _("Jpeg rotating is not losless with Imagemagick's Convert")
-                text += "\n" + _("are you sure you want to proceed rotating jpeg's??")
+                text = _("Jpeg rotating is <b>not losless</b> with Imagemagick's Convert")
+                text += "\n\n" + _("are you sure you want to <b>proceed rotating jpeg's??</b>")
                 if not show_2_dialog(self.dialog, text, _("cancel"), _("I know, it's ok")):
                     return
                 else:
