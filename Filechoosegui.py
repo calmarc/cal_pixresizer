@@ -4,6 +4,8 @@ import gtk, gobject, Image
 import gettext
 from Messageboxes import *
 from Varhelp import *
+from PIL import Image
+
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 #}}}
@@ -18,7 +20,7 @@ class filechoose:
         self.pic_dir = pic_dir
         self.viewer = viewer
         self.files = []
-
+        self.rotate_is_ok = False
         self.dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
                                        mainwindow,
                                        gtk.FILE_CHOOSER_ACTION_OPEN,
@@ -472,35 +474,27 @@ class filechoose:
 
         fileext = os.path.splitext(fname)
         targetfile = fname + "_rot" + fileext[1]
+
+        if not self.rotate_is_ok and (fileext[1] == ".jpg" or fileext[1] == ".jpeg"\
+                or fileext[1] == ".JPG"  or fileext[1] == ".JPEG"):
+                text = _("Jpeg rotating is not losless with Imagemagick's Convert")
+                text += "\n" + _("are you sure you want to proceed rotating jpeg's??")
+                if not show_2_dialog(self.dialog, text, _("cancel"), _("I know, it's ok")):
+                    return
+                else:
+                    self.rotate_is_ok = True;
+
         pre = ""
-        flag = False
-        if self.mswin:
-            pre = self.cwd  # jpegtrans will not be in path probably
-            if  fileext[1] == ".jpg" or fileext[1] == ".jpeg" or fileext[1] == ".JPG" \
-                or fileext[1] == ".JPEG":
-                tot = [pre + "jpegtran", "-rotate", direction, fname, targetfile]
-            else:
-                tot = [pre + "convert", "-rotate", direction, fname, targetfile]
-        else:
-            if  fileext[1] == ".jpg" or fileext[1] == ".jpeg" or fileext[1] == ".JPG" \
-                or fileext[1] == ".JPEG":
-                tot = [pre + "jpegtran", "-rotate", direction, fname]
-                flag = True
-            else:
-                tot = [pre + "convert", "-rotate", direction, fname, targetfile]
+        if self.py2exe:
+            pre = self.cwd
+
+        tot = [pre + "convert", "-rotate", direction, "-quality", "100", fname, targetfile]
 
         try:
-            if flag: # jpegtrans works different on *nix's
-                fh = open(targetfile,"w") 
-                pipe = subprocess.Popen(tot, stdout=fh,
-                        stderr=subprocess.PIPE, shell=False)
-                fh.close()
-                err_output = pipe.stderr.read()
-            else:
-                pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE, shell=False)
-                std_output = pipe.stdout.read()
-                err_output = pipe.stderr.read()
+            pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE, shell=False)
+            std_output = pipe.stdout.read()
+            err_output = pipe.stderr.read()
         except OSError, (errno, errstr):
             print >> sys.stderr, "## " + _("error while trying to rotate the picture")
             print >> sys.stderr, "## " + str(errno) + ": " + errstr

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-02-22 11:58+0100\n"
+"POT-Creation-Date: 2006-03-03 23:26+0100\n"
 "PO-Revision-Date: 2006-02-08 04:55+0100\n"
 "Last-Translator: calmar <mac@calmar.ws>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -131,8 +131,8 @@ msgstr "Fehler beim Versuch das Bild zu convertieren"
 msgid "catched an <b>error</b> while working on:"
 msgstr "Imagemagick's convert beendete mit einem <b>Fehler</b> bei der Datei :"
 
-#: cal_pixresizer.py:392 cal_pixresizer.py:423 Filechoosegui.py:521
-#: Filechoosegui.py:541 Filechoosegui.py:553 Filechoosegui.py:561
+#: cal_pixresizer.py:392 cal_pixresizer.py:423 Filechoosegui.py:515
+#: Filechoosegui.py:535 Filechoosegui.py:547 Filechoosegui.py:555
 msgid "(may contact mac@calmar.ws)"
 msgstr "(mac@calmar.ws kontaktieren allenfalls)"
 
@@ -240,200 +240,212 @@ msgstr "konvertieren"
 msgid "to:"
 msgstr "in:"
 
-#: Filechoosegui.py:22 Filechoosegui.py:613
+#: Filechoosegui.py:24 Filechoosegui.py:607
 msgid "Calmar's Picture Resizer - select pictures..."
 msgstr "Calmar's Picture Resizer - Bilder auswaehlen..."
 
-#: Filechoosegui.py:58
+#: Filechoosegui.py:60
 msgid "<b><u>d</u></b>elete selection"
 msgstr "<b><u>D</u></b>ie Auswahl loeschen"
 
-#: Filechoosegui.py:69
+#: Filechoosegui.py:71
 msgid "select <b><u>a</u></b>ll images"
 msgstr "<b><u>A</u></b>lle Dateien waehlen"
 
-#: Filechoosegui.py:80
+#: Filechoosegui.py:82
 msgid "pre<b><u>v</u></b>iew pictures"
 msgstr "Bild Ansicht (<b><u>V</u></b>)"
 
-#: Filechoosegui.py:91
+#: Filechoosegui.py:93
 msgid "rotate l<b><u>e</u></b>ft"
 msgstr "Roti<b><u>e</u></b>ren -90"
 
-#: Filechoosegui.py:102
+#: Filechoosegui.py:104
 msgid "rotate <b><u>r</u></b>ight"
 msgstr "<b><u>R</u></b>otieren +90"
 
-#: Filechoosegui.py:112
+#: Filechoosegui.py:114
 msgid "choose viewer"
 msgstr "Betrachter waehlen"
 
-#: Filechoosegui.py:122
+#: Filechoosegui.py:124
 msgid "edit e<b><u>x</u></b>if comment"
 msgstr "E<b><u>x</u></b>if Kommentar.."
 
-#: Filechoosegui.py:150
+#: Filechoosegui.py:152
 msgid " images              "
 msgstr " Bilder              "
 
-#: Filechoosegui.py:165
+#: Filechoosegui.py:167
 msgid " all files           "
 msgstr " alles anzeigen      "
 
-#: Filechoosegui.py:267
+#: Filechoosegui.py:269
 msgid "</b> items inside"
 msgstr "</b> Dateien/Ordner"
 
-#: Filechoosegui.py:274
+#: Filechoosegui.py:276
 msgid "are you sure you want to <b>delete</b> selected items - <b>forever</b>?"
 msgstr "die Bilder <b>fuer immer</b> <b>loeschen</b>?"
 
-#: Filechoosegui.py:275 Filechoosegui.py:419
+#: Filechoosegui.py:277 Filechoosegui.py:421 Filechoosegui.py:482
 msgid "cancel"
 msgstr "Abbruch!"
 
-#: Filechoosegui.py:275
+#: Filechoosegui.py:277
 msgid "yes"
 msgstr "ja"
 
-#: Filechoosegui.py:281
+#: Filechoosegui.py:283
 msgid "folder removed:"
 msgstr "Verzeichnis geloescht"
 
-#: Filechoosegui.py:284 Filechoosegui.py:294
+#: Filechoosegui.py:286 Filechoosegui.py:296
 msgid "error while trying to delete"
 msgstr "ein Fehler ergab sich beim Versuch die Datei zu loeschen"
 
-#: Filechoosegui.py:287
+#: Filechoosegui.py:289
 msgid "sorry, could not remove directory:"
 msgstr "sorry, konnte Verzeichnis nicht loeschen "
 
-#: Filechoosegui.py:291
+#: Filechoosegui.py:293
 msgid "file removed:"
 msgstr "Datei geloescht"
 
-#: Filechoosegui.py:297 Filechoosegui.py:303
+#: Filechoosegui.py:299 Filechoosegui.py:305
 msgid "sorry, could not remove file:"
 msgstr "sorry, konnte Datei nicht loeschen "
 
-#: Filechoosegui.py:340 Messageboxes.py:10 Messageboxes.py:47
+#: Filechoosegui.py:342 Messageboxes.py:10 Messageboxes.py:47
 msgid "attention:"
 msgstr "Achtung:"
 
-#: Filechoosegui.py:406 Filechoosegui.py:408
+#: Filechoosegui.py:408 Filechoosegui.py:410
 msgid "can not yet set Exif comments to a directory :P"
 msgstr "kann kein Exif Kommentar einem Verzeichnis hinzufuegen"
 
-#: Filechoosegui.py:412
+#: Filechoosegui.py:414
 msgid "does not seem to be a jpg picture?"
 msgstr "scheint kein .jpg Bild zu sein?"
 
-#: Filechoosegui.py:414
+#: Filechoosegui.py:416
 msgid "does not seem to be a .jpg picture?"
 msgstr "scheint kein .jpg oder .tiff Bild zu sein?"
 
-#: Filechoosegui.py:417
+#: Filechoosegui.py:419
 msgid "Exif Comment Editing:"
 msgstr "Exif Kommentar editieren:"
 
-#: Filechoosegui.py:418
+#: Filechoosegui.py:420
 msgid "(see output details on the console)"
 msgstr "(Details bei der Konsole)"
 
-#: Filechoosegui.py:420
+#: Filechoosegui.py:422
 msgid "OK, save that"
 msgstr "OK, speichern"
 
-#: Filechoosegui.py:446
+#: Filechoosegui.py:448
 msgid "error while trying to set Exif comment:"
 msgstr "ein Fehler ergab sich beim Versuch die Datei zu loeschen"
 
-#: Filechoosegui.py:465
+#: Filechoosegui.py:467
 msgid "please select only <b>one</b> pic for rotating"
 msgstr "nur ein Bild zum rotieren auswaehlen"
 
-#: Filechoosegui.py:468
+#: Filechoosegui.py:470
 msgid "don't know how to rotate a folder :P"
 msgstr "kann keinen Ordner rotieren"
 
-#: Filechoosegui.py:505 Filechoosegui.py:513
+#: Filechoosegui.py:480
+msgid "Jpeg rotating is not losless with Imagemagick's Convert"
+msgstr "Jpeg rotieren ist nicht verlustfrei mit Imagemagick's Convert"
+
+#: Filechoosegui.py:481
+msgid "are you sure you want to proceed rotating jpeg's??"
+msgstr "sind Sie sicher sie wollen Jpge's rotieren?"
+
+#: Filechoosegui.py:482
+msgid "I know, it's ok"
+msgstr "Ich weiss, weiterfahren.."
+
+#: Filechoosegui.py:499 Filechoosegui.py:507
 msgid "error while trying to rotate the picture"
 msgstr "Fehler beim Versuch das Bild zu rotieren"
 
-#: Filechoosegui.py:512
+#: Filechoosegui.py:506
 msgid "Nevertheless, there exists an produced (corrupt?) file at:\n"
 msgstr "Aber trotzdem, es existiert eine (korruptes?) Datei:\n"
 
-#: Filechoosegui.py:518
+#: Filechoosegui.py:512
 msgid "rotating didn't succeed on"
 msgstr "das Rotieren klappte nicht"
 
-#: Filechoosegui.py:532
+#: Filechoosegui.py:526
 msgid "rotated"
 msgstr "rotiert"
 
-#: Filechoosegui.py:534
+#: Filechoosegui.py:528
 msgid "Error while tyring to replace the original file"
 msgstr "Fehler beim Rotieren des Original-Bildes"
 
-#: Filechoosegui.py:536
+#: Filechoosegui.py:530
 msgid "you find your file now at"
 msgstr "das Bild ist jetzt:"
 
-#: Filechoosegui.py:539 Filechoosegui.py:551
+#: Filechoosegui.py:533 Filechoosegui.py:545
 msgid "replacing your original file didn't succeed on:"
 msgstr "das Original-Bild zu ersetzen klappte nicht:"
 
-#: Filechoosegui.py:540 Filechoosegui.py:552
+#: Filechoosegui.py:534 Filechoosegui.py:546
 msgid "you find your file now at:"
 msgstr "das Bild ist jetzt:"
 
-#: Filechoosegui.py:546
+#: Filechoosegui.py:540
 msgid "ERROR while trying to replace your file with the rotated one"
 msgstr "Fehler beim ersetzen des Original-Bildes mit dem Rotierten"
 
-#: Filechoosegui.py:548
+#: Filechoosegui.py:542
 msgid "you find the rotated file now at:"
 msgstr "das rotierte Bild ist jetzt:"
 
-#: Filechoosegui.py:557
+#: Filechoosegui.py:551
 msgid "Error while tyring to rotate the file"
 msgstr "Fehler beim Versuch das Bild zu rotieren"
 
-#: Filechoosegui.py:560
+#: Filechoosegui.py:554
 msgid "rotating didn't succeed on:"
 msgstr "das Rotieren klappte nicht"
 
-#: Filechoosegui.py:570
+#: Filechoosegui.py:564
 msgid "select first your viewer (whatever you have) and then try again"
 msgstr "zuerst das Bild Programm (was auch immer) auswaehlen"
 
-#: Filechoosegui.py:585
+#: Filechoosegui.py:579
 msgid "can not display anything, sorry"
 msgstr "kann nichts anzeigen"
 
-#: Filechoosegui.py:598 Filechoosegui.py:606
+#: Filechoosegui.py:592 Filechoosegui.py:600
 msgid "## error while trying to display the picture(s)"
 msgstr "## ein Fehler ergab sich beim Versuch das Bild anzuzeigen"
 
-#: Filechoosegui.py:601 Filechoosegui.py:609
+#: Filechoosegui.py:595 Filechoosegui.py:603
 msgid "Error while trying to display the pictures(s)"
 msgstr "ein Fehler ergab sich beim Versuch das Bild anzuzeigen"
 
-#: Filechoosegui.py:630
+#: Filechoosegui.py:624
 msgid "<b>Select</b> your <b>previewer</b> for your images - e.g:"
 msgstr ""
 "Das <b>Bild Programm</b> fuer die <b>Bild Ansicht</b> auswaehlen - z.B:"
 
-#: Filechoosegui.py:648
+#: Filechoosegui.py:642
 msgid " all files          "
 msgstr " alles anzeigen     "
 
-#: Filechoosegui.py:653
+#: Filechoosegui.py:647
 msgid " MS-Win executables "
 msgstr "MS-Win Programme (.exe)"
 
-#: Filechoosegui.py:671
+#: Filechoosegui.py:665
 msgid "no binary selected? May try again"
 msgstr "Kein Bild Betrachter gewaehlt"
 
