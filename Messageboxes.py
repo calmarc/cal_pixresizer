@@ -5,9 +5,52 @@ from Varhelp import  *
 gettext.textdomain('cal_pixresizer')
 _ = gettext.gettext
 
+def show_3_dialog(parent_widget, text, button_cancel, button_ok, button_accept):
+
+    mesbox = gtk.Dialog(_("Calmar's Picture Resizer:"),
+                           parent_widget, 
+                           gtk.DIALOG_MODAL,
+                           (button_cancel, gtk.RESPONSE_CANCEL,
+                           button_ok, gtk.RESPONSE_OK,
+                           button_accept, gtk.RESPONSE_ACCEPT))
+
+    mesbox.set_default_response(gtk.RESPONSE_OK)
+
+    mesbox.connect("destroy", quit_self, None)
+    mesbox.connect("delete_event", quit_self, None)
+    mesbox.set_size_request(700,-1)
+
+    vbox = gtk.VBox()
+    vbox.show()
+    label = gtk.Label()
+    label.set_line_wrap(True)
+    label.set_markup(text)
+    label.show()
+    vbox.pack_start(label, True, True, 15)
+    align = gtk.Alignment(0.5, 0.0, 0.5, 0.0)
+    align.set_padding(5, 5, 20, 20)
+    align.show()
+    align.add(vbox)
+    mesbox.vbox.pack_start(align, True, True, 15)
+
+    mesbox.show()
+    response = mesbox.run()
+    if response == gtk.RESPONSE_ACCEPT:
+        mesbox.hide()
+        mesbox.destroy()
+        return 2
+    elif response == gtk.RESPONSE_OK:
+        mesbox.hide()
+        mesbox.destroy()
+        return 1
+    else:
+        mesbox.hide()
+        mesbox.destroy()
+        return False
+
 def show_2_dialog(parent_widget, text, button_quit, button_ok):
 
-    mesbox = gtk.Dialog(_("attention:"),
+    mesbox = gtk.Dialog(_("Calmar's Picture Resizer:"),
                            parent_widget, 
                            gtk.DIALOG_MODAL,
                            (button_ok, gtk.RESPONSE_OK,

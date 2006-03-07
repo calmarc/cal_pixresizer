@@ -19,7 +19,7 @@ class filechoose:
         self.pic_dir = pic_dir
         self.viewer = viewer
         self.files = []
-        self.rotate_is_ok = False
+        self.rotate_is = False
         self.dialog = gtk.FileChooserDialog(_("Calmar's Picture Resizer - select pictures..."),
                                        mainwindow,
                                        gtk.FILE_CHOOSER_ACTION_OPEN,
@@ -474,26 +474,48 @@ class filechoose:
         fileext = os.path.splitext(fname)
         targetfile = fname + "_rot" + fileext[1]
 
-        if not self.rotate_is_ok and (fileext[1] == ".jpg" or fileext[1] == ".jpeg"\
-                or fileext[1] == ".JPG"  or fileext[1] == ".JPEG"):
-                text = _("Jpeg rotating is <b>not losless</b> with Imagemagick's Convert")
-                text += "\n\n" + _("are you sure you want to <b>proceed rotating jpeg's??</b>")
-                if not show_2_dialog(self.dialog, text, _("cancel"), _("I know, it's ok")):
-                    return
-                else:
-                    self.rotate_is_ok = True;
+        if not self.rotate_is and (fileext[1] in [".jpg", ".jpeg", ".JPG", ".JPEG"]):
+                text =  _("<u>Please <b>choose</b> between IM convert or jpegtran rotating:</u>")
+                text += "\n\n" + _("<b>jpegtrans</b> it's fast and lossless, but only chunks of 16")
+                text +=  _(" Pixels can get rotated. The rest of the border will get <b>trimmed away</b>.")
+                text +=  _(" (e.g. a picture of the size 1604x1210 can result in a ")
+                text +=  _(" 1600x1200 (&lt;- multiples of 16) dimension)")
+                text += "\n\n" + _("<b>Imagemagick's convert</b>, jpeg's rotating is <u>not lossless</u>.")
+                text +=  _(" In order to prevent quality loss, it's converted with the 100% quality.")
+                text +=  _(" switch, what means the size of the pic can quite increase")
+                self.rotate_is = show_3_dialog(self.dialog, text, _("cancel"),
+                                         _("jpegtrans"), _("IM convert"))
 
-        pre = ""
-        if self.py2exe:
-            pre = self.cwd
+        flag = False # redirection or not for unix jpegtrans
+        if  fileext[1] in [".jpg", ".jpeg", ".JPG", ".JPEG"] and self.rotate_is != 2:
+            if self.rotate_is == False:
+                return
+            elif self.rotate_is == 1: # jpegtrans rotating
+                if self.mswin:
+                    pre = self.cwd  # jpegtrans will not be in path probably
+                    tot = [pre + "jpegtran", "-trim", "-rotate", direction, fname, targetfile]
+                else: # linux jpegtrans in path as well
+                    tot = ["jpegtran", "-trim", "-rotate", direction, fname]
+                    flag = True
 
-        tot = [pre + "convert", "-rotate", direction, "-quality", "100", fname, targetfile]
+        else: # convert rotating
+            pre = ""
+            if self.py2exe:
+                pre = self.cwd
+            tot = [pre + "convert", "-rotate", direction, "-quality", "100", fname, targetfile]
 
         try:
-            pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, shell=False)
-            std_output = pipe.stdout.read()
-            err_output = pipe.stderr.read()
+            if flag: # jpegtrans works different on *nix's
+                fh = open(targetfile,"w") 
+                pipe = subprocess.Popen(tot, stdout=fh,
+                        stderr=subprocess.PIPE, shell=False)
+                fh.close()
+                err_output = pipe.stderr.read()
+            else:
+                pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, shell=False)
+                std_output = pipe.stdout.read()
+                err_output = pipe.stderr.read()
         except OSError, (errno, errstr):
             print >> sys.stderr, "## " + _("error while trying to rotate the picture")
             print >> sys.stderr, "## " + str(errno) + ": " + errstr
