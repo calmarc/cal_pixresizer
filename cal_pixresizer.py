@@ -4,70 +4,79 @@
 ### little FUNCTIONS 
 #              gui related
 #}}}
+""" Calmar's Picture resiezer """
 
 def maingui():
-# little gui
+    """ main gui """
     def quit_widget(widget, data): #{{{
+        """ quit """
         data.hide()
         data.destroy()
 #}}}
     def quit_self(widget, *args): #{{{
+        """ quit """
         widget.hide()
         widget.destroy()
 #}}}
     def delete_event(widget, event, data=None): #{{{
+        """ delete_event """
         userdata_save()
         gtk.main_quit()
         return False
 #}}}
     def toggle_percent(widget, data): #{{{
+        """ toggle percent """
         data.show()
         widget.hide()
         cfg.GENERAL["percentbox"].set_sensitive(False)
         cfg.GENERAL["sizebox"].set_sensitive(True)
 #}}}
     def toggle_size(widget, data): #{{{
+        """ toggle size """
         data.show()
         widget.hide()
         cfg.GENERAL["percentbox"].set_sensitive(True)
         cfg.GENERAL["sizebox"].set_sensitive(False)
 #}}}
     def get_spin_focus(widget, spinname): #{{{
-        global GENERAL
+        """ Spinner Focus """
         cfg.GENERAL[spinname].set_active(True)
 #}}}
     def setvalue(widget, data): #Radio buttons... #{{{
-        global GENERAL
+        """ Set Value """
         cfg.IMGPROCESS[data[0]] = data[1]
 #}}}
     def entries_cb(editable, id_edit): #{{{
-        global imgprocess
+        """ callback """
         posi = editable.get_position()
-        char = editable.get_chars(posi, posi+1)
+        char = editable.get_chars(posi, posi + 1)
         if char == " ":  # replace spaces with underlines
-            editable.delete_text(posi,posi+1)
+            editable.delete_text(posi, posi + 1)
             editable.insert_text("_", posi)
         cfg.IMGPROCESS[id_edit] = editable.get_text()
 #}}}
     def setcombo(combobox): #{{{
-        global imgprocess
+        """ set combo """
         model = combobox.get_model()
         active = combobox.get_active()
         if active >= 0:
-            cfg.IMGPROCESS["ftype"]=model[active][0]
+            cfg.IMGPROCESS["ftype"] = model[active][0]
 #              main label
 #}}}
     def label_nopic(): #{{{
+        """ label no pic """
         cfg.GENERAL["todolabel"].set_markup("\n\n  <b>-- %s --</b> \n\n" \
                 % _("no pictures selected"))
 #}}}
     def label_progress(count, tot, text, colorstring): #{{{
+        """ label_progress """
         cfg.GENERAL["todolabel"].set_markup("\n\n<b>%s (%s/%s): \
         <span %s>%s</span></b>\n\n" %(
                 _("progress"), count, tot, colorstring, text))
 #}}}
     def label_files(files_todo): #{{{
-        labeltext=""
+        """ load files """
+        labeltext = ""
         if len(files_todo) == 1:
             labeltext = "\n\n%s\n\n" % trimlongline(files_todo[0])
         elif len(cfg.IMGPROCESS["files_todo"]) == 2:
@@ -86,7 +95,7 @@ def maingui():
                     trimlongline(files_todo[1]), trimlongline(files_todo[2]),
                     trimlongline(files_todo[3]), trimlongline(files_todo[4]))
         else:
-            for i in range(0,3):
+            for i in range(0, 3):
                 labeltext += "%s\n" % (trimlongline(files_todo[i]))
             labeltext += ".....\n"
             labeltext += trimlongline(files_todo[-1])
@@ -99,6 +108,7 @@ def maingui():
 #              create radios
 #}}}
     def create_radios(vbox, values, text, id_radio, default): #{{{
+        """ ceate radios """
         for i in range(len(values)):
             if i == 0: # first should not get other radios as reference
                 radio = None
@@ -112,51 +122,54 @@ def maingui():
 #}}}
 # little various
     def stopprogress(widget, data): #{{{ bla bla
-        global imgprocess
+        """ stopprogress """
 #   callback for setting var while someone presses stop during progress
-        cfg.IMGPROCESS["stop_progress"]=True
+        cfg.IMGPROCESS["stop_progress"] = True
 #              userdata
 #}}}
     def userdata_load(): #{{{
+        """ load userdata """
         return #DEBUG
 
-        filename = cwd + "data_cal_pixresizer.cpd"
-        d = shelve.open(filename)
-        try:
-            for key in ["size_or_not", "viewer", "pic_folder", "bin_folder"]:
-                cfg.GENERAL[key] = d[key]
-            for key in ["ftype", "files_todo", "width", "height", "percent", \
-                    "quality", "width_rad", "height_rad", "percent_rad", \
-                    "quality_rad", "ent_prefix", "ent_suffix", "ent_folder"]:
-                cfg.IMGPROCESS[key] = d[key]
-        except KeyError:
-            ##print("## %s" % _("no valid userdata found"), file=sys.stderr)
-            print ()
-        d.close()
+        #filename = cwd + "data_cal_pixresizer.cpd"
+        #d = shelve.open(filename)
+        #try:
+            #for key in ["size_or_not", "viewer", "pic_folder", "bin_folder"]:
+                #cfg.GENERAL[key] = d[key]
+            #for key in ["ftype", "files_todo", "width", "height", "percent", \
+                    #"quality", "width_rad", "height_rad", "percent_rad", \
+                    #"quality_rad", "ent_prefix", "ent_suffix", "ent_folder"]:
+                #cfg.IMGPROCESS[key] = d[key]
+        #except KeyError:
+            ###print("## %s" % _("no valid userdata found"), file=sys.stderr)
+            #print ()
+        #d.close()
 #}}}
     def userdata_save(): #{{{
+        """ save userdata """
         return #DEBUG
 
-        d = shelve.open(cwd + "data_cal_pixresizer.cpd")
-        for key in ["viewer", "pic_folder", "bin_folder"]:
-            d[key] = cfg.GENERAL[key]
-        for key in ["ftype", "files_todo", "width", "height", \
-                "percent", "quality",
-                    "ent_prefix", "ent_suffix", "ent_folder"]:
-            d[key] = cfg.IMGPROCESS[key]
-        d["size_or_not"] = cfg.GENERAL["sizebox"].get_property("sensitive")
+        #d = shelve.open(cwd + "data_cal_pixresizer.cpd")
+        #for key in ["viewer", "pic_folder", "bin_folder"]:
+            #d[key] = cfg.GENERAL[key]
+        #for key in ["ftype", "files_todo", "width", "height", \
+                #"percent", "quality",
+                    #"ent_prefix", "ent_suffix", "ent_folder"]:
+            #d[key] = cfg.IMGPROCESS[key]
+        #d["size_or_not"] = cfg.GENERAL["sizebox"].get_property("sensitive")
 
-        d["width_rad"] = str(cfg.IMGPROCESS["spinWidth"].get_value_as_int())
-        d["height_rad"] = str(cfg.IMGPROCESS["spinHeight"].get_value_as_int())
-        d["percent_rad"] = str(cfg.IMGPROCESS["spinPercent"].get_value_as_int())
-        d["quality_rad"] = str(cfg.IMGPROCESS["spinQuality"].get_value_as_int())
+        #d["width_rad"] = str(cfg.IMGPROCESS["spinWidth"].get_value_as_int())
+        #d["height_rad"] = str(cfg.IMGPROCESS["spinHeight"].get_value_as_int())
+        #d["percent_rad"] = str(cfg.IMGPROCESS["spinPercent"].get_value_as_int())
+        #d["quality_rad"] = str(cfg.IMGPROCESS["spinQuality"].get_value_as_int())
 
-        d.close()
+        #d.close()
 #              encoding stuff
 #}}}
 #}}}
 # converting loop
     def create_subfolder(folder, fname): #{{{
+        """ create subfolder """
         if folder != "" and not os.path.exists(fname + os.sep + folder):
             ##print("## %s: %s (%s/%s)" % (_("create new folder: "), folder,
             ##             trimlongline(fname, 38), folder))
@@ -172,7 +185,7 @@ def maingui():
 
                 text = "<big><b>%s</b></big>\n\n%s/<b>%s</b>\n\n%s\n\n%s: %s" % \
                     (_("was not able to create your target folder"),
-                        trimlongline(fname ,48), folder,
+                        trimlongline(fname, 48), folder,
                         _("please check that issue first"),
                         str(errno), errstr)
                 show_mesbox(gtkwindow, text, encoding)
@@ -185,14 +198,14 @@ def maingui():
     def print_settings(width, height, percent,  usesize, quality,  \
             folder, prefix, suffix, ftype): #{{{
         if width == "9999":
-           width_here = _("unlimited")
+            width_here = _("unlimited")
         else:
-           width_here = width
+            width_here = width
 
         if height == "9999":
-           height_here = _("unlimited")
+            height_here = _("unlimited")
         else:
-           height_here = height
+            height_here = height
 
         if usesize:
             if width == "9999" and height == "9999":
@@ -215,6 +228,7 @@ def maingui():
         ##print()
 #}}}
     def get_imgprocess(): #{{{
+        """ get imgage process """
         prefix = cfg.IMGPROCESS["ent_prefix"]
         suffix = cfg.IMGPROCESS["ent_suffix"]
         folder = cfg.IMGPROCESS["ent_folder"]
@@ -242,14 +256,16 @@ def maingui():
                 percent, quality, ftype)
 #}}}
     def no_files_there_selected(): #{{{
+        """ no files there selected """
         if not cfg.IMGPROCESS["files_todo"]:
             show_mesbox(gtkwindow, "<big><b>%s</b></big>" % (
                     _("Select some <b>pics</b> to work on")), encoding)
             return True
 #}}}
     def print_stop_message(counter, total): #{{{
+        """ print_stop_message """
         cfg.GENERAL["stop_button"].hide()
-        label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
+        label_progress(str(counter), str(total), _("stopped!"), "color='#550000'")
         ##print()
         ##print("## %s" % _("stop button pressed: converting has stopped"))
         ##print()
@@ -258,6 +274,7 @@ def maingui():
         label_files(cfg.IMGPROCESS["files_todo"])
 #}}}
     def go_on_source_is_equal_target(counter, total): #{{{
+        """ go_on_source_is_equal_target """
         ##print("## " + _("source and target are the same!"), file=sys.stderr)
         text = "%s\n\n%s" % (_("<b>source</b> and <b>target</b> \
                 are the same!"),
@@ -265,7 +282,7 @@ def maingui():
         if not show_2_dialog(gtkwindow, text, _("quit processing"), \
                 _("skip and go on...")):
             cfg.GENERAL["stop_button"].hide()
-            label_progress(str(counter),str(total),_("stopped!"), \
+            label_progress(str(counter), str(total), _("stopped!"), \
                     "color='#550000'")
             while gtk.events_pending():
                 gtk.main_iteration(False)
@@ -279,8 +296,7 @@ def maingui():
             return True
 #}}}
     def start_resize(widget, event, data=None): #{{{
-        global GENERAL
-        global imgprocess
+        """ start resize """
 
         if no_files_there_selected():
             return
@@ -290,7 +306,7 @@ def maingui():
 
 # messagebox when there is no suff, pre or folder
         if prefix == "" and suffix == "" and folder == "" and ftype == "":
-                text = _("""  At least <u>one</u> must be set:
+            text = _("""  At least <u>one</u> must be set:
 
                   -> <b>Prefix</b>
                   -> <b>Suffix</b>
@@ -298,8 +314,8 @@ def maingui():
                   -> <b>picture type</b>
 
      in order to prevent overwriting the original pictures""")
-                show_mesbox(gtkwindow, text, encoding)
-                return
+            show_mesbox(gtkwindow, text, encoding)
+            return
 
 # to get the path of sample (first) file
         splitfile = os.path.split(cfg.IMGPROCESS["files_todo"][0])
@@ -337,7 +353,7 @@ def maingui():
             resultpath = splitfile[0] + os.sep
             if folder != "":    # targetdir of pics
                 resultpath += folder + os.sep
-            fname,ext=os.path.splitext(splitfile[1]);  # file itself
+            fname, ext=os.path.splitext(splitfile[1])  # file itself
             if ftype == "":
                 target_ext = ext
             else:
@@ -350,10 +366,10 @@ def maingui():
 
 # ##print what you're going to do... preparation here
             command_print = "convert: " + "%-" + str(dist) + "s --> " +\
-                    trimlongline(targetfile,58 - dist )
+                    trimlongline(targetfile, 58 - dist )
 
-            text = trimlongline(targetfile,65 - dist )
-            label_progress(str(counter), str(total), text,"")
+            text = trimlongline(targetfile, 65 - dist )
+            label_progress(str(counter), str(total), text, "")
             ##print(command_#print % (splitfile[1][-1*(dist-1):])) 
             # initial file lenght (dist-1)
 
@@ -371,13 +387,13 @@ def maingui():
                     while gtk.events_pending():
                         gtk.main_iteration(False)
                     if overwrite_retval == "skip":
-                        ##print(_("# skipped: ") + trimlongline(targetfile,58))
+                        ##print(_("# skipped: ") + trimlongline(targetfile, 58))
                         continue
                     elif overwrite_retval == "quit":
                         overwrite_retval = ""
                         cfg.GENERAL["stop_button"].hide()
-                        label_progress(str(counter),str(total), \
-                                _("stopped!"),"color='#550000'")
+                        label_progress(str(counter), str(total), \
+                                _("stopped!"), "color='#550000'")
                         while gtk.events_pending():
                             gtk.main_iteration(False)
                         time.sleep(2.0)
@@ -403,11 +419,11 @@ def maingui():
                 resize = percent + "%"
 
 # the actual work/progress
-            tot = [exe, sourcefile,"-resize", resize, "-quality", \
+            tot = [exe, sourcefile, "-resize", resize, "-quality", \
                     quality, targetfile]
             try:
-                pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE, shell=False)
+                pipe = subprocess.Popen(tot, stdout = subprocess.PIPE,
+                                        stderr = subprocess.PIPE, shell = False)
                 err_output = pipe.stderr.read()
             except OSError as xxx_todo_changeme1:
                 (errno, errstr) = xxx_todo_changeme1.args
@@ -421,8 +437,8 @@ def maingui():
                 if not show_2_dialog(gtkwindow, text, _("quit processing"), \
                         _("skip and go on...")):
                     cfg.GENERAL["stop_button"].hide()
-                    label_progress(str(counter),str(total), \
-                            _("canceled!"),"color='#550000'")
+                    label_progress(str(counter), str(total), \
+                            _("canceled!"), "color='#550000'")
                     while gtk.events_pending():
                         gtk.main_iteration(False)
                     time.sleep(2.4)
@@ -463,8 +479,8 @@ def maingui():
                 if not show_2_dialog(gtkwindow, text, \
                         _("quit processing"), _("skip and go on...")):
                     cfg.GENERAL["stop_button"].hide()
-                    label_progress(str(counter),str(total), \
-                            _("canceled!"),"color='#550000'")
+                    label_progress(str(counter), str(total), \
+                            _("canceled!"), "color='#550000'")
                     while gtk.events_pending():
                         gtk.main_iteration(False)
                     time.sleep(2.4)
@@ -481,7 +497,7 @@ def maingui():
         ##print()
 
         cfg.GENERAL["stop_button"].hide()
-        label_progress(str(total),str(total), _("finish!"),"color='#000070'")
+        label_progress(str(total), str(total), _("finish!"), "color='#000070'")
 
         while gtk.events_pending():
             gtk.main_iteration(False)
@@ -492,7 +508,7 @@ def maingui():
 #}}}
 # main and gui
     def open_filechooser_func(widget, acgroup): #{{{
-        global GENERAL
+        """ open the file chooser dialog """
         fcgui = Filechoosegui.filechoose(widget, 
                                          acgroup, 
                                          gtkwindow,
@@ -512,26 +528,27 @@ def maingui():
             cfg.IMGPROCESS["files_todo"] = fcgui.files
             label_files(cfg.IMGPROCESS["files_todo"])
 
-        counter=0
+        counter = 0
         ##print("## Die Bilder Auswahl:")
         ##print()
         for filename in cfg.IMGPROCESS["files_todo"]:
             counter += 1
-            string = "%3s: " + trimlongline(filename,65)
+            string = "%3s: " + trimlongline(filename, 65)
             ##print(string % (str(counter)))
 #}}} 
     def gui_todo_box(mainbox): #{{{
+        """ todo box """
         box = gtk.HBox(False, 0)
         mainbox.pack_start(box, False, False, 0)
 
         if cfg.IMGPROCESS["files_todo"] != []:
             label_files(cfg.IMGPROCESS["files_todo"])
-            counter=0
+            counter = 0
             ##print("## Die Bilder Auswahl:")
             ##print()
             for fname in cfg.IMGPROCESS["files_todo"]:
                 counter += 1
-                string = "%3s: " + trimlongline(fname,66)
+                string = "%3s: " + trimlongline(fname, 66)
                 ##print(string % (str(counter)))
             ##print()
         else:
@@ -543,6 +560,7 @@ def maingui():
         mainbox.pack_start(separator, False, False, 5)
 #}}}
     def gui_top_box(mainbox): #{{{
+        """ top box """
         box = gtk.HBox(False, 0)
         mainbox.pack_start(box, False, False, 0)
 
@@ -553,7 +571,7 @@ def maingui():
         image = gtk.Image()
         image.set_from_file(cwd + "bilder/exit.png")
         but_quit = gtk.Button()
-        hbox=gtk.HBox()
+        hbox = gtk.HBox()
         hbox.pack_end(image, False, False, 0)
         but_quit.add(hbox)
         label = gtk.Label(_("exit"))
@@ -567,10 +585,11 @@ def maingui():
 
 #}}}
     def gui_last_box(mainbox, acgroup): #{{{
+        """ last box """
         box = gtk.HBox(False, 0)
         mainbox.pack_start(box, False, False, 0)
 
-        hbox=gtk.HBox()
+        hbox = gtk.HBox()
         image = gtk.Image()
         image.set_from_file(cwd + "bilder/go.png")
         hbox.pack_end(image, False, False, 0)
@@ -581,7 +600,7 @@ def maingui():
         button.connect("clicked", start_resize, None)
         box.pack_end(button, False, False, 0)
 
-        hbox=gtk.HBox()
+        hbox = gtk.HBox()
         image = gtk.Image()
         image.set_from_file(cwd + "bilder/open.png")
         hbox.pack_end(image, False, False, 0)
@@ -591,14 +610,14 @@ def maingui():
         button.add(hbox)
         button.connect("clicked", open_filechooser_func, acgroup)
 
-        align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+        align = gtk.Alignment(xalign = 1.0, yalign = 1.0, xscale = 1.0, yscale = 1.0)
         align.set_padding(0, 0, 5, 15)
         align.add(button)
         box.pack_end(align, False, False, 0)
 
         button.grab_focus()
 
-        hbox=gtk.HBox()
+        hbox = gtk.HBox()
         image = gtk.Image()
         image.set_from_file(cwd + "bilder/stop.png")
         hbox.pack_end(image, False, False, 0)
@@ -609,7 +628,8 @@ def maingui():
         box.pack_end(cfg.GENERAL["stop_button"], False, False, 0)
 #}}}
     def gui_setting_box(mainbox): #{{{
-        table = gtk.Table(rows=6, columns=2, homogeneous=False)
+        """ setting box """
+        table = gtk.Table(rows = 6, columns = 2, homogeneous = False)
         mainbox.pack_start(table, False, False, 0)
 
 # over hbox for sizes
@@ -628,7 +648,7 @@ def maingui():
                 _("width"))
         vbox.pack_start(label, False, False, 0)
 
-        text = [ _("no limit"), "1600x", "1280x", "1024x", "800x", "640x",\
+        text = [ _("no limit"), "1600x", "1280x", "1024x", "800x", "640x", \
                 "480x", _("specific:") ]
         values = [ "9999", "1600", "1280", "1024", "800", "640", "480", "0"]
         default = cfg.IMGPROCESS["width"]
@@ -649,7 +669,7 @@ def maingui():
                 _("height"))
         vbox.pack_start(label, False, False, 0)
 
-        text = [ _("no limit"), "x1200", "x1024",  "x768", "x600", "x480",\
+        text = [ _("no limit"), "x1200", "x1024",  "x768", "x600", "x480", \
                  "x320", _("specific:") ]
         values = [ "9999", "1200", "1024", "768", "600", "480", "320", "0"]
         default = cfg.IMGPROCESS["height"]
@@ -693,12 +713,12 @@ def maingui():
 
         but1 = gtk.Button()
         but1.set_size_request(-1, 8)
-        align1 = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+        align1 = gtk.Alignment(xalign = 1.0, yalign = 1.0, xscale = 1.0, yscale = 1.0)
         align1.set_padding(6, 6, 0, 5)
         align1.add(but1)
         but2 = gtk.Button()
         but2.set_size_request(-1, 8)
-        align2 = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+        align2 = gtk.Alignment(xalign = 1.0, yalign = 1.0, xscale = 1.0, yscale = 1.0)
         align2.set_padding(6, 6, 0, 5)
         align2.add(but2)
 
@@ -709,11 +729,11 @@ def maingui():
         table.attach(align2, 2, 3, 1, 2, gtk.FILL)
 
 ## Vseparator
-        align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+        align = gtk.Alignment(xalign = 1.0, yalign = 1.0, xscale = 1.0, yscale = 1.0)
         align.set_padding(0, 0, 5, 5)
         separator = gtk.VSeparator()
         align.add(separator)
-        table.attach(align,3,4,0,2)
+        table.attach(align, 3, 4, 0, 2)
 
 ## quality
 
@@ -736,11 +756,11 @@ def maingui():
         vbox.pack_start(cfg.IMGPROCESS["spinQuality"], False, False, 0)
 
 ## separator
-        align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
+        align = gtk.Alignment(xalign = 1.0, yalign = 1.0, xscale = 1.0, yscale = 1.0)
         align.set_padding(0, 0, 5, 5)
         separator = gtk.VSeparator()
         align.add(separator)
-        table.attach(align,5,6,0,2)
+        table.attach(align, 5, 6, 0, 2)
 
 # prefix/suffix/folder entries
 
@@ -857,7 +877,7 @@ def maingui():
     adj = gtk.Adjustment(float(cfg.IMGPROCESS["quality_rad"]), \
             10, 100, 1, 10, 0)
     adj.connect("value_changed", get_spin_focus, "radio_quality" )
-    cfg.IMGPROCESS["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
+    cfg.IMGPROCESS["spinQuality"] = gtk.SpinButton(adj, 0.1, 0)
     cfg.IMGPROCESS["spinQuality"].set_numeric(True)
 
     ##print("=================================================")
@@ -867,7 +887,7 @@ def maingui():
 
 
     gtkwindow.set_title("Calmar's Picture Resizer - http://www.calmar.ws")
-    gtkwindow.set_default_size(500,300)
+    gtkwindow.set_default_size(500, 300)
     gtkwindow.connect("delete_event", delete_event)
     gtkwindow.set_border_width(10)
 
