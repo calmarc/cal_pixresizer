@@ -279,28 +279,30 @@ class filechoose:
             if os.path.isdir(item):
                 try:
                     os.rmdir(item)
-                    print "## %s: %s" % ( _("folder removed:"), trimlongline(item,40))
+                    ##print("## %s: %s" % ( _("folder removed:"), trimlongline(item,40)))
                     self.dialog.set_current_folder(self.dialog.get_current_folder())
-                except OSError,  (errno, errstr):
-                    print >> sys.stderr, "## %s" %  _("error while trying to delete")
-                    print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+                except OSError as xxx_todo_changeme:
+                    (errno, errstr) = xxx_todo_changeme.args
+                    ##print("## %s" %  _("error while trying to delete"), file=sys.stderr)
+                    ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
                     self.dialog_delete_error(item,
                             _('sorry, could not remove directory:'), errno, errstr)
             else:
                 try:
                     os.remove(item)
-                    print "## %s: %s" % (_("file removed:"), trimlongline(item,40))
+                    ##print("## %s: %s" % (_("file removed:"), trimlongline(item,40)))
                     self.dialog.set_current_folder(self.dialog.get_current_folder())
-                except OSError,  (errno, errstr):
-                    print >> sys.stderr, "## %s" %  _("error while trying to delete")
-                    print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+                except OSError as xxx_todo_changeme1:
+                    (errno, errstr) = xxx_todo_changeme1.args
+                    ##print("## %s" %  _("error while trying to delete"), file=sys.stderr)
+                    ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
                     self.dialog_delete_error(item,
                             _('sorry, could not remove file:'), errno, errstr)
 #}}}
     def dialog_delete_error(self, item, text, errno, errstr): #{{{
-        print >> sys.stderr, "## %s" % text
-        print >> sys.stderr, "## %s" % item
-        print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+        ##print("## %s" % text, file=sys.stderr)
+        ##print("## %s" % item, file=sys.stderr)
+        ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
         message = "<big><b>%s</b></big>\n\n%s\n\n%s: %s" % (_("sorry, could not remove file:"),
                                                 item, str(errno), errstr)
         show_mesbox(self.dialog, message, self.encoding)
@@ -322,11 +324,12 @@ class filechoose:
                     stderr=subprocess.PIPE, shell=False)
             std_output = pipe.stdout.read()
             err_output = pipe.stderr.read()
-        except OSError, (errno, errstr):
-            print >> sys.stderr, "## jhead: %s: %s" % (str(errno), errstr)
+        except OSError as xxx_todo_changeme2:
+            (errno, errstr) = xxx_todo_changeme2.args
+            ##print("## jhead: %s: %s" % (str(errno), errstr), file=sys.stderr)
             return ""
         if err_output != "":
-            print >> sys.stderr, "## jhead (ERROR): %s" % err_output
+            ##print("## jhead (ERROR): %s" % err_output, file=sys.stderr)
             return ""
         std_output = std_output.split("\n")
         comment = ""
@@ -404,13 +407,13 @@ class filechoose:
         filename = files[0]
 
         if os.path.isdir(filename):
-            print >> sys.stderr, "## " + _("can not yet set Exif comments to a directory :P")
+            ##print("## " + _("can not yet set Exif comments to a directory :P"), file=sys.stderr)
             show_mesbox(self.dialog, "<big><b>%s</b></big>" % (
                      _("can not yet set Exif comments to a directory :P")), self.encoding)
             return
         fname, ext = os.path.splitext(filename);  # file itself
         if ext != ".jpg" and ext != ".jpeg" and ext != ".JPG" and ext != ".JPEG":
-            print >> sys.stderr, "## jhead: %s" %  _("does not seem to be a jpg picture?")
+            ##print("## jhead: %s" %  _("does not seem to be a jpg picture?"), file=sys.stderr)
             show_mesbox(self.dialog, "<big><b>%s</b></big>" %
                         _("does not seem to be a .jpg picture?"), self.encoding)
             return
@@ -441,16 +444,17 @@ class filechoose:
                         stderr=subprocess.PIPE, shell=False)
                 std_output = pipe.stdout.read()
                 err_output = pipe.stderr.read()
-            except OSError, (errno, errstr):
-                print >> sys.stderr, "## jhead (ERROR): %s: %s" % (str(errno), errstr)
+            except OSError as xxx_todo_changeme3:
+                (errno, errstr) = xxx_todo_changeme3.args
+                ##print("## jhead (ERROR): %s: %s" % (str(errno), errstr), file=sys.stderr)
                 show_mesbox(self.dialog, "<big><b>%s</b></big>\n\n%s: %s" % (
                     _("error while trying to set Exif comment:"), str(errno), errstr), self.encoding)
                 return ""
             if err_output != "": # does not reach here unfortunately
-                print >> sys.stderr, "## jhead (ERROR): %s" % err_output
+                ##print("## jhead (ERROR): %s" % err_output, file=sys.stderr)
                 return ""
 
-            print "## jhead: %s" % trimlongline(std_output.replace("\n",""),62)
+            ##print("## jhead: %s" % trimlongline(std_output.replace("\n",""),62))
 
 #        check of correct output, 'modified...' ?
             self.dialog.emit("update-preview")
@@ -516,19 +520,21 @@ class filechoose:
                         stderr=subprocess.PIPE, shell=False)
                 std_output = pipe.stdout.read()
                 err_output = pipe.stderr.read()
-        except OSError, (errno, errstr):
-            print >> sys.stderr, "## " + _("error while trying to rotate the picture")
-            print >> sys.stderr, "## " + str(errno) + ": " + errstr
+        except OSError as xxx_todo_changeme4:
+            (errno, errstr) = xxx_todo_changeme4.args
+            ##print("## " + _("error while trying to rotate the picture"), file=sys.stderr)
+            ##print("## " + str(errno) + ": " + errstr, file=sys.stderr)
             return
 
         if err_output != "" :
             plustext = ""
             if os.path.exists(targetfile) and os.path.getsize(targetfile) > 0 : # real test then here
                 plustext = _("Nevertheless, there exists an produced (corrupt?) file at:\n") + targetfile
-            print >> sys.stderr, "## %s" % _("error while trying to rotate the picture")
-            print >> sys.stderr, "## %s" %  std_output
+            ##print("## %s" % _("error while trying to rotate the picture"), file=sys.stderr)
+            ##print("## %s" %  std_output, file=sys.stderr)
             if plustext != "":
-                print >> sys.stderr, "## %s" % plustext
+                ##print("## %s" % plustext, file=sys.stderr)
+                print()
             text = "<big><b>%s</b></big>:\n\n%s\n\n<b>%s</b>\n\n" % (
                              _("rotating didn't succeed on"), fname, err_output)
             if plustext != "":
@@ -544,12 +550,13 @@ class filechoose:
                 os.remove(fname) # could also first move for more security
                 try:
                     os.rename(targetfile, fname)
-                    print "## %s (%s): %s" % ( _("rotated"), direction, trimlongline(fname, 62))
-                except OSError, (errno, errstr):
-                    print >> sys.stderr, "## %s" % _("Error while tyring to replace the original file")
-                    print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
-                    print >> sys.stderr, "## %s:\n## %s" % (_("you find your file now at"),
-                            trimlongline(targetfile, 65))
+                    ##print("## %s (%s): %s" % ( _("rotated"), direction, trimlongline(fname, 62)))
+                except OSError as xxx_todo_changeme5:
+                    (errno, errstr) = xxx_todo_changeme5.args
+                    ##print("## %s" % _("Error while tyring to replace the original file"), file=sys.stderr)
+                    ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
+                    ##print("## %s:\n## %s" % (_("you find your file now at"),
+                    #        trimlongline(targetfile, 65)), file=sys.stderr)
                     text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                                 _("replacing your original file didn't succeed on:"),
                                 fname, str(errno), errstr, _("you find your file now at:"),
@@ -557,11 +564,12 @@ class filechoose:
                     show_mesbox(self.dialog, text, self.encoding)
                     self.dialog.set_current_folder(self.dialog.get_current_folder())
 
-            except OSError, (errno, errstr):
-               print >> sys.stderr, "## %s" % _("ERROR while trying to replace your file with the rotated one")
-               print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
-               print >> sys.stderr, "## %s" % _("you find the rotated file now at:")
-               print >> sys.stderr, "## %s" % trimlongline(targetfile, 65)
+            except OSError as xxx_todo_changeme6:
+               (errno, errstr) = xxx_todo_changeme6.args
+               ##print("## %s" % _("ERROR while trying to replace your file with the rotated one"), file=sys.stderr)
+               ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
+               ##print("## %s" % _("you find the rotated file now at:"), file=sys.stderr)
+               ##print("## %s" % trimlongline(targetfile, 65), file=sys.stderr)
                text = "<big><b>%s</b></big>\n\n%s\n<b>%s: %s</b>\n\n%s:\n\n%s\n%s" % (
                            _("replacing your original file didn't succeed on:"),
                            fname, str(errno), errstr, _("you find your file now at:"),
@@ -569,8 +577,8 @@ class filechoose:
                show_mesbox(self.dialog, text, self.encoding)
                self.dialog.set_current_folder(self.dialog.get_current_folder())
         else:
-            print >> sys.stderr, "## %s" % _("Error while tyring to rotate the file")
-            print >> sys.stderr, "## %s" % std_output
+            ##print("## %s" % _("Error while tyring to rotate the file"), file=sys.stderr)
+            ##print("## %s" % std_output, file=sys.stderr)
             text = "<big><b>%s</b></big>\n\n%s\n\n%s\n\n%s" % (
                     _("rotating didn't succeed on:"), fname, std_output,
                     _("(may contact mac@calmar.ws)"))
@@ -582,7 +590,7 @@ class filechoose:
     def dialog_viewpics(self, *args): #{{{
         if self.viewer == "":
             if self.mswin:
-                print "## %s" % _("select first your viewer (whatever you have) and then try again")
+                ##print("## %s" % _("select first your viewer (whatever you have) and then try again"))
                 self.dialog_setupviewer() #### hmmm
                 return
             else:
@@ -609,17 +617,18 @@ class filechoose:
             pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,\
                     stderr=subprocess.PIPE, shell=False)
             err_output = pipe.stderr.read()
-        except OSError, (errno, errstr):
-            print >> sys.stderr, _("## error while trying to display the picture(s)")
-            print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+        except OSError as xxx_todo_changeme7:
+            (errno, errstr) = xxx_todo_changeme7.args
+            ##print(_("## error while trying to display the picture(s)"), file=sys.stderr)
+            ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
             text = "<big><b>%s</b></big>\n\n%s: %s" % (
                     _("Error while trying to display the pictures(s)"), str(errno), errstr)
             show_mesbox(self.dialog, text, self.encoding)
             return
 
         if err_output != "" :
-            print >> sys.stderr, _("## error while trying to display the picture(s)")
-            print >> sys.stderr, "## (ERROR): %s" % err_output
+            ##print(_("## error while trying to display the picture(s)"), file=sys.stderr)
+            ##print("## (ERROR): %s" % err_output, file=sys.stderr)
             text = "<big><b>%s</b></big>\n\n%s" % (
                     _("Error while trying to display the pictures(s)"), err_output )
             show_mesbox(self.dialog, text, self.encoding)
@@ -683,7 +692,7 @@ class filechoose:
             try:   # Probably when folder is selected, should do in a different way, so
                 self.viewer = dialog_sw.get_filenames()[0]
             except IndexError:
-                print >> sys.stderr, "## %s" % _("no binary selected? May try again")
+                ##print("## %s" % _("no binary selected? May try again"), file=sys.stderr)
                 return
         dialog_sw.destroy()
 #}}}

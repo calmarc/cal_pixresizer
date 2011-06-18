@@ -4,11 +4,11 @@ def trimlongline(item, size=70):
     return item
 
 def loc_enc(text, encod): 
-    obj = unicode(text, 'utf-8')
+    obj = str(text, 'utf-8')
     return obj.encode( encod)
 
 def utf8_enc(text, encod):
-    obj = unicode(text, encod)
+    obj = str(text, encod)
     return obj.encode('utf-8')
 
 def quit_self(widget, *args):

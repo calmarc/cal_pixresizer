@@ -4,70 +4,71 @@
 ### little FUNCTIONS 
 #              gui related
 #}}}
-class maingui:
+
+def maingui():
 # little gui
-    def quit_widget(self, widget, data): #{{{
+    def quit_widget(widget, data): #{{{
         data.hide()
         data.destroy()
 #}}}
-    def quit_self(self, widget, *args): #{{{
+    def quit_self(widget, *args): #{{{
         widget.hide()
         widget.destroy()
 #}}}
-    def delete_event(self, widget, event, data=None): #{{{
-        self.userdata_save()
+    def delete_event(widget, event, data=None): #{{{
+        userdata_save()
         gtk.main_quit()
         return False
 #}}}
-    def toggle_percent(self, widget, data): #{{{
+    def toggle_percent(widget, data): #{{{
         data.show()
         widget.hide()
-        self.general["percentbox"].set_sensitive(False)
-        self.general["sizebox"].set_sensitive(True)
+        cfg.GENERAL["percentbox"].set_sensitive(False)
+        cfg.GENERAL["sizebox"].set_sensitive(True)
 #}}}
-    def toggle_size(self, widget, data): #{{{
+    def toggle_size(widget, data): #{{{
         data.show()
         widget.hide()
-        self.general["percentbox"].set_sensitive(True)
-        self.general["sizebox"].set_sensitive(False)
+        cfg.GENERAL["percentbox"].set_sensitive(True)
+        cfg.GENERAL["sizebox"].set_sensitive(False)
 #}}}
-    def get_spin_focus(self, widget, spinname): #{{{
+    def get_spin_focus(widget, spinname): #{{{
         global general
-        self.general[spinname].set_active(True)
+        cfg.GENERAL[spinname].set_active(True)
 #}}}
-    def setvalue(self, widget, data): #Radio buttons... #{{{
+    def setvalue(widget, data): #Radio buttons... #{{{
         global general
-        self.imgprocess[data[0]] = data[1]
+        cfg.IMGPROCESS[data[0]] = data[1]
 #}}}
-    def entries_cb(self, editable, id_edit): #{{{
+    def entries_cb(editable, id_edit): #{{{
         global imgprocess
         posi = editable.get_position()
         char = editable.get_chars(posi, posi+1)
         if char == " ":  # replace spaces with underlines
             editable.delete_text(posi,posi+1)
             editable.insert_text("_", posi)
-        self.imgprocess[id_edit] = editable.get_text()
+        cfg.IMGPROCESS[id_edit] = editable.get_text()
 #}}}
-    def setcombo(self, combobox): #{{{
+    def setcombo(combobox): #{{{
         global imgprocess
         model = combobox.get_model()
         active = combobox.get_active()
         if active >= 0:
-            self.imgprocess["ftype"]=model[active][0]
+            cfg.IMGPROCESS["ftype"]=model[active][0]
 #              main label
 #}}}
-    def label_nopic(self): #{{{
-        self.general["todolabel"].set_markup("\n\n  <b>-- %s --</b> \n\n" % _("no pictures selected"))
+    def label_nopic(): #{{{
+        cfg.GENERAL["todolabel"].set_markup("\n\n  <b>-- %s --</b> \n\n" % _("no pictures selected"))
 #}}}
-    def label_progress(self, count, tot, text, colorstring): #{{{
-        self.general["todolabel"].set_markup("\n\n<b>%s (%s/%s): <span %s>%s</span></b>\n\n" %(
+    def label_progress(count, tot, text, colorstring): #{{{
+        cfg.GENERAL["todolabel"].set_markup("\n\n<b>%s (%s/%s): <span %s>%s</span></b>\n\n" %(
                 _("progress"), count, tot, colorstring, text))
 #}}}
-    def label_files(self, files_todo): #{{{
+    def label_files(files_todo): #{{{
         labeltext=""
         if len(files_todo) == 1:
             labeltext = "\n\n%s\n\n" % trimlongline(files_todo[0])
-        elif len(self.imgprocess["files_todo"]) == 2:
+        elif len(cfg.IMGPROCESS["files_todo"]) == 2:
             labeltext = "\n%s\n%s\n\n" % (trimlongline(files_todo[0]), trimlongline(files_todo[1]))
         elif len(files_todo) == 3:
             labeltext = "\n%s\n%s\n%s\n" % (trimlongline(files_todo[0]), trimlongline(files_todo[1]),
@@ -88,17 +89,17 @@ class maingui:
 
 # encoding hack. grr
         if mswin:
-            self.general["todolabel"].set_text(labeltext)
+            cfg.GENERAL["todolabel"].set_text(labeltext)
         else:
-            self.general["todolabel"].set_text(utf8_enc(labeltext, encoding))
+            cfg.GENERAL["todolabel"].set_text(utf8_enc(labeltext, encoding))
 #              create radios
 #}}}
-    def create_radios(self, vbox, values, text, id_radio, default): #{{{
+    def create_radios(vbox, values, text, id_radio, default): #{{{
         for i in range(len(values)):
             if i == 0: # first should not get other radios as reference
                 radio = None
             radio = gtk.RadioButton(radio, text[i])
-            radio.connect("toggled", self.setvalue, (id_radio, values[i]))
+            radio.connect("toggled", setvalue, (id_radio, values[i]))
             vbox.pack_start(radio, True, True, 0)
             if values[i] == default:
                 radio.set_active(True)
@@ -106,58 +107,62 @@ class maingui:
 #              various
 #}}}
 # little various
-    def stopprogress(self, widget, data): #{{{ bla bla
+    def stopprogress(widget, data): #{{{ bla bla
         global imgprocess
 #   callback for setting var while someone presses stop during progress
-        self.imgprocess["stop_progress"]=True
+        cfg.IMGPROCESS["stop_progress"]=True
 #              userdata
 #}}}
-    def userdata_load(self): #{{{
+    def userdata_load(): #{{{
+        return #DEBUG
 
         filename = cwd + "data_cal_pixresizer.cpd"
         d = shelve.open(filename)
         try:
             for key in ["size_or_not", "viewer", "pic_folder", "bin_folder"]:
-                self.general[key] = d[key]
+                cfg.GENERAL[key] = d[key]
             for key in ["ftype", "files_todo", "width", "height", "percent", "quality",
                         "width_rad", "height_rad", "percent_rad", "quality_rad", 
                         "ent_prefix", "ent_suffix", "ent_folder"]:
-                self.imgprocess[key] = d[key]
+                cfg.IMGPROCESS[key] = d[key]
         except KeyError:
-            print >> sys.stderr, "## %s" % _("no valid userdata found")
+            ##print("## %s" % _("no valid userdata found"), file=sys.stderr)
+            print ()
         d.close()
 #}}}
-    def userdata_save(self): #{{{
+    def userdata_save(): #{{{
+        return #DEBUG
 
         d = shelve.open(cwd + "data_cal_pixresizer.cpd")
         for key in ["viewer", "pic_folder", "bin_folder"]:
-            d[key] = self.general[key]
+            d[key] = cfg.GENERAL[key]
         for key in ["ftype", "files_todo", "width", "height", "percent", "quality",
                     "ent_prefix", "ent_suffix", "ent_folder"]:
-            d[key] = self.imgprocess[key]
-        d["size_or_not"] = self.general["sizebox"].get_property("sensitive")
+            d[key] = cfg.IMGPROCESS[key]
+        d["size_or_not"] = cfg.GENERAL["sizebox"].get_property("sensitive")
 
-        d["width_rad"] = str(self.imgprocess["spinWidth"].get_value_as_int())
-        d["height_rad"] = str(self.imgprocess["spinHeight"].get_value_as_int())
-        d["percent_rad"] = str(self.imgprocess["spinPercent"].get_value_as_int())
-        d["quality_rad"] = str(self.imgprocess["spinQuality"].get_value_as_int())
+        d["width_rad"] = str(cfg.IMGPROCESS["spinWidth"].get_value_as_int())
+        d["height_rad"] = str(cfg.IMGPROCESS["spinHeight"].get_value_as_int())
+        d["percent_rad"] = str(cfg.IMGPROCESS["spinPercent"].get_value_as_int())
+        d["quality_rad"] = str(cfg.IMGPROCESS["spinQuality"].get_value_as_int())
 
         d.close()
 #              encoding stuff
 #}}}
 #}}}
 # converting loop
-    def create_subfolder(self, folder, fname): #{{{
+    def create_subfolder(folder, fname): #{{{
         if folder != "" and not os.path.exists(fname + os.sep + folder):
-            print "## %s: %s (%s/%s)" % (_("create new folder: "), folder,
-                         trimlongline(fname, 38), folder)
+            ##print("## %s: %s (%s/%s)" % (_("create new folder: "), folder,
+            ##             trimlongline(fname, 38), folder))
             try:
                 os.mkdir(fname + os.sep + folder)
-            except OSError, (errno, errstr):
-                print >> sys.stderr, ""
-                print >> sys.stderr, "## %s" % _("was not able to create target directory: converting will stop")
-                print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
-                print >> sys.stderr
+            except OSError as xxx_todo_changeme:
+                (errno, errstr) = xxx_todo_changeme.args
+                ##print("", file=sys.stderr)
+                ##print("## %s" % _("was not able to create target directory: converting will stop"), file=sys.stderr)
+                ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
+                ##print(file=sys.stderr)
 
                 text = "<big><b>%s</b></big>\n\n%s/<b>%s</b>\n\n%s\n\n%s: %s" % (
                         _("was not able to create your target folder"),
@@ -167,10 +172,11 @@ class maingui:
                 show_mesbox(gtkwindow, text, encoding)
                 return False
         else:
-            print >> sys.stderr, "## %s" % _("sub-folder exists already")
+            ##print("## %s" % _("sub-folder exists already"), file=sys.stderr)
+            print()
         return True
 #}}}
-    def print_settings(self, width, height, percent,  usesize, quality,  folder, prefix, suffix, ftype): #{{{
+    def print_settings(width, height, percent,  usesize, quality,  folder, prefix, suffix, ftype): #{{{
         if width == "9999":
            width_here = _("unlimited")
         else:
@@ -189,84 +195,84 @@ class maingui:
         else:
             reso = percent + "%"
 
-        print """\
+        ##print("""\
 ## create new pictures: resizing   : %-s
-                            quality    : %-s
-                            folder     : %-s
-                            prefix     : %-s
-                            suffix     : %-s
-                            convert to : %-s""" % \
-                                  (reso, quality, folder, prefix, suffix, ftype)
+                            #quality    : %-s
+                            #folder     : %-s
+                            #prefix     : %-s
+                            #suffix     : %-s
+                            #convert to : %-s""" % \
+                                  #(reso, quality, folder, prefix, suffix, ftype))
 
-        print
+        ##print()
 #}}}
-    def get_imgprocess(self): #{{{
-        prefix = self.imgprocess["ent_prefix"]
-        suffix = self.imgprocess["ent_suffix"]
-        folder = self.imgprocess["ent_folder"]
+    def get_imgprocess(): #{{{
+        prefix = cfg.IMGPROCESS["ent_prefix"]
+        suffix = cfg.IMGPROCESS["ent_suffix"]
+        folder = cfg.IMGPROCESS["ent_folder"]
         usesize = True
-        if self.general["percentbox"].get_property("sensitive"):
+        if cfg.GENERAL["percentbox"].get_property("sensitive"):
             usesize = False
-        if self.imgprocess["width"] == "0": # then, the spinner is selected
-            width = str(self.imgprocess["spinWidth"].get_value_as_int())
+        if cfg.IMGPROCESS["width"] == "0": # then, the spinner is selected
+            width = str(cfg.IMGPROCESS["spinWidth"].get_value_as_int())
         else:
-            width = str(self.imgprocess["width"])
-        if self.imgprocess["height"] == "0":
-            height = str(self.imgprocess["spinHeight"].get_value_as_int())
+            width = str(cfg.IMGPROCESS["width"])
+        if cfg.IMGPROCESS["height"] == "0":
+            height = str(cfg.IMGPROCESS["spinHeight"].get_value_as_int())
         else:
-            height = str(self.imgprocess["height"])
-        if self.imgprocess["percent"] == "0":
-            percent = str(self.imgprocess["spinPercent"].get_value_as_int())
+            height = str(cfg.IMGPROCESS["height"])
+        if cfg.IMGPROCESS["percent"] == "0":
+            percent = str(cfg.IMGPROCESS["spinPercent"].get_value_as_int())
         else:
-            percent = str(self.imgprocess["percent"])
-        if self.imgprocess["quality"] == "0":
-            quality = str(self.imgprocess["spinQuality"].get_value_as_int())
+            percent = str(cfg.IMGPROCESS["percent"])
+        if cfg.IMGPROCESS["quality"] == "0":
+            quality = str(cfg.IMGPROCESS["spinQuality"].get_value_as_int())
         else:
-            quality = str(self.imgprocess["quality"])
-        ftype = self.imgprocess["ftype"]
+            quality = str(cfg.IMGPROCESS["quality"])
+        ftype = cfg.IMGPROCESS["ftype"]
         return (prefix, suffix, folder, usesize, width, height, percent, quality, ftype)
 #}}}
-    def no_files_there_selected(self): #{{{
-        if not self.imgprocess["files_todo"]:
+    def no_files_there_selected(): #{{{
+        if not cfg.IMGPROCESS["files_todo"]:
             show_mesbox(gtkwindow, "<big><b>%s</b></big>" % (
                     _("Select some <b>pics</b> to work on")), encoding)
             return True
 #}}}
-    def print_stop_message(self, counter, total): #{{{
-        self.general["stop_button"].hide()
-        self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
-        print
-        print "## %s" % _("stop button pressed: converting has stopped")
-        print
+    def print_stop_message(counter, total): #{{{
+        cfg.GENERAL["stop_button"].hide()
+        label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
+        ##print()
+        ##print("## %s" % _("stop button pressed: converting has stopped"))
+        ##print()
         show_mesbox(gtkwindow, "<big><b>%s</b></big>" % _("progress stopped"), encoding)
-        self.label_files(self.imgprocess["files_todo"])
+        label_files(cfg.IMGPROCESS["files_todo"])
 #}}}
-    def go_on_source_is_equal_target(self, counter, total): #{{{
-        print >> sys.stderr, "## " + _("source and target are the same!")
+    def go_on_source_is_equal_target(counter, total): #{{{
+        ##print("## " + _("source and target are the same!"), file=sys.stderr)
         text = "%s\n\n%s" % (_("<b>source</b> and <b>target</b> are the same!"),
                 _("(...cowardly refuses to overwrite)"))
         if not show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on...")):
-            self.general["stop_button"].hide()
-            self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
+            cfg.GENERAL["stop_button"].hide()
+            label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
             while gtk.events_pending():
                 gtk.main_iteration(False)
             time.sleep(2.0)
-            print
-            print "## %s" % _("converting has stopped")
-            print
-            self.label_files(self.imgprocess["files_todo"])
+            ##print()
+            ##print("## %s" % _("converting has stopped"))
+            ##print()
+            label_files(cfg.IMGPROCESS["files_todo"])
             return False
         else:
             return True
 #}}}
-    def start_resize(self, widget, event, data=None): #{{{
+    def start_resize(widget, event, data=None): #{{{
         global general
         global imgprocess
 
-        if self.no_files_there_selected():
+        if no_files_there_selected():
             return
 # get imgprocess data
-        prefix, suffix, folder, usesize, width, height, percent, quality, ftype = self.get_imgprocess()
+        prefix, suffix, folder, usesize, width, height, percent, quality, ftype = get_imgprocess()
 
 # messagebox when there is no suff, pre or folder
         if prefix == "" and suffix == "" and folder == "" and ftype == "":
@@ -282,31 +288,31 @@ class maingui:
                 return
 
 # to get the path of sample (first) file
-        splitfile = os.path.split(self.imgprocess["files_todo"][0])
+        splitfile = os.path.split(cfg.IMGPROCESS["files_todo"][0])
 
 # create folder when needed
-        if not self.create_subfolder(folder, splitfile[0]):
+        if not create_subfolder(folder, splitfile[0]):
             return
 # just some konsole messages
-        self.print_settings(width, height, percent, usesize, quality, folder, prefix, suffix, ftype)
+        print_settings(width, height, percent, usesize, quality, folder, prefix, suffix, ftype)
 
 # loop preparations
-        total = len(self.imgprocess["files_todo"])
+        total = len(cfg.IMGPROCESS["files_todo"])
         counter = 0
         dist = ""
-        self.imgprocess["stop_progress"] = False
-        self.general["stop_button"].show()
-        self.general["stop_button"].grab_focus()
+        cfg.IMGPROCESS["stop_progress"] = False
+        cfg.GENERAL["stop_button"].show()
+        cfg.GENERAL["stop_button"].grab_focus()
         overwrite_retval = ""  # reset  'overwrite all' flag
 #######################################################################
 # begin the loop
 #######################################################################
-        for sourcefile in self.imgprocess["files_todo"]:
+        for sourcefile in cfg.IMGPROCESS["files_todo"]:
             while gtk.events_pending():
                 gtk.main_iteration(False)
 # check if stop got pressed
-            if self.imgprocess["stop_progress"]:
-                self.print_stop_message(counter, total)
+            if cfg.IMGPROCESS["stop_progress"]:
+                print_stop_message(counter, total)
                 return
             counter += 1
 # split filenames into pieces and create targetfile name
@@ -322,21 +328,21 @@ class maingui:
                 target_ext = ftype
             targetfile = resultpath + prefix + fname + suffix + target_ext
 
-# some printing issue
+# some #printing issue
             if dist == "":  # initialisize only once
                 dist = len(splitfile[1]) + 1 # first sourcefile (no path) + 1
 
-# print what you're going to do... preparation here
+# ##print what you're going to do... preparation here
             command_print = "convert: " + "%-" + str(dist) + "s --> " +\
                     trimlongline(targetfile,58 - dist )
 
             text = trimlongline(targetfile,65 - dist )
-            self.label_progress(str(counter), str(total), text,"")
-            print command_print % (splitfile[1][-1*(dist-1):]) # initial file lenght (dist-1)
+            label_progress(str(counter), str(total), text,"")
+            ##print(command_#print % (splitfile[1][-1*(dist-1):])) # initial file lenght (dist-1)
 
 # source und target the same?  continue or stop?
             if sourcefile == targetfile:
-                if self.go_on_source_is_equal_target(counter, total):
+                if go_on_source_is_equal_target(counter, total):
                     continue
                 else:
                     return
@@ -347,19 +353,19 @@ class maingui:
                     while gtk.events_pending():
                         gtk.main_iteration(False)
                     if overwrite_retval == "skip":
-                        print _("# skipped: ") + trimlongline(targetfile,58)
+                        ##print(_("# skipped: ") + trimlongline(targetfile,58))
                         continue
                     elif overwrite_retval == "quit":
                         overwrite_retval = ""
-                        self.general["stop_button"].hide()
-                        self.label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
+                        cfg.GENERAL["stop_button"].hide()
+                        label_progress(str(counter),str(total),_("stopped!"),"color='#550000'")
                         while gtk.events_pending():
                             gtk.main_iteration(False)
                         time.sleep(2.0)
-                        print
-                        print _("# converting has stopped ")
-                        print
-                        self.label_files(self.imgprocess["files_todo"])
+                        ##print()
+                        ##print(_("# converting has stopped "))
+                        ##print()
+                        label_files(cfg.IMGPROCESS["files_todo"])
                         return
                     elif overwrite_retval == "overwrite":
                         overwrite_retval = ""
@@ -383,125 +389,127 @@ class maingui:
                 pipe = subprocess.Popen(tot, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, shell=False)
                 err_output = pipe.stderr.read()
-            except OSError, (errno, errstr):
-                print >> sys.stderr, "## %s" % _("error while trying to convert the picture")
-                print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
+            except OSError as xxx_todo_changeme1:
+                (errno, errstr) = xxx_todo_changeme1.args
+                ##print("## %s" % _("error while trying to convert the picture"), file=sys.stderr)
+                ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
                 text = "%s\n\n%s\n\n%s: %s\n\n%s" % (
                         _("catched an <b>error</b> while working on:"),
                         sourcefile, str(errno), errstr,
                         _("(may contact mac@calmar.ws)"))
                 if not show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on...")):
-                    self.general["stop_button"].hide()
-                    self.label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
+                    cfg.GENERAL["stop_button"].hide()
+                    label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
                     while gtk.events_pending():
                         gtk.main_iteration(False)
                     time.sleep(2.4)
-                    print
-                    print "## %s" % _("converting has stopped")
-                    print
-                    self.label_files(self.imgprocess["files_todo"])
+                    ##print()
+                    ##print("## %s" % _("converting has stopped"))
+                    ##print()
+                    label_files(cfg.IMGPROCESS["files_todo"])
                     return
                 else:
                     continue
 
             if err_output != "" : # an error, since not empty or so
-                print >> sys.stderr, "## %s" % _("ERROR while working on that picture")
-                print >> sys.stderr, "## %s" % err_output
-                print
+                ##print("## %s" % _("ERROR while working on that picture"), file=sys.stderr)
+                ##print("## %s" % err_output, file=sys.stderr)
+                ##print()
                 if os.path.exists(targetfile) and os.path.getsize(targetfile) == 0 : # del bogus
                     try:
                         os.remove(targetfile)
-                    except OSError,  (errno, errstr):
-                        print >> sys.stderr, "## %s" % _(" there is a currupt (filesize == 0 bytes) generated file")
-                        print >> sys.stderr, "## %s" % targetfile
-                        print >> sys.stderr, "## %s" % _("trying to delete, didn't succeed")
-                        print >> sys.stderr, "## %s: %s" % (str(errno), errstr)
-                        print >> sys.stderr, "## %s" % _("please check that issue yourself as well")
+                    except OSError as xxx_todo_changeme2:
+                        (errno, errstr) = xxx_todo_changeme2.args
+                        ##print("## %s" % _(" there is a currupt (filesize == 0 bytes) generated file"), file=sys.stderr)
+                        ##print("## %s" % targetfile, file=sys.stderr)
+                        ##print("## %s" % _("trying to delete, didn't succeed"), file=sys.stderr)
+                        ##print("## %s: %s" % (str(errno), errstr), file=sys.stderr)
+                        ##print("## %s" % _("please check that issue yourself as well"), file=sys.stderr)
 
                 text = "%s\n\n%s\n<b>%s</b>\n\n%s" % (
                         _("imagemagick terminated with an <b>error</b> while working on:"),
                         sourcefile, err_output, _("(may contact mac@calmar.ws)"))
                 if not show_2_dialog(gtkwindow, text, _("quit processing"), _("skip and go on...")):
-                    self.general["stop_button"].hide()
-                    self.label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
+                    cfg.GENERAL["stop_button"].hide()
+                    label_progress(str(counter),str(total), _("canceled!"),"color='#550000'")
                     while gtk.events_pending():
                         gtk.main_iteration(False)
                     time.sleep(2.4)
                     #self.label_nopic()
-                    # self.imgprocess["files_todo"]=[]
-                    print
-                    print _("# converting has stopped ")
-                    print
-                    self.label_files(self.imgprocess["files_todo"])
+                    # cfg.IMGPROCESS["files_todo"]=[]
+                    ##print()
+                    ##print(_("# converting has stopped "))
+                    ##print()
+                    label_files(cfg.IMGPROCESS["files_todo"])
                     return
 
-        print
-        print "## %s" % _("progress finished")
-        print
+        ##print()
+        ##print("## %s" % _("progress finished"))
+        ##print()
 
-        self.general["stop_button"].hide()
-        self.label_progress(str(total),str(total), _("finish!"),"color='#000070'")
+        cfg.GENERAL["stop_button"].hide()
+        label_progress(str(total),str(total), _("finish!"),"color='#000070'")
 
         while gtk.events_pending():
             gtk.main_iteration(False)
         time.sleep(2.0)
 
-        self.label_files(self.imgprocess["files_todo"])
+        label_files(cfg.IMGPROCESS["files_todo"])
 ### major GUI
 #}}}
 # main and gui
-    def open_filechooser_func(self, widget, acgroup): #{{{
+    def open_filechooser_func(widget, acgroup): #{{{
         global general
         fcgui = Filechoosegui.filechoose(widget, 
                                          acgroup, 
                                          gtkwindow,
-                                         self.general["pic_folder"], 
+                                         cfg.GENERAL["pic_folder"], 
                                          mswin,
                                          cwd,
                                          py2exe,
-                                         self.general["bin_folder"],
-                                         self.general["viewer"],
+                                         cfg.GENERAL["bin_folder"],
+                                         cfg.GENERAL["viewer"],
                                          encoding)
 
-        self.general["pic_folder"] = fcgui.pic_dir
-        self.general["bin_folder"] = fcgui.bin_dir
-        self.general["viewer"] = fcgui.viewer
+        cfg.GENERAL["pic_folder"] = fcgui.pic_dir
+        cfg.GENERAL["bin_folder"] = fcgui.bin_dir
+        cfg.GENERAL["viewer"] = fcgui.viewer
 
         if fcgui.files:
-            self.imgprocess["files_todo"] = fcgui.files
-            self.label_files(self.imgprocess["files_todo"])
+            cfg.IMGPROCESS["files_todo"] = fcgui.files
+            label_files(cfg.IMGPROCESS["files_todo"])
 
         counter=0
-        print "## Die Bilder Auswahl:"
-        print
-        for filename in self.imgprocess["files_todo"]:
+        ##print("## Die Bilder Auswahl:")
+        ##print()
+        for filename in cfg.IMGPROCESS["files_todo"]:
             counter += 1
             string = "%3s: " + trimlongline(filename,65)
-            print string % (str(counter))
+            ##print(string % (str(counter)))
 #}}} 
-    def gui_todo_box(self, mainbox): #{{{
+    def gui_todo_box(mainbox): #{{{
         box = gtk.HBox(False, 0)
         mainbox.pack_start(box, False, False, 0)
 
-        if self.imgprocess["files_todo"] != []:
-            self.label_files(self.imgprocess["files_todo"])
+        if cfg.IMGPROCESS["files_todo"] != []:
+            label_files(cfg.IMGPROCESS["files_todo"])
             counter=0
-            print "## Die Bilder Auswahl:"
-            print
-            for fname in self.imgprocess["files_todo"]:
+            ##print("## Die Bilder Auswahl:")
+            ##print()
+            for fname in cfg.IMGPROCESS["files_todo"]:
                 counter += 1
                 string = "%3s: " + trimlongline(fname,66)
-                print string % (str(counter))
-            print
+                ##print(string % (str(counter)))
+            ##print()
         else:
-            self.label_nopic()
+            label_nopic()
 
-        box.pack_start(self.general["todolabel"], False, False , 0)
+        box.pack_start(cfg.GENERAL["todolabel"], False, False , 0)
 
         separator = gtk.HSeparator()
         mainbox.pack_start(separator, False, False, 5)
 #}}}
-    def gui_top_box(self, mainbox): #{{{
+    def gui_top_box(mainbox): #{{{
         box = gtk.HBox(False, 0)
         mainbox.pack_start(box, False, False, 0)
 
@@ -518,14 +526,14 @@ class maingui:
         label = gtk.Label(_("exit"))
         hbox.pack_end(label, False, False, 0)
 
-        but_quit.connect("clicked", self.delete_event, None)
+        but_quit.connect("clicked", delete_event, None)
         box.pack_end(but_quit, False, False, 0)
 
         separator = gtk.HSeparator()
         mainbox.pack_start(separator, False, False, 5)
 
 #}}}
-    def gui_last_box(self, mainbox, acgroup): #{{{
+    def gui_last_box(mainbox, acgroup): #{{{
         box = gtk.HBox(False, 0)
         mainbox.pack_start(box, False, False, 0)
 
@@ -537,7 +545,7 @@ class maingui:
         hbox.pack_end(label, False, False, 0)
         button = gtk.Button()
         button.add(hbox)
-        button.connect("clicked", self.start_resize, None)
+        button.connect("clicked", start_resize, None)
         box.pack_end(button, False, False, 0)
 
         hbox=gtk.HBox()
@@ -548,7 +556,7 @@ class maingui:
         hbox.pack_end(label, False, False, 0)
         button = gtk.Button()
         button.add(hbox)
-        button.connect("clicked", self.open_filechooser_func, acgroup)
+        button.connect("clicked", open_filechooser_func, acgroup)
 
         align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
         align.set_padding(0, 0, 5, 15)
@@ -563,24 +571,24 @@ class maingui:
         hbox.pack_end(image, False, False, 0)
         label = gtk.Label(_("STOP "))
         hbox.pack_end(label, False, False, 0)
-        self.general["stop_button"].add(hbox)
-        self.general["stop_button"].connect("clicked", self.stopprogress, None)
-        box.pack_end(self.general["stop_button"], False, False, 0)
+        cfg.GENERAL["stop_button"].add(hbox)
+        cfg.GENERAL["stop_button"].connect("clicked", stopprogress, None)
+        box.pack_end(cfg.GENERAL["stop_button"], False, False, 0)
 #}}}
-    def gui_setting_box(self, mainbox): #{{{
+    def gui_setting_box(mainbox): #{{{
         table = gtk.Table(rows=6, columns=2, homogeneous=False)
         mainbox.pack_start(table, False, False, 0)
 
 # over hbox for sizes
 
-        self.general["sizebox"] = gtk.HBox(True, 0)
-        table.attach(self.general["sizebox"], 0, 2, 0, 1, gtk.EXPAND)
-        self.general["sizebox"].set_sensitive(self.general["size_or_not"])
+        cfg.GENERAL["sizebox"] = gtk.HBox(True, 0)
+        table.attach(cfg.GENERAL["sizebox"], 0, 2, 0, 1, gtk.EXPAND)
+        cfg.GENERAL["sizebox"].set_sensitive(cfg.GENERAL["size_or_not"])
 
 # width
 
         vbox = gtk.VBox(False, 0)
-        self.general["sizebox"].pack_start(vbox, False, False, 5)
+        cfg.GENERAL["sizebox"].pack_start(vbox, False, False, 5)
 
         label = gtk.Label()
         label.set_markup("<span foreground=\"#000060\"><b>%s</b></span>" % _("width"))
@@ -589,17 +597,17 @@ class maingui:
         text = [ _("no limit"), "1600x", "1280x", "1024x", "800x", "640x",\
                 "480x", _("specific:") ]
         values = [ "9999", "1600", "1280", "1024", "800", "640", "480", "0"]
-        default = self.imgprocess["width"]
-        self.general["radio_width"] = self.create_radios(vbox, values, text, "width", default)
+        default = cfg.IMGPROCESS["width"]
+        cfg.GENERAL["radio_width"] = create_radios(vbox, values, text, "width", default)
 
-        self.imgprocess["spinWidth"].set_wrap(False)
-        vbox.pack_start(self.imgprocess["spinWidth"], False, False, 0)
+        cfg.IMGPROCESS["spinWidth"].set_wrap(False)
+        vbox.pack_start(cfg.IMGPROCESS["spinWidth"], False, False, 0)
 
 
 # height
 
         vbox = gtk.VBox(False, 0)
-        self.general["sizebox"].pack_start(vbox, False, False, 5)
+        cfg.GENERAL["sizebox"].pack_start(vbox, False, False, 5)
 
         label = gtk.Label()
         label.set_markup("<span foreground=\"#000060\"><b>%s</b></span>" % _("height"))
@@ -608,25 +616,25 @@ class maingui:
         text = [ _("no limit"), "x1200", "x1024",  "x768", "x600", "x480",\
                  "x320", _("specific:") ]
         values = [ "9999", "1200", "1024", "768", "600", "480", "320", "0"]
-        default = self.imgprocess["height"]
-        self.general["radio_height"] = self.create_radios(vbox, values, text, "height", default)
+        default = cfg.IMGPROCESS["height"]
+        cfg.GENERAL["radio_height"] = create_radios(vbox, values, text, "height", default)
 
-        self.imgprocess["spinHeight"].set_wrap(False)
-        vbox.pack_start(self.imgprocess["spinHeight"], False, False, 0)
+        cfg.IMGPROCESS["spinHeight"].set_wrap(False)
+        vbox.pack_start(cfg.IMGPROCESS["spinHeight"], False, False, 0)
 
 # overbox finish
 
 # over hbox for percent
 
-        self.general["percentbox"] = gtk.HBox(False, 0)
-        table.attach(self.general["percentbox"], 2, 3, 0, 1, gtk.EXPAND)
-        self.general["percentbox"].set_sensitive(not self.general["size_or_not"])
+        cfg.GENERAL["percentbox"] = gtk.HBox(False, 0)
+        table.attach(cfg.GENERAL["percentbox"], 2, 3, 0, 1, gtk.EXPAND)
+        cfg.GENERAL["percentbox"].set_sensitive(not cfg.GENERAL["size_or_not"])
 
 
 # percent
 
         vbox = gtk.VBox(False, 0)
-        self.general["percentbox"].pack_start(vbox, False, False, 5)
+        cfg.GENERAL["percentbox"].pack_start(vbox, False, False, 5)
 
         label = gtk.Label()
         label.set_markup("<span foreground=\"#000060\"><b>%s</b></span>" % _("size in %"))
@@ -634,11 +642,11 @@ class maingui:
 
         text = [ "100%", "90%", "80%", "70%", "60%", "50%", "40%", _("specific:") ]
         values = [ "100", "90", "80", "70", "60", "50", "40", "0"]
-        default = self.imgprocess["percent"]
-        self.general["radio_percent"] = self.create_radios(vbox, values, text, "percent", default)
+        default = cfg.IMGPROCESS["percent"]
+        cfg.GENERAL["radio_percent"] = create_radios(vbox, values, text, "percent", default)
 
-        self.imgprocess["spinPercent"].set_wrap(False)
-        vbox.pack_start(self.imgprocess["spinPercent"], False, False, 0)
+        cfg.IMGPROCESS["spinPercent"].set_wrap(False)
+        vbox.pack_start(cfg.IMGPROCESS["spinPercent"], False, False, 0)
 
 # overbox finish
 #  to toggle sensitivity of the above boxes
@@ -654,10 +662,10 @@ class maingui:
         align2.set_padding(6, 6, 0, 5)
         align2.add(but2)
 
-        but1.connect("clicked", self.toggle_percent, but2)
+        but1.connect("clicked", toggle_percent, but2)
         table.attach(align1, 0, 2, 1, 2, gtk.FILL)
 
-        but2.connect("clicked", self.toggle_size, but1)
+        but2.connect("clicked", toggle_size, but1)
         table.attach(align2, 2, 3, 1, 2, gtk.FILL)
 
 ## Vseparator
@@ -678,11 +686,11 @@ class maingui:
 
         text = [ "100%", "97%", "94%", "90%", "85%", "80%", "60%", _("specific")]
         values = [ "100", "97", "94", "90", "85", "80", "60", "0"]
-        default = self.imgprocess["quality"]
-        self.general["radio_quality"] = self.create_radios(vbox, values, text, "quality", default)
+        default = cfg.IMGPROCESS["quality"]
+        cfg.GENERAL["radio_quality"] = create_radios(vbox, values, text, "quality", default)
 
-        self.imgprocess["spinQuality"].set_wrap(False)
-        vbox.pack_start(self.imgprocess["spinQuality"], False, False, 0)
+        cfg.IMGPROCESS["spinQuality"].set_wrap(False)
+        vbox.pack_start(cfg.IMGPROCESS["spinQuality"], False, False, 0)
 
 ## separator
         align = gtk.Alignment(xalign=1.0, yalign=1.0, xscale=1.0, yscale=1.0)
@@ -701,8 +709,8 @@ class maingui:
         vbox.pack_start(label, False, False, 0)
         entry = gtk.Entry(60)
         entry.set_alignment(0.49)
-        entry.set_text(self.imgprocess["ent_prefix"])
-        entry.connect('changed', self.entries_cb, "ent_prefix")
+        entry.set_text(cfg.IMGPROCESS["ent_prefix"])
+        entry.connect('changed', entries_cb, "ent_prefix")
         vbox.pack_start(entry, False, False, 0)
 
         label = gtk.Label()
@@ -710,8 +718,8 @@ class maingui:
         vbox.pack_start(label, False, False, 0)
         entry = gtk.Entry(60)
         entry.set_alignment(0.49)
-        entry.set_text(self.imgprocess["ent_suffix"])
-        entry.connect('changed', self.entries_cb, "ent_suffix")
+        entry.set_text(cfg.IMGPROCESS["ent_suffix"])
+        entry.connect('changed', entries_cb, "ent_suffix")
         vbox.pack_start(entry, False, False, 0)
 
         label = gtk.Label()
@@ -720,8 +728,8 @@ class maingui:
         vbox.pack_start(label, False, False, 0)
         entry = gtk.Entry(60)
         entry.set_alignment(0.49)
-        entry.set_text(self.imgprocess["ent_folder"])
-        entry.connect('changed', self.entries_cb, "ent_folder")
+        entry.set_text(cfg.IMGPROCESS["ent_folder"])
+        entry.connect('changed', entries_cb, "ent_folder")
         vbox.pack_start(entry, False, False, 0)
 
         label = gtk.Label()
@@ -740,115 +748,110 @@ class maingui:
             ".xbm", ".xc", ".xpm"]
         for ext in ext_list:
             combo.append_text(ext)
-        combo.set_active(ext_list.index(self.imgprocess["ftype"]))
+        combo.set_active(ext_list.index(cfg.IMGPROCESS["ftype"]))
         vbox.pack_start(combo, False, False, 0)
-        combo.connect('changed', self.setcombo)
+        combo.connect('changed', setcombo)
 
         separator = gtk.HSeparator()
         mainbox.pack_start(separator, False, False, 5)
         return but1, but2
 #}}}
-    def __init__(self): #{{{
 
-        self.radio_bogus = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
-        self.general = dict( todolabel = gtk.Label(),
-                        stop_button    = gtk.Button(),
-                        pic_folder     = "",
-                        bin_folder     = "",
-                        viewer         = "",
-                        mswin          = False,
-                        stop_progress  = False,
-                        sizebox        = True,
-                        percentbox     = False,
-                        size_or_not    = True,
-                        radio_width    = self.radio_bogus,
-                        radio_height   = self.radio_bogus,
-                        radio_percent  = self.radio_bogus,
-                        radio_quality  = self.radio_bogus)
+    cfg.RADIO_BOGUS = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
+    cfg.general = dict( todolabel = gtk.Label(),
+                    stop_button    = gtk.Button(),
+                    pic_folder     = "",
+                    bin_folder     = "",
+                    viewer         = "",
+                    mswin          = False,
+                    stop_progress  = False,
+                    sizebox        = True,
+                    percentbox     = False,
+                    size_or_not    = True,
+                    radio_width    = cfg.RADIO_BOGUS,
+                    radio_height   = cfg.RADIO_BOGUS,
+                    radio_percent  = cfg.RADIO_BOGUS,
+                    radio_quality  = cfg.RADIO_BOGUS)
 
 
 # imgprocess (global)- data (source) for image processing
-        self.imgprocess = dict( ent_prefix  = "",
-                           ent_suffix  = "",
-                           ent_folder  = "",
-                           ftype       = "",
-                           files_todo  = [],
-                           width       = "9999",
-                           width_rad   = "1024",
-                           height      = "768",
-                           height_rad  = "768",
-                           percent     = "60",
-                           percent_rad = "60",
-                           quality     = "94",
-                           quality_rad = "94")
+    cfg.IMGPROCESS = dict( ent_prefix  = "",
+                       ent_suffix  = "",
+                       ent_folder  = "",
+                       ftype       = "",
+                       files_todo  = [],
+                       width       = "9999",
+                       width_rad   = "1024",
+                       height      = "768",
+                       height_rad  = "768",
+                       percent     = "60",
+                       percent_rad = "60",
+                       quality     = "94",
+                       quality_rad = "94")
 
-        self.userdata_load()  # if there, overwrites above values if they exists
+    userdata_load()  # if there, overwrites above values if they exists
 
-        adj = gtk.Adjustment(float(self.imgprocess["width_rad"]), 10, 2000, 1, 100, 0)
-        adj.connect("value_changed", self.get_spin_focus, "radio_width" )
-        self.imgprocess["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
-        self.imgprocess["spinWidth"].set_numeric(True)  #spinnervalue needed later
-        adj = gtk.Adjustment(float(self.imgprocess["height_rad"]), 10, 2000, 1, 100, 0)
-        adj.connect("value_changed", self.get_spin_focus, "radio_height" )
-        self.imgprocess["spinHeight"] = gtk.SpinButton(adj, 1.0, 0)
-        self.imgprocess["spinHeight"].set_numeric(True)
-        adj = gtk.Adjustment(float(self.imgprocess["percent_rad"]), 10, 400, 1, 30, 0)
-        adj.connect("value_changed", self.get_spin_focus, "radio_percent" )
-        self.imgprocess["spinPercent"] = gtk.SpinButton(adj, 1.0, 0)
-        self.imgprocess["spinPercent"].set_numeric(True)
-        adj = gtk.Adjustment(float(self.imgprocess["quality_rad"]), 10, 100, 1, 10, 0)
-        adj.connect("value_changed", self.get_spin_focus, "radio_quality" )
-        self.imgprocess["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
-        self.imgprocess["spinQuality"].set_numeric(True)
+    adj = gtk.Adjustment(float(cfg.IMGPROCESS["width_rad"]), 10, 2000, 1, 100, 0)
+    adj.connect("value_changed", get_spin_focus, "radio_width" )
+    cfg.IMGPROCESS["spinWidth"] = gtk.SpinButton(adj, 1.0, 0)
+    cfg.IMGPROCESS["spinWidth"].set_numeric(True)  #spinnervalue needed later
+    adj = gtk.Adjustment(float(cfg.IMGPROCESS["height_rad"]), 10, 2000, 1, 100, 0)
+    adj.connect("value_changed", get_spin_focus, "radio_height" )
+    cfg.IMGPROCESS["spinHeight"] = gtk.SpinButton(adj, 1.0, 0)
+    cfg.IMGPROCESS["spinHeight"].set_numeric(True)
+    adj = gtk.Adjustment(float(cfg.IMGPROCESS["percent_rad"]), 10, 400, 1, 30, 0)
+    adj.connect("value_changed", get_spin_focus, "radio_percent" )
+    cfg.IMGPROCESS["spinPercent"] = gtk.SpinButton(adj, 1.0, 0)
+    cfg.IMGPROCESS["spinPercent"].set_numeric(True)
+    adj = gtk.Adjustment(float(cfg.IMGPROCESS["quality_rad"]), 10, 100, 1, 10, 0)
+    adj.connect("value_changed", get_spin_focus, "radio_quality" )
+    cfg.IMGPROCESS["spinQuality"] = gtk.SpinButton(adj,0.1, 0)
+    cfg.IMGPROCESS["spinQuality"].set_numeric(True)
 
-        print "================================================="
-        print "Calmar's Picture Resizer - a Imagemagick Frontend"
-        print "================================================="
-        print
+    ##print("=================================================")
+    ##print("Calmar's Picture Resizer - a Imagemagick Frontend")
+    ##print("=================================================")
+    ##print()
 
 
-        gtkwindow.set_title("Calmar's Picture Resizer - http://www.calmar.ws")
-        gtkwindow.set_default_size(500,300)
-        gtkwindow.connect("delete_event", self.delete_event)
-        gtkwindow.set_border_width(10)
+    gtkwindow.set_title("Calmar's Picture Resizer - http://www.calmar.ws")
+    gtkwindow.set_default_size(500,300)
+    gtkwindow.connect("delete_event", delete_event)
+    gtkwindow.set_border_width(10)
 
-        acgroup = gtk.AccelGroup()  # not needed actually.
-        gtkwindow.add_accel_group(acgroup)
+    acgroup = gtk.AccelGroup()  # not needed actually.
+    gtkwindow.add_accel_group(acgroup)
 
-        mainbox = gtk.VBox(False, 0)
-        gtkwindow.add(mainbox)
+    mainbox = gtk.VBox(False, 0)
+    gtkwindow.add(mainbox)
 
-        self.gui_top_box(mainbox)
-        but1, but2 = self.gui_setting_box(mainbox)
-        self.gui_todo_box(mainbox)
-        self.gui_last_box(mainbox, acgroup)
+    gui_top_box(mainbox)
+    but1, but2 = gui_setting_box(mainbox)
+    gui_todo_box(mainbox)
+    gui_last_box(mainbox, acgroup)
 
 # show
-        font_desc = pango.FontDescription("Courier")
-        if font_desc:
-            self.general["todolabel"].modify_font(font_desc)
+    font_desc = pango.FontDescription("Courier")
+    if font_desc:
+        cfg.general["todolabel"].modify_font(font_desc)
 
-        gtkwindow.show_all()
+    gtkwindow.show_all()
 
 # if showing depends on size_or_not boolean / needs to be at the end or so
-        if self.general["size_or_not"]:
-            but1.hide()
-            but2.show()
-            self.general["percentbox"].set_sensitive(False)
-            self.general["sizebox"].set_sensitive(True)
-        else:
-            but2.hide()
-            but1.show()
-            self.general["percentbox"].set_sensitive(True)
-            self.general["sizebox"].set_sensitive(False)
+    if cfg.general["size_or_not"]:
+        but1.hide()
+        but2.show()
+        cfg.general["percentbox"].set_sensitive(False)
+        cfg.general["sizebox"].set_sensitive(True)
+    else:
+        but2.hide()
+        but1.show()
+        cfg.general["percentbox"].set_sensitive(True)
+        cfg.general["sizebox"].set_sensitive(False)
 
-        self.general["stop_button"].hide()
+    cfg.general["stop_button"].hide()
 #}}}
-def main(): #{{{
-    maingui()
-    gtk.main()
-    return 0
-#}}}
+
 ### imports, head (at the bottom :) #{{{
 #imports... vars...
 import os, sys,  time, string, shelve, subprocess
@@ -856,10 +859,13 @@ import gtk, pango
 import gettext, locale
 import Image
 
-# for pyexe PIL needs some help, when py2exe'd
-import dbhash
-import PngImagePlugin, JpegImagePlugin
 
+# for pyexe PIL needs some help, when py2exe'd
+#import bsddb
+#import PngImagePlugin, JpegImagePlugin
+
+#own import
+import cfg
 # classes
 import Filechoosegui
 from Messageboxes import *
@@ -890,9 +896,11 @@ encoding = locale.getpreferredencoding()
 
 gtkwindow  = gtk.Window(gtk.WINDOW_TOPLEVEL)
 
+#}}}
 
 if __name__ == "__main__":
-    main()
+    maingui()
+    gtk.main()
+    sys.exit(0)
 
-#}}}
 # vim: foldmethod=marker
