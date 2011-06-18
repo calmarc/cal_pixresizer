@@ -33,11 +33,11 @@ def maingui():
         cfg.GENERAL["sizebox"].set_sensitive(False)
 #}}}
     def get_spin_focus(widget, spinname): #{{{
-        global general
+        global GENERAL
         cfg.GENERAL[spinname].set_active(True)
 #}}}
     def setvalue(widget, data): #Radio buttons... #{{{
-        global general
+        global GENERAL
         cfg.IMGPROCESS[data[0]] = data[1]
 #}}}
     def entries_cb(editable, id_edit): #{{{
@@ -266,7 +266,7 @@ def maingui():
             return True
 #}}}
     def start_resize(widget, event, data=None): #{{{
-        global general
+        global GENERAL
         global imgprocess
 
         if no_files_there_selected():
@@ -459,7 +459,7 @@ def maingui():
 #}}}
 # main and gui
     def open_filechooser_func(widget, acgroup): #{{{
-        global general
+        global GENERAL
         fcgui = Filechoosegui.filechoose(widget, 
                                          acgroup, 
                                          gtkwindow,
@@ -758,7 +758,7 @@ def maingui():
 #}}}
 
     cfg.RADIO_BOGUS = gtk.RadioButton() #radio_ must be radio, gtk calls it before assigned
-    cfg.general = dict( todolabel = gtk.Label(),
+    cfg.GENERAL = dict( todolabel = gtk.Label(),
                     stop_button    = gtk.Button(),
                     pic_folder     = "",
                     bin_folder     = "",
@@ -833,23 +833,23 @@ def maingui():
 # show
     font_desc = pango.FontDescription("Courier")
     if font_desc:
-        cfg.general["todolabel"].modify_font(font_desc)
+        cfg.GENERAL["todolabel"].modify_font(font_desc)
 
     gtkwindow.show_all()
 
 # if showing depends on size_or_not boolean / needs to be at the end or so
-    if cfg.general["size_or_not"]:
+    if cfg.GENERAL["size_or_not"]:
         but1.hide()
         but2.show()
-        cfg.general["percentbox"].set_sensitive(False)
-        cfg.general["sizebox"].set_sensitive(True)
+        cfg.GENERAL["percentbox"].set_sensitive(False)
+        cfg.GENERAL["sizebox"].set_sensitive(True)
     else:
         but2.hide()
         but1.show()
-        cfg.general["percentbox"].set_sensitive(True)
-        cfg.general["sizebox"].set_sensitive(False)
+        cfg.GENERAL["percentbox"].set_sensitive(True)
+        cfg.GENERAL["sizebox"].set_sensitive(False)
 
-    cfg.general["stop_button"].hide()
+    cfg.GENERAL["stop_button"].hide()
 #}}}
 
 ### imports, head (at the bottom :) #{{{
